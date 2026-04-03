@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>万福玛丽号船员维生系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        primaryHover: '#4f46e5',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        bgLight: '#f8fafc',
+                        bgDark: '#0f172a',
+                        cardLight: '#ffffff',
+                        cardDark: '#1e293b',
+                    },
+                    boxShadow: {
+                        'soft': '0 8px 30px rgba(0, 0, 0, 0.04)',
+                        'soft-dark': '0 8px 30px rgba(0, 0, 0, 0.2)',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        
+        .achievement-popup { animation: popup 0.5s ease-out, fadeOut 0.5s ease-in 3.5s forwards; }
+        @keyframes popup {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0; pointer-events: none;}
+        }
+
+        @keyframes toastSlideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes toastFadeOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        .animate-toast-in { animation: toastSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .animate-toast-out { animation: toastFadeOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+    </style>
+</head>
+<body class="bg-bgLight dark:bg-bgDark text-slate-800 dark:text-slate-200 font-sans h-screen overflow-hidden transition-colors duration-300">
+    
+    <div class="flex h-full w-full">
+        <aside class="w-72 bg-cardLight dark:bg-cardDark border-r border-slate-200 dark:border-slate-700 flex flex-col h-full transition-colors z-10 shrink-0">
+            <div class="p-6 pb-2">
+                <div class="flex items-center justify-between mb-2">
+                    <h1 class="text-xl font-bold text-primary flex items-center gap-2">
+                        <i data-lucide="graduation-cap"></i> HM-CLSS
+                    </h1>
+                    <button id="theme-toggle" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 transition-colors">
+                        <i data-lucide="moon" id="theme-icon-dark" class="w-5 h-5 hidden"></i>
+                        <i data-lucide="sun" id="theme-icon-light" class="w-5 h-5 hidden"></i>
+                    </button>
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400" id="current-date-time">加载时间...</p>
+            </div>
+
+            <nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+                <button id="nav-checkin" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all bg-primary/10 text-primary dark:bg-primary/20">
+                    <i data-lucide="radar" class="w-4 h-4"></i> 舰桥值班日志
+                </button>
+                <button id="nav-phone" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i> 认知拦截干扰
+                </button>
+                <button id="nav-tasks" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                    <i data-lucide="terminal" class="w-4 h-4"></i> 全舰任务管理
+                </button>
+                <button id="nav-leave" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                    <i data-lucide="power-off" class="w-4 h-4"></i> 离舰活动审批
+                </button>
+                <button id="nav-stats" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                    <i data-lucide="bar-chart-2" class="w-4 h-4"></i> 维生统计分析
+                </button>
+                <button id="nav-settings" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                    <i data-lucide="settings" class="w-4 h-4"></i> 云端同步设置
+                </button>
+            </nav>
+
+            <div class="p-4 m-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-700">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">今日概况</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500">上午打卡</span>
+                        <span id="today-morning-status" class="font-medium">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500">下午打卡</span>
+                        <span id="today-afternoon-status" class="font-medium">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500">晚上打卡</span>
+                        <span id="today-evening-status" class="font-medium">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500">手机克制</span>
+                        <span id="today-phone-count" class="font-medium text-warning">0 次</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500">当前任务</span>
+                        <span id="today-active-task" class="font-medium text-primary truncate max-w-[100px]">-</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 h-full overflow-y-auto p-6 lg:p-10 relative">
+            <div class="max-w-5xl mx-auto">
+                
+                <section id="checkin-section" class="mb-8">
+                    <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                        <i data-lucide="clock" class="text-primary"></i> 日志记录系统
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-5 shadow-soft dark:shadow-soft-dark border border-slate-100 dark:border-slate-800">
+                            <h3 class="text-lg font-semibold text-primary mb-3">上午打卡</h3>
+                            <div class="text-xs text-slate-500 dark:text-slate-400 mb-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl space-y-1">
+                                <div>上班: 06:00 - 12:00</div>
+                                <div>下班: 09:00 - 14:00</div>
+                                <div class="text-success font-medium">合格: 08:00前上, 12:00前下</div>
+                            </div>
+                            <div class="space-y-3">
+                                <button id="morning-checkin" class="w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200">上午上班</button>
+                                <button id="morning-checkout" class="w-full bg-slate-100 dark:bg-slate-900 text-slate-500 py-3 rounded-xl font-medium transition-all duration-200" disabled>上午下班</button>
+                            </div>
+                            <div class="mt-4 flex justify-between text-xs text-slate-400 font-mono">
+                                <span id="morning-checkin-time">上班: -</span>
+                                <span id="morning-checkout-time">下班: -</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-5 shadow-soft dark:shadow-soft-dark border border-slate-100 dark:border-slate-800">
+                            <h3 class="text-lg font-semibold text-primary mb-3">下午打卡</h3>
+                            <div class="text-xs text-slate-500 dark:text-slate-400 mb-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl space-y-1">
+                                <div>上班: 12:00 - 17:00</div>
+                                <div>下班: 14:00 - 20:00</div>
+                                <div class="text-success font-medium">合格: 14:00前上, 18:00前下</div>
+                            </div>
+                            <div class="space-y-3">
+                                <button id="afternoon-checkin" class="w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200">下午上班</button>
+                                <button id="afternoon-checkout" class="w-full bg-slate-100 dark:bg-slate-900 text-slate-500 py-3 rounded-xl font-medium transition-all duration-200" disabled>下午下班</button>
+                            </div>
+                            <div class="mt-4 flex justify-between text-xs text-slate-400 font-mono">
+                                <span id="afternoon-checkin-time">上班: -</span>
+                                <span id="afternoon-checkout-time">下班: -</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-5 shadow-soft dark:shadow-soft-dark border border-slate-100 dark:border-slate-800">
+                            <h3 class="text-lg font-semibold text-primary mb-3">晚上打卡</h3>
+                            <div class="text-xs text-slate-500 dark:text-slate-400 mb-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl space-y-1">
+                                <div>上班: 17:00 - 22:00</div>
+                                <div>下班: 20:00 - 24:00</div>
+                                <div class="text-success font-medium">合格: 19:00前上, 21-22点下</div>
+                            </div>
+                            <div class="space-y-3">
+                                <button id="evening-checkin" class="w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200">晚上上班</button>
+                                <button id="evening-checkout" class="w-full bg-slate-100 dark:bg-slate-900 text-slate-500 py-3 rounded-xl font-medium transition-all duration-200" disabled>晚上下班</button>
+                            </div>
+                            <div class="mt-4 flex justify-between text-xs text-slate-400 font-mono">
+                                <span id="evening-checkin-time">上班: -</span>
+                                <span id="evening-checkout-time">下班: -</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft dark:shadow-soft-dark border border-slate-100 dark:border-slate-800 overflow-hidden">
+                        <h3 class="text-lg font-semibold mb-4">今日打卡记录</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead>
+                                    <tr class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400">
+                                        <th class="py-3 px-4 text-left rounded-l-lg font-medium">时段</th>
+                                        <th class="py-3 px-4 text-left font-medium">上班时间</th>
+                                        <th class="py-3 px-4 text-left font-medium">下班时间</th>
+                                        <th class="py-3 px-4 text-left font-medium">上班状态</th>
+                                        <th class="py-3 px-4 text-left rounded-r-lg font-medium">下班状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="today-checkin-table" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+                                        <td class="py-3 px-4 font-medium">上午</td>
+                                        <td class="py-3 px-4 font-mono text-slate-500" id="table-morning-checkin">-</td>
+                                        <td class="py-3 px-4 font-mono text-slate-500" id="table-morning-checkout">-</td>
+                                        <td class="py-3 px-4" id="table-morning-checkin-status">-</td>
+                                        <td class="py-3 px-4" id="table-morning-checkout-status">-</td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+                                        <td class="py-3 px-4 font-medium">下午</td>
+                                        <td class="py-3 px-4 font-mono text-slate-500" id="table-afternoon-checkin">-</td>
+                                        <td class="py-3 px-4 font-mono text-slate-500" id="table-afternoon-checkout">-</td>
+                                        <td class="py-3 px-4" id="table-afternoon-checkin-status">-</td>
+                                        <td class="py-3 px-4" id="table-afternoon-checkout-status">-</td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+                                        <td class="py-3 px-4 font-medium">晚上</td>
+                                        <td class="py-3 px-4 font-mono text-slate-500" id="table-evening-checkin">-</td>
+                                        <td class="py-3 px-4 font-mono text-slate-500" id="table-evening-checkout">-</td>
+                                        <td class="py-3 px-4" id="table-evening-checkin-status">-</td>
+                                        <td class="py-3 px-4" id="table-evening-checkout-status">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="phone-section" class="mb-8 hidden">
+                    <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                        <i data-lucide="smartphone" class="text-primary"></i> 专注力记录
+                    </h2>
+                    
+                    <div class="text-center mb-8 bg-cardLight dark:bg-cardDark rounded-2xl p-10 shadow-soft dark:shadow-soft-dark border border-slate-100 dark:border-slate-800">
+                        <div class="text-7xl font-black text-primary mb-2" id="phone-resist-count">0</div>
+                        <p class="text-slate-500 mb-8">累计拒绝碎片化诱惑次数</p>
+                        <button id="add-phone-resist" class="bg-primary hover:bg-primaryHover text-white py-4 px-8 rounded-xl font-medium text-lg transition-all active:scale-95 shadow-lg flex items-center justify-center mx-auto gap-2">
+                            <i data-lucide="shield-check"></i> 又成功克制了一次
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
+                            <h3 class="text-lg font-semibold mb-3">今日记录</h3>
+                            <div class="text-4xl font-bold text-primary mb-2" id="today-phone-resist-count">0</div>
+                            <p class="text-slate-500 text-sm">今日忍住次数</p>
+                            <div class="mt-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl text-xs text-slate-500 font-mono" id="today-phone-resist-times">
+                                暂无记录
+                            </div>
+                        </div>
+                        
+                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 overflow-y-auto max-h-64">
+                            <h3 class="text-lg font-semibold mb-4">成就图鉴</h3>
+                            <div class="space-y-4" id="achievements-list">
+                                </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="tasks-section" class="mb-8 hidden">
+                    <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                        <i data-lucide="list-todo" class="text-primary"></i> 任务管理
+                    </h2>
+                    
+                    <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 mb-6">
+                        <h3 class="text-lg font-semibold mb-4">开启深度工作</h3>
+                        <div class="flex flex-col md:flex-row gap-3">
+                            <div class="relative w-full md:w-48 shrink-0 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-primary/50 transition-all focus-within:ring-2 focus-within:ring-primary">
+                                <select id="task-tag" class="w-full h-full appearance-none bg-transparent px-4 py-3 pr-10 outline-none text-slate-700 dark:text-slate-200 text-sm font-medium cursor-pointer rounded-xl">
+                                    <option value="paper" class="bg-white text-slate-700 dark:bg-slate-900 dark:text-slate-200">📄 文献阅读</option>
+                                    <option value="code" class="bg-white text-slate-700 dark:bg-slate-900 dark:text-slate-200">💻 代码构建</option>
+                                    <option value="experiment" class="bg-white text-slate-700 dark:bg-slate-900 dark:text-slate-200">🧪 实验跑数</option>
+                                    <option value="write" class="bg-white text-slate-700 dark:bg-slate-900 dark:text-slate-200">✍️ 文档撰写</option>
+                                    <option value="other" class="bg-white text-slate-700 dark:bg-slate-900 dark:text-slate-200">📦 杂项事务</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400 group-hover:text-primary transition-colors">
+                                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                                </div>
+                            </div>
+                            
+                            <input type="text" id="task-name" placeholder="输入你想专注攻克的任务..." class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-slate-700 dark:text-white transition-all">
+                            
+                            <button id="start-task" class="bg-primary hover:bg-primaryHover text-white py-3 px-8 rounded-xl font-medium transition-all shadow-md shrink-0">
+                                开始专注
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="current-task-container" class="bg-primary/10 dark:bg-primary/20 border border-primary/20 rounded-2xl p-6 mb-6 hidden transition-all">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <div class="text-xs text-primary font-bold uppercase tracking-wider mb-1">正在进行</div>
+                                <div class="text-xl font-bold dark:text-white" id="current-task-name">-</div>
+                                <div class="text-sm text-slate-500 dark:text-slate-400 mt-1 font-mono" id="current-task-time">已进行: 00:00:00</div>
+                            </div>
+                            <button id="end-task" class="bg-danger hover:bg-red-600 text-white py-2 px-6 rounded-xl font-medium transition-all shadow-md">
+                                结束并记录
+                            </button>
+                        </div>
+                        <div class="w-full bg-primary/20 rounded-full h-2">
+                            <div id="task-progress-bar" class="bg-primary h-2 rounded-full transition-all duration-1000 ease-linear" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 mb-6">
+                        <h3 class="text-lg font-semibold mb-4">今日日志</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead>
+                                    <tr class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400">
+                                        <th class="py-3 px-4 text-left rounded-l-lg font-medium">任务名称</th>
+                                        <th class="py-3 px-4 text-left font-medium">开始</th>
+                                        <th class="py-3 px-4 text-left font-medium">结束</th>
+                                        <th class="py-3 px-4 text-left font-medium">专注时长</th>
+                                        <th class="py-3 px-4 text-left rounded-r-lg font-medium">状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="today-tasks-table" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold flex items-center gap-2"><i data-lucide="lightbulb" class="w-5 h-5 text-warning"></i> 灵感碎片池</h3>
+                            <span class="text-xs text-slate-400 font-mono">全局快捷键: Ctrl + K</span>
+                        </div>
+                        <div id="quick-notes-container" class="space-y-3">
+                            </div>
+                    </div>
+                    
+                    <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
+                        <h3 class="text-lg font-semibold mb-4">时间轴映射</h3>
+                        <div class="relative h-96 bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
+                            <div class="absolute left-0 top-0 bottom-0 w-16 border-r border-slate-200 dark:border-slate-700">
+                                <div class="h-full flex flex-col justify-between py-2 text-xs text-slate-400 font-mono text-center">
+                                    <div>06:00</div><div>08:00</div><div>10:00</div><div>12:00</div><div>14:00</div>
+                                    <div>16:00</div><div>18:00</div><div>20:00</div><div>22:00</div><div>24:00</div>
+                                </div>
+                            </div>
+                            <div id="schedule-content" class="ml-16 h-full relative">
+                                <div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
+                                    今日暂无数据留存
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="leave-section" class="mb-8 hidden">
+                    <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                        <i data-lucide="calendar-off" class="text-primary"></i> 审批与请假
+                    </h2>
+                    
+                    <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 mb-6">
+                        <h3 class="text-lg font-semibold mb-4">记录脱产</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-500 mb-2">日期</label>
+                                <input type="date" id="leave-date" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-500 mb-2">缘由</label>
+                                <input type="text" id="leave-reason" placeholder="如：参加学术会议 / 身体不适" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all">
+                            </div>
+                        </div>
+                        <div class="flex justify-end">
+                            <button id="add-leave" class="bg-primary hover:bg-primaryHover text-white py-2 px-6 rounded-xl font-medium transition-all shadow-md">归档请假</button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
+                        <h3 class="text-lg font-semibold mb-4">历史记录</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead>
+                                    <tr class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400">
+                                        <th class="py-3 px-4 text-left rounded-l-lg font-medium">请假日期</th>
+                                        <th class="py-3 px-4 text-left font-medium">请假理由</th>
+                                        <th class="py-3 px-4 text-left rounded-r-lg font-medium">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leave-records-table" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="stats-section" class="mb-8 hidden">
+                    <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                        <i data-lucide="bar-chart-2" class="text-primary"></i> 效能洞察
+                    </h2>
+                    
+                    <div class="flex gap-2 mb-6 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl w-fit">
+                        <button class="stats-period-btn bg-white dark:bg-slate-700 text-slate-900 dark:text-white py-1.5 px-5 rounded-lg font-medium shadow-sm text-sm transition-all" data-period="week">本周</button>
+                        <button class="stats-period-btn text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 py-1.5 px-5 rounded-lg font-medium text-sm transition-all" data-period="month">本月</button>
+                        <button class="stats-period-btn text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 py-1.5 px-5 rounded-lg font-medium text-sm transition-all" data-period="year">年度</button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
+                            <h3 class="text-sm font-semibold text-slate-500 mb-4">考勤合规率趋势</h3>
+                            <div class="h-64"><canvas id="checkin-rate-chart"></canvas></div>
+                        </div>
+                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
+                            <h3 class="text-sm font-semibold text-slate-500 mb-4">各时段活跃分布</h3>
+                            <div class="h-64"><canvas id="checkin-period-chart"></canvas></div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div class="md:col-span-2 bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
+                            <h3 class="text-sm font-semibold text-slate-500 mb-4">专注时长沉淀 (h)</h3>
+                            <div class="h-64"><canvas id="task-duration-chart"></canvas></div>
+                        </div>
+                        <div class="md:col-span-1 bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
+                            <h3 class="text-sm font-semibold text-slate-500 mb-4">精力分布图谱</h3>
+                            <div class="h-64"><canvas id="task-tag-chart"></canvas></div>
+                        </div>
+                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
+                            <h3 class="text-sm font-semibold text-slate-500 mb-4">多巴胺克制指数</h3>
+                            <div class="h-64"><canvas id="phone-resist-chart"></canvas></div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-primary/5 dark:bg-primary/10 rounded-2xl p-6 border border-primary/10 text-center">
+                            <div class="text-3xl font-black text-primary mb-1" id="total-checkin-days">0</div>
+                            <div class="text-xs text-slate-500 font-medium">累计出勤天数</div>
+                        </div>
+                        <div class="bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-800/30 text-center">
+                            <div class="text-3xl font-black text-indigo-600 dark:text-indigo-400 mb-1" id="total-task-hours">0</div>
+                            <div class="text-xs text-slate-500 font-medium">深度工作总时长(h)</div>
+                            <div id="space-survival-egg" class="mt-3 text-[10px] text-indigo-400/80 font-mono bg-indigo-100/50 dark:bg-indigo-900/50 py-1 px-2 rounded-lg inline-block transition-all group-hover:scale-105">
+                                🛸 维生系统计算中...
+                            </div>
+                        </div>
+                        <div class="bg-orange-50 dark:bg-orange-900/20 rounded-2xl p-6 border border-orange-100 dark:border-orange-800/30 text-center">
+                            <div class="text-3xl font-black text-orange-500 mb-1" id="total-phone-resist">0</div>
+                            <div class="text-xs text-slate-500 font-medium">总克制次数</div>
+                        </div>
+                        <div class="bg-green-50 dark:bg-green-900/20 rounded-2xl p-6 border border-green-100 dark:border-green-800/30 text-center">
+                            <div class="text-3xl font-black text-green-500 mb-1" id="achievement-count">0</div>
+                            <div class="text-xs text-slate-500 font-medium">解锁成就总量</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="settings-section" class="mb-8 hidden">
+                    <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                        <i data-lucide="cloud" class="text-primary"></i> 云端同步中心
+                    </h2>
+                    
+                    <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold">GitHub Gist API 配置</h3>
+                            <span class="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg text-xs font-bold">极客专享</span>
+                        </div>
+                        <p class="text-sm text-slate-500 mb-6">配置你的 Personal Access Token 和 Gist ID，实现数据的跨设备云端覆盖与拉取，告别数据丢失。</p>
+                        
+                        <div class="space-y-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-500 mb-2">GitHub Token (需勾选 gist 权限)</label>
+                                <input type="password" id="github-token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all font-mono text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-500 mb-2">Gist ID</label>
+                                <input type="text" id="gist-id-input" placeholder="输入你想同步的 Gist ID" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all font-mono text-sm">
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-4 border-t border-slate-100 dark:border-slate-700 pt-6">
+                            <button id="save-config-btn" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-2.5 px-6 rounded-xl font-medium transition-all">保存配置</button>
+                            <button id="pull-cloud-btn" class="bg-primary hover:bg-primaryHover text-white py-2.5 px-6 rounded-xl font-medium transition-all shadow-md flex items-center gap-2"><i data-lucide="cloud-download" class="w-4 h-4"></i> 拉取云端数据</button>
+                            <button id="push-cloud-btn" class="bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 text-white dark:text-slate-900 py-2.5 px-6 rounded-xl font-medium transition-all shadow-md flex items-center gap-2"><i data-lucide="cloud-upload" class="w-4 h-4"></i> 上传覆盖云端</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    
+    <div id="achievement-popup" class="fixed top-8 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl shadow-2xl p-4 w-80 hidden achievement-popup z-50 flex items-start gap-4 border border-slate-700 dark:border-slate-200">
+        <div class="p-2 bg-yellow-400/20 text-yellow-500 rounded-xl shrink-0">
+            <i data-lucide="award" class="w-6 h-6"></i>
+        </div>
+        <div>
+            <h3 class="font-bold text-sm mb-1" id="popup-achievement-title">新成就达成！</h3>
+            <p class="text-xs opacity-80" id="popup-achievement-desc">恭喜你达成了新的成就</p>
+        </div>
+    </div>
+
+    <div id="quick-capture-modal" class="fixed inset-0 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-start justify-center pt-[15vh] transition-opacity">
+        <div id="quick-capture-content" class="bg-cardLight dark:bg-cardDark w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-all duration-200">
+            <div class="p-4 flex items-center gap-3">
+                <i data-lucide="zap" class="text-warning w-6 h-6 shrink-0"></i>
+                <input type="text" id="quick-capture-input" autocomplete="off" placeholder="速记灵感、DOI、调参记录... (按 Enter 归档，Esc 退出)" class="flex-1 bg-transparent border-none focus:outline-none text-lg text-slate-800 dark:text-white placeholder-slate-400 font-medium">
+                <span class="text-xs font-mono text-slate-400 bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700 shrink-0">Ctrl+K</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // 暗黑模式切换逻辑
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        //const iconDark = document.getElementById('theme-icon-dark');
+        //const iconLight = document.getElementById('theme-icon-light');
+        const htmlElement = document.documentElement;
+
+        function updateThemeIcon() {
+            // 每次点击时实时获取最新的 DOM 元素
+            const iconDark = document.getElementById('theme-icon-dark');   // 月亮图标
+            const iconLight = document.getElementById('theme-icon-light'); // 太阳图标
+            
+            if (htmlElement.classList.contains('dark')) {
+                // 【暗黑模式】：隐藏太阳，显示月亮
+                if(iconLight) iconLight.classList.add('hidden');
+                if(iconDark) iconDark.classList.remove('hidden');
+            } else {
+                // 【白天模式】：隐藏月亮，显示太阳
+                if(iconDark) iconDark.classList.add('hidden');
+                if(iconLight) iconLight.classList.remove('hidden');
+            }
+        }
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark');
+        } else {
+            htmlElement.classList.remove('dark');
+        }
+        updateThemeIcon();
+        themeToggleBtn.addEventListener('click', () => {
+            htmlElement.classList.toggle('dark');
+            localStorage.theme = htmlElement.classList.contains('dark') ? 'dark' : 'light';
+            updateThemeIcon();
+            if(window.checkinRateChart) updateStatisticsCharts(document.querySelector('.stats-period-btn.bg-white, .stats-period-btn.bg-slate-700').getAttribute('data-period'));
+        });
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!('theme' in localStorage)) {
+                if (e.matches) {
+                    htmlElement.classList.add('dark');
+                } else {
+                    htmlElement.classList.remove('dark');
+                }
+                
+                updateThemeIcon();
+                
+                if (window.checkinRateChart) {
+                    const activePeriodBtn = document.querySelector('.stats-period-btn.bg-white, .stats-period-btn.bg-slate-700');
+                    if (activePeriodBtn) {
+                        updateStatisticsCharts(activePeriodBtn.getAttribute('data-period'));
+                    }
+                }
+            }
+        });
+
+        // 全局变量
+        let checkinData = {}; 
+        let phoneResistData = { totalCount: 0, records: {} }; 
+        let taskData = {}; 
+        let leaveData = []; 
+        let achievements = []; 
+        let currentTask = null; 
+        let taskTimer = null; 
+        let taskStartTime = null; 
+        let quickNotesData = {}; // 结构: { 'YYYY-MM-DD': [{ time: '10:00', text: 'idea' }] }
+        const tagMap = { 'paper': '文献阅读', 'code': '代码构建', 'experiment': '实验跑数', 'write': '文档撰写', 'other': '杂项事务' };
+        
+        // 成就列表
+        const achievementList = [
+            { id: 'first_resist', name: '初次克制', description: '第一次忍住玩手机', requirement: 1 },
+            { id: 'small_achievement', name: '小有成就', description: '忍住玩手机10次', requirement: 10 },
+            { id: 'strong_will', name: '意志坚强', description: '忍住玩手机50次', requirement: 50 },
+            { id: 'phone_killer', name: '手机克星', description: '忍住玩手机100次', requirement: 100 },
+            { id: 'focus_master', name: '专注大师', description: '忍住玩手机365次', requirement: 365 },
+            { id: 'first_checkin', name: '初次打卡', description: '第一次完成打卡', requirement: 1, type: 'checkin' },
+            { id: 'week_streak', name: '一周坚持', description: '连续打卡7天', requirement: 7, type: 'streak' },
+            { id: 'month_streak', name: '月度达人', description: '连续打卡30天', requirement: 30, type: 'streak' },
+            { id: 'task_master', name: '任务大师', description: '完成100个任务', requirement: 100, type: 'task' },
+            { id: 'time_master', name: '时间大师', description: '累计任务时间达到1000小时', requirement: 1000, type: 'task_hour' },
+            // 在 achievementList 中追加：
+            { id: 'vectorize_all', name: '万物皆可向量化', description: '连续打卡30天，你的生物钟已完全转化为高维张量', requirement: 30, type: 'streak' },
+            { id: 'hacker_mind', name: '神经直连', description: '累计捕捉50个灵感碎片，脑机接口正在形成', requirement: 50, type: 'notes' }
+        ];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initData();
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            initNavigation();
+            initCheckin();
+            initPhoneResist();
+            initTaskManagement();
+            initLeaveManagement();
+            initStatistics();
+            updateTodayStatus();
+            updateQuickNotesList();
+            autoPullOnStartup();
+        });
+        
+        function initData() {
+            const savedCheckinData = localStorage.getItem('checkinData');
+            const savedPhoneResistData = localStorage.getItem('phoneResistData');
+            const savedTaskData = localStorage.getItem('taskData');
+            const savedLeaveData = localStorage.getItem('leaveData');
+            const savedAchievements = localStorage.getItem('achievements');
+            const savedNotes = localStorage.getItem('quickNotesData');
+
+            quickNotesData = savedNotes ? JSON.parse(savedNotes) : {};
+            if (!quickNotesData[getTodayString()]) quickNotesData[getTodayString()] = [];
+            checkinData = savedCheckinData ? JSON.parse(savedCheckinData) : {};
+            phoneResistData = savedPhoneResistData ? JSON.parse(savedPhoneResistData) : { totalCount: 0, records: {} };
+            taskData = savedTaskData ? JSON.parse(savedTaskData) : {};
+            leaveData = savedLeaveData ? JSON.parse(savedLeaveData) : [];
+            achievements = savedAchievements ? JSON.parse(savedAchievements) : [];
+            
+            if (!phoneResistData.records) phoneResistData.records = {};
+
+            const today = getTodayString();
+            if (!checkinData[today]) {
+                checkinData[today] = {
+                    morning: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+                    afternoon: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+                    evening: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+                    leave: false,
+                    leaveReason: ''
+                };
+            }
+            if (!phoneResistData.records[today]) phoneResistData.records[today] = { count: 0, times: [] };
+            if (!taskData[today]) taskData[today] = [];
+            
+            saveData();
+        }
+        
+        function saveData(preventAutoSync = false) {
+            localStorage.setItem('checkinData', JSON.stringify(checkinData));
+            localStorage.setItem('phoneResistData', JSON.stringify(phoneResistData));
+            localStorage.setItem('taskData', JSON.stringify(taskData));
+            localStorage.setItem('leaveData', JSON.stringify(leaveData));
+            localStorage.setItem('achievements', JSON.stringify(achievements));
+            localStorage.setItem('quickNotesData', JSON.stringify(quickNotesData));
+
+            if (!preventAutoSync && typeof triggerAutoSync === 'function') {
+                triggerAutoSync();
+            }
+        }
+        
+        function updateDateTime() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' };
+            document.getElementById('current-date-time').textContent = now.toLocaleDateString('zh-CN', options);
+            updateCheckinButtons();
+        }
+        
+        function formatLocalDate(date) {
+            return date.getFullYear() + '-' + 
+                   String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                   String(date.getDate()).padStart(2, '0');
+        }
+        
+        function getTodayString() { return formatLocalDate(new Date()); }
+        function getCurrentTimeString() { return new Date().toTimeString().slice(0, 5); }
+        function getCurrentTime() { const now = new Date(); return { hour: now.getHours(), minute: now.getMinutes() }; }
+        
+        function initNavigation() {
+            const sections = ['checkin-section', 'phone-section', 'tasks-section', 'leave-section', 'stats-section', 'settings-section'];
+            const navButtons = ['nav-checkin', 'nav-phone', 'nav-tasks', 'nav-leave', 'nav-stats', 'nav-settings'];
+
+            navButtons.forEach((btnId, index) => {
+                document.getElementById(btnId).addEventListener('click', function() {
+                    sections.forEach(sectionId => document.getElementById(sectionId).classList.add('hidden'));
+                    document.getElementById(sections[index]).classList.remove('hidden');
+                    
+                    navButtons.forEach(id => {
+                        const btn = document.getElementById(id);
+                        btn.className = "w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all";
+                    });
+                    
+                    const currentBtn = document.getElementById(btnId);
+                    currentBtn.className = "w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all bg-primary/10 text-primary dark:bg-primary/20";
+                    
+                    if (sections[index] === 'stats-section') {
+                        const activePeriod = document.querySelector('.stats-period-btn.bg-white, .stats-period-btn.bg-slate-700').getAttribute('data-period');
+                        updateStatisticsCharts(activePeriod);
+                    }
+                });
+            });
+        }
+        
+        function initCheckin() {
+            ['morning', 'afternoon', 'evening'].forEach(period => {
+                document.getElementById(`${period}-checkin`).addEventListener('click', () => checkIn(period));
+                document.getElementById(`${period}-checkout`).addEventListener('click', () => checkOut(period));
+            });
+            updateCheckinButtons();
+            updateTodayCheckinTable();
+        }
+        
+        function updateCheckinButtons() {
+            const today = getTodayString();
+            if (!checkinData[today]) {
+                checkinData[today] = {
+                    morning: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+                    afternoon: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+                    evening: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+                    leave: false,
+                    leaveReason: ''
+                };
+                saveData();
+            }
+            const now = getCurrentTime();
+            const currentHour = now.hour;
+            
+            const isLeave = checkinData[today] && checkinData[today].leave;
+            if (isLeave) {
+                ['morning', 'afternoon', 'evening'].forEach(period => {
+                    const checkinBtn = document.getElementById(`${period}-checkin`);
+                    const checkoutBtn = document.getElementById(`${period}-checkout`);
+                    checkinBtn.disabled = true; checkoutBtn.disabled = true;
+                    checkinBtn.className = checkoutBtn.className = "w-full bg-slate-100 dark:bg-slate-900 text-slate-400 py-3 rounded-xl font-medium transition-all duration-200 cursor-not-allowed";
+                });
+                return;
+            }
+            
+            const m = checkinData[today].morning, a = checkinData[today].afternoon, e = checkinData[today].evening;
+            
+            document.getElementById('morning-checkin').disabled = m.checkIn !== null || currentHour < 6 || currentHour >= 12;
+            document.getElementById('morning-checkout').disabled = m.checkOut !== null || m.checkIn === null || currentHour < 9 || currentHour >= 14;
+            
+            document.getElementById('afternoon-checkin').disabled = a.checkIn !== null || currentHour < 12 || currentHour >= 17;
+            document.getElementById('afternoon-checkout').disabled = a.checkOut !== null || a.checkIn === null || currentHour < 14 || currentHour >= 20;
+            
+            document.getElementById('evening-checkin').disabled = e.checkIn !== null || currentHour < 17 || currentHour >= 22;
+            document.getElementById('evening-checkout').disabled = e.checkOut !== null || e.checkIn === null || currentHour < 20 || currentHour >= 24;
+            
+            ['morning', 'afternoon', 'evening'].forEach(period => {
+                const cIn = document.getElementById(`${period}-checkin`), cOut = document.getElementById(`${period}-checkout`);
+                cIn.className = cIn.disabled ? "w-full bg-slate-100 dark:bg-slate-900 text-slate-400 py-3 rounded-xl font-medium transition-all duration-200 cursor-not-allowed" : "w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200 shadow-md";
+                cOut.className = cOut.disabled ? "w-full bg-slate-100 dark:bg-slate-900 text-slate-400 py-3 rounded-xl font-medium transition-all duration-200 cursor-not-allowed" : "w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200 shadow-md";
+            });
+            
+            updateCheckinTimeDisplay();
+        }
+        
+        function checkIn(period) {
+            const today = getTodayString(), now = getCurrentTime();
+            checkinData[today][period].checkIn = getCurrentTimeString();
+            let status = false;
+            if (period === 'morning') status = now.hour < 8 || (now.hour === 8 && now.minute === 0);
+            else if (period === 'afternoon') status = now.hour < 14 || (now.hour === 14 && now.minute === 0);
+            else if (period === 'evening') status = now.hour < 19 || (now.hour === 19 && now.minute === 0);
+            checkinData[today][period].status.checkIn = status;
+            saveData(); updateCheckinButtons(); updateTodayCheckinTable(); updateTodayStatus(); checkAchievements();
+        }
+        
+        function checkOut(period) {
+            const today = getTodayString(), now = getCurrentTime();
+            checkinData[today][period].checkOut = getCurrentTimeString();
+            let status = false;
+            if (period === 'morning') status = now.hour < 12 || (now.hour === 12 && now.minute === 0);
+            else if (period === 'afternoon') status = now.hour < 18 || (now.hour === 18 && now.minute === 0);
+            else if (period === 'evening') status = (now.hour === 21 && now.minute >= 0) || (now.hour === 22 && now.minute === 0);
+            checkinData[today][period].status.checkOut = status;
+            saveData(); updateCheckinButtons(); updateTodayCheckinTable(); updateTodayStatus(); checkAchievements();
+        }
+        
+        function updateCheckinTimeDisplay() {
+            const t = getTodayString();
+            ['morning', 'afternoon', 'evening'].forEach(p => {
+                document.getElementById(`${p}-checkin-time`).textContent = `上班: ${checkinData[t][p].checkIn || '-'}`;
+                document.getElementById(`${p}-checkout-time`).textContent = `下班: ${checkinData[t][p].checkOut || '-'}`;
+            });
+        }
+        
+        function updateTodayCheckinTable() {
+            const t = getTodayString();
+            ['morning', 'afternoon', 'evening'].forEach(p => {
+                document.getElementById(`table-${p}-checkin`).textContent = checkinData[t][p].checkIn || '-';
+                document.getElementById(`table-${p}-checkout`).textContent = checkinData[t][p].checkOut || '-';
+                
+                const cInStatus = document.getElementById(`table-${p}-checkin-status`);
+                if (checkinData[t][p].checkIn === null) { cInStatus.textContent = '-'; cInStatus.className = 'py-3 px-4'; }
+                else { cInStatus.textContent = checkinData[t][p].status.checkIn ? '合格' : '不合格'; cInStatus.className = `py-3 px-4 font-medium ${checkinData[t][p].status.checkIn ? 'text-success' : 'text-danger'}`; }
+                
+                const cOutStatus = document.getElementById(`table-${p}-checkout-status`);
+                if (checkinData[t][p].checkOut === null) { cOutStatus.textContent = '-'; cOutStatus.className = 'py-3 px-4'; }
+                else { cOutStatus.textContent = checkinData[t][p].status.checkOut ? '合格' : '不合格'; cOutStatus.className = `py-3 px-4 font-medium ${checkinData[t][p].status.checkOut ? 'text-success' : 'text-danger'}`; }
+            });
+        }
+        
+        function initPhoneResist() {
+            document.getElementById('phone-resist-count').textContent = phoneResistData.totalCount;
+            document.getElementById('today-phone-resist-count').textContent = phoneResistData.records[getTodayString()].count;
+            updateTodayPhoneResistTimes();
+            updateAchievementsList();
+            document.getElementById('add-phone-resist').addEventListener('click', addPhoneResist);
+        }
+        
+        function addPhoneResist() {
+            const today = getTodayString();
+            phoneResistData.totalCount++;
+            if (!phoneResistData.records[today]) phoneResistData.records[today] = { count: 0, times: [] };
+            phoneResistData.records[today].count++;
+            phoneResistData.records[today].times.push(getCurrentTimeString());
+            saveData();
+            document.getElementById('phone-resist-count').textContent = phoneResistData.totalCount;
+            document.getElementById('today-phone-resist-count').textContent = phoneResistData.records[today].count;
+            updateTodayPhoneResistTimes(); updateAchievementsList(); checkAchievements(); updateTodayStatus();
+        }
+        
+        function updateTodayPhoneResistTimes() {
+            const times = phoneResistData.records[getTodayString()].times;
+            document.getElementById('today-phone-resist-times').textContent = times.length === 0 ? '暂无记录' : '记录时间: ' + times.join(', ');
+        }
+        
+        function updateAchievementsList() {
+            const list = document.getElementById('achievements-list');
+            list.innerHTML = '';
+            achievementList.forEach(ach => {
+                if (ach.type && ach.type !== 'phone') return;
+                const isAchieved = achievements.includes(ach.id);
+                const bgClass = isAchieved ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 'bg-slate-100 text-slate-400 dark:bg-slate-900 dark:text-slate-500';
+                const icon = isAchieved ? 'check' : 'lock';
+                const textClass = isAchieved ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500';
+                
+                list.innerHTML += `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl ${bgClass} flex items-center justify-center shrink-0">
+                            <i data-lucide="${icon}" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm ${textClass}">${ach.name}</div>
+                            <div class="text-xs text-slate-500">${ach.description}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+        
+        function showAchievementPopup(ach) {
+            const popup = document.getElementById('achievement-popup');
+            document.getElementById('popup-achievement-title').textContent = ach.name;
+            document.getElementById('popup-achievement-desc').textContent = ach.description;
+            popup.classList.remove('hidden');
+            setTimeout(() => popup.classList.add('hidden'), 5000);
+        }
+        
+        function checkAchievements() {
+            let hasNew = false;
+            achievementList.forEach(ach => {
+                if (achievements.includes(ach.id)) return;
+                let achieved = false;
+                if (ach.type === 'phone' || !ach.type) achieved = phoneResistData.totalCount >= ach.requirement;
+                else if (ach.type === 'checkin') achieved = Object.values(checkinData).filter(d => d.morning.checkIn || d.afternoon.checkIn || d.evening.checkIn).length >= ach.requirement;
+                else if (ach.type === 'streak') achieved = calculateCheckinStreak() >= ach.requirement;
+                else if (ach.type === 'task') achieved = Object.values(taskData).reduce((t, d) => t + d.length, 0) >= ach.requirement;
+                else if (ach.type === 'task_hour') achieved = calculateTotalTaskHours() >= ach.requirement;
+                else if (ach.type === 'notes') achieved = Object.values(quickNotesData).reduce((sum, notes) => sum + notes.length, 0) >= ach.requirement;
+                
+                if (achieved) { achievements.push(ach.id); showAchievementPopup(ach); hasNew = true; }
+            });
+            if (hasNew) { saveData(); updateAchievementsList(); updateTodayStatus(); }
+        }
+        
+    //     function calculateCheckinStreak() {
+    //         const todayStr = getTodayString();
+    
+    //         const dates = Object.keys(checkinData)
+    //             .filter(date => date <= todayStr)
+    //             .sort().reverse();
+        
+    //         if (!dates.length) return 0;
+    
+    //         let streak = 0; 
+    //         const today = new Date();
+    
+    //         for (let i = 0; i < dates.length; i++) {
+    //             const checkDate = new Date(dates[i]);
+    //             const expectedDate = new Date(today);
+    //             expectedDate.setDate(today.getDate() - i);
+        
+    //             if (checkDate.toDateString() !== expectedDate.toDateString()) break;
+        
+    //             // 如果当天有打卡记录，连击+1
+    //             if (checkinData[dates[i]].morning.checkIn || checkinData[dates[i]].afternoon.checkIn || checkinData[dates[i]].evening.checkIn) {
+    //                 streak++;
+    //             } else {
+    //                 break; 
+    //         }
+    //     }
+    //     return streak;
+    // }
+
+        function calculateCheckinStreak() {
+            const todayStr = getTodayString();
+            const dates = Object.keys(checkinData)
+                .filter(date => date <= todayStr)
+                .sort().reverse();
+
+            if (!dates.length) return 0;
+
+            let streak = 0;
+            let expectedDate = new Date();
+            
+            // 检查今天是否已经有打卡动作
+            const todayData = checkinData[todayStr];
+            const checkedInToday = todayData && (todayData.morning.checkIn || todayData.afternoon.checkIn || todayData.evening.checkIn);
+            
+            if (checkedInToday) {
+                streak = 1;
+                expectedDate.setDate(expectedDate.getDate() - 1); // 往前推一天
+            } else {
+                // 如果今天还没打卡，不应中断连击！我们将预期日期设为昨天开始计算
+                expectedDate.setDate(expectedDate.getDate() - 1);
+            }
+
+            // 从过去的数据中继续回溯
+            for (let i = 0; i < dates.length; i++) {
+                const dateStr = dates[i];
+                if (dateStr >= todayStr) continue; // 跳过今天或未来的异常数据
+
+                const expectedStr = formatLocalDate(expectedDate);
+                if (dateStr === expectedStr) {
+                    const d = checkinData[dateStr];
+                    // 只要早中晚有一次打卡就算连续
+                    if (d.morning.checkIn || d.afternoon.checkIn || d.evening.checkIn) {
+                        streak++;
+                        expectedDate.setDate(expectedDate.getDate() - 1);
+                    } else {
+                        break; // 昨天或过去的某天没打卡，连击正式中断
+                    }
+                } else {
+                    break; // 发现日期断层，连击中断
+                }
+            }
+            
+            return streak;
+        }
+    
+        
+        function calculateTotalTaskHours() {
+            let mins = 0;
+            Object.values(taskData).forEach(day => day.forEach(t => { if(t.duration) mins += t.duration; }));
+            return Math.floor(mins / 60);
+        }
+        
+        function initTaskManagement() {
+            document.getElementById('start-task').addEventListener('click', startTask);
+            document.getElementById('end-task').addEventListener('click', endTask);
+            updateTodayTasksList(); updateSchedule();
+        }
+
+        const quickModal = document.getElementById('quick-capture-modal');
+        const quickInput = document.getElementById('quick-capture-input');
+        
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+K 或 Cmd+K
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault(); // 阻止浏览器默认搜索焦点
+                if (quickModal.classList.contains('hidden')) {
+                    quickModal.classList.remove('hidden');
+                    setTimeout(() => quickInput.focus(), 50);
+                } else {
+                    quickModal.classList.add('hidden');
+                }
+            }
+            if (e.key === 'Escape' && !quickModal.classList.contains('hidden')) {
+                quickModal.classList.add('hidden');
+            }
+        });
+
+        quickInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const text = quickInput.value.trim();
+                if (text) {
+                    const today = getTodayString();
+                    if (!quickNotesData[today]) quickNotesData[today] = [];
+                    quickNotesData[today].unshift({ time: getCurrentTimeString(), text: text }); // 最新的排前面
+                    saveData();
+                    quickInput.value = '';
+                    quickModal.classList.add('hidden');
+                    updateQuickNotesList();
+                    checkAchievements();
+                    
+                    lucide.createIcons();
+                }
+            }
+        });
+
+        function updateQuickNotesList() {
+            const container = document.getElementById('quick-notes-container');
+            const notes = quickNotesData[getTodayString()] || [];
+            if (!notes.length) {
+                container.innerHTML = '<div class="text-sm text-slate-400 text-center py-4 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl">今天还没有任何火花... 按 Ctrl+K 记录。</div>';
+                return;
+            }
+            container.innerHTML = notes.map(n => `
+                <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 group hover:border-primary/30 transition-colors">
+                    <span class="text-xs font-mono text-slate-400 mt-0.5">${n.time}</span>
+                    <span class="text-sm text-slate-700 dark:text-slate-300">${n.text}</span>
+                </div>
+            `).join('');
+        }
+        
+        function startTask() {
+            const name = document.getElementById('task-name').value.trim();
+            const tagValue = document.getElementById('task-tag').value; 
+            //if (!name) return alert('请输入任务名称');
+            if (!name) return showToast('请输入任务名称', 'warning');
+            if (currentTask) endTask();
+            
+            currentTask = { 
+                id: 'task_' + Date.now(), 
+                name: name, 
+                tag: tagValue, 
+                startTime: getCurrentTimeString(), 
+                startTimestamp: Date.now() 
+            };
+            
+            document.getElementById('current-task-name').innerHTML = `<span class="text-xs bg-primary/20 text-primary px-2 py-1 rounded-md mr-2">${tagMap[tagValue]}</span>${name}`;
+            document.getElementById('current-task-time').textContent = '已进行: 00:00:00';
+            document.getElementById('current-task-container').classList.remove('hidden');
+            document.getElementById('task-name').value = '';
+            
+            startTaskTimer(); updateTodayStatus();
+        }
+        
+        function startTaskTimer() {
+            if (taskTimer) clearInterval(taskTimer);
+            taskTimer = setInterval(() => {
+                if (!currentTask) return;
+                const elapsed = Date.now() - currentTask.startTimestamp;
+                const h = Math.floor(elapsed / 3600000), m = Math.floor((elapsed % 3600000) / 60000), s = Math.floor((elapsed % 60000) / 1000);
+                document.getElementById('current-task-time').textContent = `已进行: ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                document.getElementById('task-progress-bar').style.width = `${Math.min((elapsed / 36000000) * 100, 100)}%`;
+            }, 1000);
+        }
+        
+        function endTask() {
+            if (!currentTask) return;
+            clearInterval(taskTimer); taskTimer = null;
+            const duration = Math.floor((Date.now() - currentTask.startTimestamp) / 60000);
+            if (!taskData[getTodayString()]) taskData[getTodayString()] = [];
+            taskData[getTodayString()].push({ ...currentTask, endTime: getCurrentTimeString(), duration: duration, completed: true });
+            saveData();
+            currentTask = null;
+            document.getElementById('current-task-container').classList.add('hidden');
+            updateTodayTasksList(); updateSchedule(); updateTodayStatus(); checkAchievements();
+        }
+        
+        function updateTodayTasksList() {
+            const tasks = taskData[getTodayString()] || [], tbody = document.getElementById('today-tasks-table');
+            if (!tasks.length) return tbody.innerHTML = '<tr><td colspan="5" class="py-4 px-4 text-center text-slate-400">暂无任务记录</td></tr>';
+            tbody.innerHTML = '';
+            
+            tasks.forEach(t => {
+                const h = Math.floor(t.duration / 60), m = t.duration % 60;
+                const tagName = tagMap[t.tag || 'other']; 
+                
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+                        <td class="py-3 px-4 font-medium flex items-center">
+                            <span class="text-[11px] bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 px-2 py-0.5 rounded mr-2 border border-slate-200 dark:border-slate-600 whitespace-nowrap">
+                                ${tagName}
+                            </span>
+                            <span class="truncate max-w-[200px]">${t.name}</span>
+                        </td>
+                        <td class="py-3 px-4 text-slate-500 font-mono">${t.startTime}</td>
+                        <td class="py-3 px-4 text-slate-500 font-mono">${t.endTime}</td>
+                        <td class="py-3 px-4 text-slate-500">${h > 0 ? `${h}h ${m}m` : `${m}m`}</td>
+                        <td class="py-3 px-4"><span class="px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-md text-xs font-bold">已完成</span></td>
+                    </tr>
+                `;
+            });
+        }
+        
+        function updateSchedule() {
+            const tasks = taskData[getTodayString()] || [];
+            const container = document.getElementById('schedule-content');
+            
+            if (!tasks.length) {
+                return container.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">今日暂无数据留存</div>';
+            }
+            
+            container.innerHTML = '';
+            // 时间轴总跨度是 18 小时 (06:00 到 24:00)
+            const hourHeight = 384 / 18; 
+            
+            tasks.forEach(t => {
+                const [sh, sm] = t.startTime.split(':').map(Number);
+                const [eh, em] = t.endTime.split(':').map(Number);
+                
+                // 转换为带小数的小时数
+                let startHour = sh + (sm / 60);
+                let endHour = eh + (em / 60);
+                
+                // 【新增防御逻辑】：处理跨越边界的时间
+                // 如果整个任务都在 06:00 之前结束，则不渲染在当前的 06:00-24:00 时间轴上
+                if (endHour <= 6) return; 
+                
+                // 如果任务开始得比 06:00 早，把它强行截断在 06:00，防止飞出顶部
+                if (startHour < 6) startHour = 6;
+                // 如果任务结束得比 24:00 晚，强行截断在 24:00，防止掉出底部
+                if (endHour > 24) endHour = 24;
+                
+                // 重新计算安全的高度和位置
+                const top = (startHour - 6) * hourHeight;
+                const height = (endHour - startHour) * hourHeight;
+                
+                container.innerHTML += `
+                    <div class="absolute left-4 right-4 bg-primary/90 text-white p-2 rounded-xl shadow-sm hover:bg-primary transition-all overflow-hidden border border-white/20" 
+                        style="top: ${top}px; height: ${Math.max(height, 30)}px;">
+                        <div class="font-bold text-xs truncate">${t.name}</div>
+                        <div class="text-[10px] opacity-90 font-mono mt-0.5">${t.startTime} - ${t.endTime}</div>
+                    </div>
+                `;
+            });
+        }
+        
+        function initLeaveManagement() {
+            document.getElementById('leave-date').value = getTodayString();
+            document.getElementById('add-leave').addEventListener('click', addLeave);
+            updateLeaveRecordsList();
+        }
+        
+        function addLeave() {
+            const date = document.getElementById('leave-date').value, reason = document.getElementById('leave-reason').value.trim();
+            //if (!date || !reason) return alert('请完整填写请假信息');
+            if (!date || !reason) return showToast('请完整填写请假信息', 'warning');
+            const idx = leaveData.findIndex(l => l.date === date);
+            if (idx !== -1) leaveData[idx].reason = reason; else leaveData.push({ date, reason });
+            
+            if (!checkinData[date]) {
+                checkinData[date] = {
+                    morning: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+                    afternoon: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+                    evening: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+                    leave: false,
+                    leaveReason: ''
+                };
+            }
+
+            checkinData[date].leave = true; checkinData[date].leaveReason = reason;
+            saveData(); document.getElementById('leave-reason').value = '';
+            updateLeaveRecordsList();
+            if (date === getTodayString()) { updateCheckinButtons(); updateTodayStatus(); }
+        }
+        
+        function updateLeaveRecordsList() {
+            const tbody = document.getElementById('leave-records-table');
+            if (!leaveData.length) return tbody.innerHTML = '<tr><td colspan="3" class="py-4 px-4 text-center text-slate-400">暂无历史归档</td></tr>';
+            tbody.innerHTML = '';
+            [...leaveData].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(l => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-400">${l.date}</td>
+                    <td class="py-3 px-4 font-medium">${l.reason}</td>
+                    <td class="py-3 px-4"><button class="delete-leave px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-lg text-xs font-bold transition-all" data-date="${l.date}">撤销</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.querySelectorAll('.delete-leave').forEach(btn => btn.addEventListener('click', function() {
+                if(confirm('确定撤销该记录吗？')) {
+                    const date = this.getAttribute('data-date');
+                    leaveData = leaveData.filter(l => l.date !== date);
+                    if (checkinData[date]) { checkinData[date].leave = false; checkinData[date].leaveReason = ''; }
+                    saveData(); updateLeaveRecordsList();
+                    if (date === getTodayString()) { updateCheckinButtons(); updateTodayStatus(); }
+                }
+            }));
+        }
+        
+        // function initStatistics() {
+        //     document.querySelectorAll('.stats-period-btn').forEach(btn => {
+        //         btn.addEventListener('click', function() {
+        //             document.querySelectorAll('.stats-period-btn').forEach(b => {
+        //                 b.className = "stats-period-btn text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 py-1.5 px-5 rounded-lg font-medium text-sm transition-all";
+        //             });
+        //             this.className = "stats-period-btn bg-white dark:bg-slate-700 text-slate-900 dark:text-white py-1.5 px-5 rounded-lg font-medium shadow-sm text-sm transition-all";
+        //             updateStatisticsCharts(this.getAttribute('data-period'));
+        //         });
+        //     });
+        //     updateSummaryStatistics();
+        // }
+        
+        // function updateStatisticsCharts(period) {
+        //     const isDark = document.documentElement.classList.contains('dark');
+        //     Chart.defaults.color = isDark ? '#94a3b8' : '#64748b'; // Slate 400 vs Slate 500
+        //     Chart.defaults.borderColor = isDark ? '#334155' : '#e2e8f0'; // Slate 700 vs Slate 200
+
+        //     const { startDate, endDate, labels } = getDateRange(period);
+        //     updateCheckinRateChart(labels, prepareCheckinRateData(startDate, endDate, labels));
+        //     updateCheckinPeriodChart(prepareCheckinPeriodData(startDate, endDate));
+        //     updateTaskDurationChart(labels, prepareTaskDurationData(startDate, endDate, labels));
+        //     updatePhoneResistChart(labels, preparePhoneResistData(startDate, endDate, labels));
+        //     updateTagChart(prepareTagData(getDateRange(period).startDate, getDateRange(period).endDate));
+        // }
+
+        // function prepareTagData(start, end) {
+        //     const tagCounts = { paper: 0, code: 0, experiment: 0, write: 0, other: 0 };
+        //     const cur = new Date(start);
+            
+        //     while (cur <= end) {
+        //         const ds = formatLocalDate(cur);
+        //         const dayTasks = taskData[ds] || [];
+                
+        //         dayTasks.forEach(t => {
+        //             if (t.duration) {
+        //                 tagCounts[t.tag || 'other'] += t.duration; // 累加分钟数
+        //             }
+        //         });
+        //         cur.setDate(cur.getDate() + 1);
+        //     }
+            
+        //     return [tagCounts.paper, tagCounts.code, tagCounts.experiment, tagCounts.write, tagCounts.other].map(m => Number((m / 60).toFixed(2))); 
+        // }
+        
+        // function updateTagChart(data) {
+        //     if(window.taskTagChart) window.taskTagChart.destroy();
+            
+        //     const hasData = data.some(val => val > 0);
+        //     const renderData = hasData ? data : [1]; 
+        //     const renderColors = hasData 
+        //         ? ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'] 
+        //         : ['#e2e8f0']; 
+            
+        //     window.taskTagChart = new Chart(document.getElementById('task-tag-chart'), {
+        //         type: 'doughnut', 
+        //         data: { 
+        //             labels: hasData ? ['文献阅读', '代码构建', '实验跑数', '文档撰写', '杂项'] : ['暂无数据'], 
+        //             datasets: [{ 
+        //                 data: renderData, 
+        //                 backgroundColor: renderColors,
+        //                 borderWidth: 0,
+        //                 hoverOffset: 4
+        //             }] 
+        //         },
+        //         options: { 
+        //             responsive: true, maintainAspectRatio: false,
+        //             plugins: { 
+        //                 legend: { position: 'right', labels: { boxWidth: 12 } },
+        //                 tooltip: { enabled: hasData } 
+        //             },
+        //             cutout: '75%'
+        //         }
+        //     });
+        // }
+
+        // function getDateRange(period) {
+        //     const end = new Date(), start = new Date(); let labels = [];
+        //     if (period === 'week') { start.setDate(end.getDate() - 6); for(let i=0;i<7;i++){ const d=new Date(start); d.setDate(start.getDate()+i); labels.push(d.toLocaleDateString('zh-CN',{month:'short',day:'numeric'})); } }
+        //     else if (period === 'month') { start.setDate(end.getDate() - 29); for(let i=0;i<30;i+=3){ const d=new Date(start); d.setDate(start.getDate()+i); labels.push(d.toLocaleDateString('zh-CN',{month:'short',day:'numeric'})); } }
+        //     else if (period === 'year') { start.setMonth(end.getMonth() - 11); for(let i=0;i<12;i++){ const d=new Date(start); d.setMonth(start.getMonth()+i); labels.push(d.toLocaleDateString('zh-CN',{month:'short'})); } }
+        //     return { startDate: start, endDate: end, labels };
+        // }
+        // function prepareCheckinRateData(start, end, labels) {
+        //     const data = [];
+        //     for (let i = 0; i < labels.length; i++) {
+        //         const date = new Date(start);
+        //         if (labels.length === 7) date.setDate(start.getDate() + i);
+        //         else if (labels.length === 10) date.setDate(start.getDate() + i * 3);
+        //         else if (labels.length === 12) date.setMonth(start.getMonth() + i);
+        //         const ds = date.formatLocalDate(date), day = checkinData[ds];
+        //         if (!day || day.leave) data.push(null);
+        //         else {
+        //             let total = 0, q = 0;
+        //             ['morning','afternoon','evening'].forEach(p => {
+        //                 if(day[p].checkIn !== null){ total++; if(day[p].status.checkIn) q++; }
+        //                 if(day[p].checkOut !== null){ total++; if(day[p].status.checkOut) q++; }
+        //             });
+        //             data.push(total > 0 ? (q/total)*100 : 0);
+        //         }
+        //     } return data;
+        // }
+        // function prepareCheckinPeriodData(start, end) {
+        //     const res = { m: {i:0,q:0}, a: {i:0,q:0}, e: {i:0,q:0} };
+        //     const cur = new Date(start);
+        //     while (cur <= end) {
+        //         const day = checkinData[cur.formatLocalDate(date)];
+        //         if (day && !day.leave) {
+        //             if(day.morning.checkIn){ res.m.i++; if(day.morning.status.checkIn) res.m.q++; }
+        //             if(day.afternoon.checkIn){ res.a.i++; if(day.afternoon.status.checkIn) res.a.q++; }
+        //             if(day.evening.checkIn){ res.e.i++; if(day.evening.status.checkIn) res.e.q++; }
+        //         } cur.setDate(cur.getDate() + 1);
+        //     } return res;
+        // }
+        // function prepareTaskDurationData(start, end, labels) {
+        //     const data = [];
+        //     for(let i=0;i<labels.length;i++){
+        //         const date=new Date(start);
+        //         if(labels.length===7) date.setDate(start.getDate()+i); else if(labels.length===10) date.setDate(start.getDate()+i*3);
+        //         else if(labels.length===12){ data.push(0); /* 简化的跨月计算占位 */ continue; }
+        //         const ds = date.formatLocalDate(date);
+        //         data.push((taskData[ds]||[]).reduce((sum, t)=>sum+t.duration, 0)/60);
+        //     } return data;
+        // }
+        // function preparePhoneResistData(start, end, labels) {
+        //     const data = [];
+        //     for(let i=0;i<labels.length;i++){
+        //         const date=new Date(start);
+        //         if(labels.length===7) date.setDate(start.getDate()+i); else if(labels.length===10) date.setDate(start.getDate()+i*3);
+        //         else if(labels.length===12){ data.push(0); continue; }
+        //         const ds = date.formatLocalDate(date);
+        //         data.push(phoneResistData.records[ds]?phoneResistData.records[ds].count:0);
+        //     } return data;
+        // }
+        
+        // function updateCheckinRateChart(labels, data) {
+        //     if(window.checkinRateChart) window.checkinRateChart.destroy();
+        //     window.checkinRateChart = new Chart(document.getElementById('checkin-rate-chart'), {
+        //         type: 'line', data: { labels, datasets: [{ label: '打卡合规率(%)', data, borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.1)', borderWidth: 2, fill: true, tension: 0.4 }] },
+        //         options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
+        //     });
+        // }
+        // function updateCheckinPeriodChart(data) {
+        //     if(window.checkinPeriodChart) window.checkinPeriodChart.destroy();
+        //     window.checkinPeriodChart = new Chart(document.getElementById('checkin-period-chart'), {
+        //         type: 'bar', data: { labels: ['上午', '下午', '晚上'], datasets: [
+        //             { label: '总打卡次数', data: [data.m.i, data.a.i, data.e.i], backgroundColor: 'rgba(99, 102, 241, 0.8)' },
+        //             { label: '合格次数', data: [data.m.q, data.a.q, data.e.q], backgroundColor: 'rgba(16, 185, 129, 0.8)' }
+        //         ]}, options: { responsive: true, maintainAspectRatio: false }
+        //     });
+        // }
+        // function updateTaskDurationChart(labels, data) {
+        //     if(window.taskDurationChart) window.taskDurationChart.destroy();
+        //     window.taskDurationChart = new Chart(document.getElementById('task-duration-chart'), {
+        //         type: 'bar', data: { labels, datasets: [{ label: '任务时长(小时)', data, backgroundColor: '#6366f1', borderRadius: 4 }] },
+        //         options: { responsive: true, maintainAspectRatio: false }
+        //     });
+        // }
+        // function updatePhoneResistChart(labels, data) {
+        //     if(window.phoneResistChart) window.phoneResistChart.destroy();
+        //     window.phoneResistChart = new Chart(document.getElementById('phone-resist-chart'), {
+        //         type: 'line', data: { labels, datasets: [{ label: '克制次数', data, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', borderWidth: 2, fill: true, tension: 0.3 }] },
+        //         options: { responsive: true, maintainAspectRatio: false }
+        //     });
+        // }
+        
+        // function updateSummaryStatistics() {
+        //     document.getElementById('total-checkin-days').textContent = Object.values(checkinData).filter(d => !d.leave && (d.morning.checkIn || d.afternoon.checkIn || d.evening.checkIn)).length;
+        //     document.getElementById('total-task-hours').textContent = calculateTotalTaskHours();
+        //     document.getElementById('total-phone-resist').textContent = phoneResistData.totalCount;
+        //     document.getElementById('achievement-count').textContent = achievements.length;
+        //     const sols = (totalHours * 1.5).toFixed(1);
+        //     document.getElementById('space-survival-egg').innerHTML = `🛸 折合波江座飞船 <b>${sols} Sols</b> 维生能源`;
+        //     document.getElementById('total-phone-resist').textContent = phoneResistData.totalCount;
+        //     document.getElementById('achievement-count').textContent = achievements.length;
+        // }
+
+        function initStatistics() {
+            document.querySelectorAll('.stats-period-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.stats-period-btn').forEach(b => {
+                        b.className = "stats-period-btn text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 py-1.5 px-5 rounded-lg font-medium text-sm transition-all";
+                    });
+                    this.className = "stats-period-btn bg-white dark:bg-slate-700 text-slate-900 dark:text-white py-1.5 px-5 rounded-lg font-medium shadow-sm text-sm transition-all";
+                    updateStatisticsCharts(this.getAttribute('data-period'));
+                });
+            });
+            updateSummaryStatistics();
+        }
+        
+        function updateStatisticsCharts(period) {
+            const isDark = document.documentElement.classList.contains('dark');
+            Chart.defaults.color = isDark ? '#94a3b8' : '#64748b'; 
+            Chart.defaults.borderColor = isDark ? '#334155' : '#e2e8f0'; 
+
+            const { startDate, endDate, labels } = getDateRange(period);
+            
+            // 安全调用，防止某一个报错导致全盘崩溃
+            try { updateCheckinRateChart(labels, prepareCheckinRateData(startDate, endDate, labels)); } catch(e){ console.error(e); }
+            try { updateCheckinPeriodChart(prepareCheckinPeriodData(startDate, endDate)); } catch(e){ console.error(e); }
+            try { updateTaskDurationChart(labels, prepareTaskDurationData(startDate, endDate, labels)); } catch(e){ console.error(e); }
+            try { updatePhoneResistChart(labels, preparePhoneResistData(startDate, endDate, labels)); } catch(e){ console.error(e); }
+            try { updateTagChart(prepareTagData(startDate, endDate)); } catch(e){ console.error(e); }
+        }
+
+        function getDateRange(period) {
+            const end = new Date(), start = new Date(); let labels = [];
+            if (period === 'week') { start.setDate(end.getDate() - 6); for(let i=0;i<7;i++){ const d=new Date(start); d.setDate(start.getDate()+i); labels.push(d.toLocaleDateString('zh-CN',{month:'short',day:'numeric'})); } }
+            else if (period === 'month') { start.setDate(end.getDate() - 29); for(let i=0;i<30;i+=3){ const d=new Date(start); d.setDate(start.getDate()+i); labels.push(d.toLocaleDateString('zh-CN',{month:'short',day:'numeric'})); } }
+            else if (period === 'year') { start.setMonth(end.getMonth() - 11); for(let i=0;i<12;i++){ const d=new Date(start); d.setMonth(start.getMonth()+i); labels.push(d.toLocaleDateString('zh-CN',{month:'short'})); } }
+            return { startDate: start, endDate: end, labels };
+        }
+
+        function prepareCheckinRateData(start, end, labels) {
+            const data = [];
+            for (let i = 0; i < labels.length; i++) {
+                const date = new Date(start);
+                if (labels.length === 7) date.setDate(start.getDate() + i);
+                else if (labels.length === 10) date.setDate(start.getDate() + i * 3);
+                else if (labels.length === 12) date.setMonth(start.getMonth() + i);
+                
+                const ds = formatLocalDate(date);
+                const day = checkinData[ds];
+                if (!day || day.leave) data.push(null);
+                else {
+                    let total = 0, q = 0;
+                    ['morning','afternoon','evening'].forEach(p => {
+                        if(day[p].checkIn !== null){ total++; if(day[p].status.checkIn) q++; }
+                        if(day[p].checkOut !== null){ total++; if(day[p].status.checkOut) q++; }
+                    });
+                    data.push(total > 0 ? (q/total)*100 : 0);
+                }
+            } return data;
+        }
+
+        function prepareCheckinPeriodData(start, end) {
+            const res = { m: {i:0,q:0}, a: {i:0,q:0}, e: {i:0,q:0} };
+            const cur = new Date(start);
+            while (cur <= end) {
+                const day = checkinData[formatLocalDate(cur)];
+                if (day && !day.leave) {
+                    if(day.morning.checkIn){ res.m.i++; if(day.morning.status.checkIn) res.m.q++; }
+                    if(day.afternoon.checkIn){ res.a.i++; if(day.afternoon.status.checkIn) res.a.q++; }
+                    if(day.evening.checkIn){ res.e.i++; if(day.evening.status.checkIn) res.e.q++; }
+                } cur.setDate(cur.getDate() + 1);
+            } return res;
+        }
+
+        function prepareTaskDurationData(start, end, labels) {
+            const data = [];
+            for(let i=0;i<labels.length;i++){
+                const date=new Date(start);
+                if(labels.length===7) date.setDate(start.getDate()+i); else if(labels.length===10) date.setDate(start.getDate()+i*3);
+                else if(labels.length===12){ data.push(0); continue; }
+                const ds = formatLocalDate(date);
+                data.push((taskData[ds]||[]).reduce((sum, t)=>sum+t.duration, 0)/60);
+            } return data;
+        }
+
+        function preparePhoneResistData(start, end, labels) {
+            const data = [];
+            for(let i=0;i<labels.length;i++){
+                const date=new Date(start);
+                if(labels.length===7) date.setDate(start.getDate()+i); else if(labels.length===10) date.setDate(start.getDate()+i*3);
+                else if(labels.length===12){ data.push(0); continue; }
+                const ds = formatLocalDate(date);
+                data.push(phoneResistData.records[ds]?phoneResistData.records[ds].count:0);
+            } return data;
+        }
+
+        function prepareTagData(start, end) {
+            const tagCounts = { paper: 0, code: 0, experiment: 0, write: 0, other: 0 };
+            const cur = new Date(start);
+            while (cur <= end) {
+                const dayTasks = taskData[formatLocalDate(cur)] || [];
+                dayTasks.forEach(t => {
+                    if (t.duration) tagCounts[t.tag || 'other'] += t.duration;
+                });
+                cur.setDate(cur.getDate() + 1);
+            }
+            // 修复取整 Bug，保留两位小数
+            return [tagCounts.paper, tagCounts.code, tagCounts.experiment, tagCounts.write, tagCounts.other].map(m => Number((m/60).toFixed(2))); 
+        }
+        
+        function updateCheckinRateChart(labels, data) {
+            const canvas = document.getElementById('checkin-rate-chart');
+            if(!canvas) return;
+            if(window.checkinRateChart) window.checkinRateChart.destroy();
+            window.checkinRateChart = new Chart(canvas, {
+                type: 'line', data: { labels, datasets: [{ label: '打卡合规率(%)', data, borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.1)', borderWidth: 2, fill: true, tension: 0.4 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
+            });
+        }
+
+        function updateCheckinPeriodChart(data) {
+            const canvas = document.getElementById('checkin-period-chart');
+            if(!canvas) return;
+            if(window.checkinPeriodChart) window.checkinPeriodChart.destroy();
+            window.checkinPeriodChart = new Chart(canvas, {
+                type: 'bar', data: { labels: ['上午', '下午', '晚上'], datasets: [
+                    { label: '总打卡次数', data: [data.m.i, data.a.i, data.e.i], backgroundColor: 'rgba(99, 102, 241, 0.8)' },
+                    { label: '合格次数', data: [data.m.q, data.a.q, data.e.q], backgroundColor: 'rgba(16, 185, 129, 0.8)' }
+                ]}, options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function updateTaskDurationChart(labels, data) {
+            const canvas = document.getElementById('task-duration-chart');
+            if(!canvas) return;
+            if(window.taskDurationChart) window.taskDurationChart.destroy();
+            window.taskDurationChart = new Chart(canvas, {
+                type: 'bar', data: { labels, datasets: [{ label: '任务时长(小时)', data, backgroundColor: '#6366f1', borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function updatePhoneResistChart(labels, data) {
+            const canvas = document.getElementById('phone-resist-chart');
+            if(!canvas) return;
+            if(window.phoneResistChart) window.phoneResistChart.destroy();
+            window.phoneResistChart = new Chart(canvas, {
+                type: 'line', data: { labels, datasets: [{ label: '克制次数', data, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', borderWidth: 2, fill: true, tension: 0.3 }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function updateTagChart(data) {
+            const canvas = document.getElementById('task-tag-chart');
+            if(!canvas) return;
+            if(window.taskTagChart) window.taskTagChart.destroy();
+            
+            const hasData = data.some(val => val > 0);
+            window.taskTagChart = new Chart(canvas, {
+                type: 'doughnut', 
+                data: { 
+                    labels: hasData ? ['文献阅读', '代码构建', '实验跑数', '文档撰写', '杂项'] : ['暂无数据'], 
+                    datasets: [{ 
+                        data: hasData ? data : [1], 
+                        backgroundColor: hasData ? ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'] : ['#e2e8f0'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }] 
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { position: 'right', labels: { boxWidth: 12 } },
+                        tooltip: { enabled: hasData } 
+                    },
+                    cutout: '75%' 
+                }
+            });
+        }
+        
+        function updateSummaryStatistics() {
+            document.getElementById('total-checkin-days').textContent = Object.values(checkinData).filter(d => !d.leave && (d.morning.checkIn || d.afternoon.checkIn || d.evening.checkIn)).length;
+            
+            const totalHours = calculateTotalTaskHours();
+            document.getElementById('total-task-hours').textContent = totalHours;
+            
+            const sols = (totalHours * 1.5).toFixed(1);
+            const eggElement = document.getElementById('space-survival-egg');
+            if (eggElement) {
+                eggElement.innerHTML = `🛸 折合波江座飞船 <b>${sols} Sols</b> 维生能源`;
+            }
+            
+            document.getElementById('total-phone-resist').textContent = phoneResistData.totalCount;
+            document.getElementById('achievement-count').textContent = achievements.length;
+        }
+
+        function updateTodayStatus() {
+            const today = getTodayString(), dayData = checkinData[today];
+            ['morning', 'afternoon', 'evening'].forEach(p => {
+                const el = document.getElementById(`today-${p}-status`);
+                if (dayData.leave) { el.textContent = '脱产请假'; el.className = 'font-medium text-slate-400'; }
+                else if (dayData[p].checkIn && dayData[p].checkOut) {
+                    const ok = dayData[p].status.checkIn && dayData[p].status.checkOut;
+                    el.textContent = ok ? '合规' : '异常'; el.className = `font-medium ${ok ? 'text-success' : 'text-danger'}`;
+                } else if (dayData[p].checkIn) { el.textContent = '工作中'; el.className = 'font-medium text-primary'; }
+                else { el.textContent = '-'; el.className = 'font-medium text-slate-400'; }
+            });
+            document.getElementById('today-phone-count').textContent = `${phoneResistData.records[today].count} 次`;
+            const activeTaskEl = document.getElementById('today-active-task');
+            if (currentTask) { activeTaskEl.textContent = currentTask.name; activeTaskEl.className = 'font-medium text-primary truncate max-w-[120px]'; }
+            else { activeTaskEl.textContent = '空闲'; activeTaskEl.className = 'font-medium text-slate-400'; }
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            // 配置不同类型的颜色方案
+            const colors = {
+                success: 'bg-white dark:bg-slate-800 border-l-4 border-success text-slate-700 dark:text-slate-200',
+                error: 'bg-white dark:bg-slate-800 border-l-4 border-danger text-slate-700 dark:text-slate-200',
+                warning: 'bg-white dark:bg-slate-800 border-l-4 border-warning text-slate-700 dark:text-slate-200'
+            };
+            
+            // 匹配不同的图标
+            const icons = {
+                success: '<i data-lucide="check-circle" class="w-5 h-5 text-success shrink-0"></i>',
+                error: '<i data-lucide="x-circle" class="w-5 h-5 text-danger shrink-0"></i>',
+                warning: '<i data-lucide="alert-triangle" class="w-5 h-5 text-warning shrink-0"></i>'
+            };
+
+            // 构建 Toast 卡片
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 pointer-events-auto animate-toast-in ${colors[type]}`;
+            toast.innerHTML = `
+                ${icons[type]}
+                <span class="text-sm font-medium">${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            lucide.createIcons(); // 渲染刚插入的图标
+
+            // 3秒后自动触发淡出动画，并从页面中移除
+            setTimeout(() => {
+                toast.classList.remove('animate-toast-in');
+                toast.classList.add('animate-toast-out');
+                setTimeout(() => toast.remove(), 300); // 等待动画结束
+            }, 3000);
+        }
+
+        let githubToken = localStorage.getItem('githubToken') || '';
+        let gistId = localStorage.getItem('gistId') || '';
+
+        let localLastSyncTime = localStorage.getItem('localLastSyncTime') || '';
+        function updateLocalSyncTime(timeStr) {
+            localLastSyncTime = timeStr;
+            localStorage.setItem('localLastSyncTime', timeStr);
+        }
+
+        document.getElementById('github-token-input').value = githubToken;
+        document.getElementById('gist-id-input').value = gistId;
+
+        document.getElementById('save-config-btn').addEventListener('click', () => {
+            githubToken = document.getElementById('github-token-input').value.trim();
+            gistId = document.getElementById('gist-id-input').value.trim();
+            localStorage.setItem('githubToken', githubToken);
+            localStorage.setItem('gistId', gistId);
+            //alert('⚙️ 配置已保存到本地！');
+            showToast('配置已保存到本地！', 'success');
+        });
+
+        function buildExportData() {
+            return {
+                checkinData,
+                phoneResistData,
+                taskData,
+                leaveData,
+                achievements,
+                quickNotesData,
+                lastSyncTime: new Date().toISOString()
+            };
+        }
+
+        // document.getElementById('push-cloud-btn').addEventListener('click', async () => {
+        //     //if (!githubToken || !gistId) return alert('请先配置并保存 GitHub Token 和 Gist ID');
+        //     if (!githubToken || !gistId) return showToast('请先配置并保存 GitHub Token 和 Gist ID', 'error');
+            
+        //     const btn = document.getElementById('push-cloud-btn');
+        //     const originalText = btn.innerHTML;
+        //     btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> 上传中...';
+        //     lucide.createIcons();
+            
+        //     try {
+        //         const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+        //             method: 'PATCH',
+        //             headers: {
+        //                 'Authorization': `token ${githubToken}`,
+        //                 'Accept': 'application/vnd.github.v3+json'
+        //             },
+        //             body: JSON.stringify({
+        //                 files: {
+        //                     'workspace_data.json': {
+        //                         content: JSON.stringify(buildExportData(), null, 2)
+        //                     }
+        //                 }
+        //             })
+        //         });
+                
+        //         if (response.ok) {
+        //             //alert('✅ 成功同步至云端！你的数据现在很安全。');
+        //             showToast('成功同步至云端！', 'success');
+        //         } else {
+        //             //alert('❌ 上传失败，请检查你的 Token 是否具有 gist 权限，以及 Gist ID 是否正确。');
+        //             showToast('上传失败，请检查配置信息。', 'error');
+        //         }
+        //     } catch (error) {
+        //         //alert('🌐 网络请求失败：' + error.message);
+        //         showToast('🌐 网络请求失败：' + error.message, 'error');
+        //     } finally {
+        //         btn.innerHTML = originalText;
+        //         lucide.createIcons();
+        //     }
+        // });
+
+        document.getElementById('push-cloud-btn').addEventListener('click', async () => {
+            if (!githubToken || !gistId) return showToast('请先配置并保存 GitHub Token 和 Gist ID', 'error');
+            
+            const btn = document.getElementById('push-cloud-btn');
+            const originalText = btn.innerHTML;
+            
+            // 阶段一：检查冲突
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> 检查冲突...';
+            lucide.createIcons();
+            
+            try {
+                // 先去云端获取当前的数据摘要
+                const getRes = await fetch(`https://api.github.com/gists/${gistId}`, {
+                    headers: { 'Authorization': `token ${githubToken}`, 'Accept': 'application/vnd.github.v3+json' }
+                });
+                
+                if (getRes.ok) {
+                    const data = await getRes.json();
+                    const file = data.files['workspace_data.json'];
+                    if (file && file.content) {
+                        const cloudData = JSON.parse(file.content);
+                        // 【核心防御逻辑】：如果云端时间比本地记忆的时间更新，说明有其他设备操作过
+                        if (cloudData.lastSyncTime && localLastSyncTime) {
+                            if (new Date(cloudData.lastSyncTime) > new Date(localLastSyncTime)) {
+                                const confirmPush = confirm('⚠️ 严重警告：\n\n检测到云端存在比您本地更新的数据（可能来自您的另一台设备）。\n如果您执意上传，云端的新数据将被彻底抹除！\n\n强烈建议点击"取消"，并先执行"拉取云端数据"。\n\n是否仍然要强制覆盖云端？');
+                                if (!confirmPush) {
+                                    btn.innerHTML = originalText;
+                                    lucide.createIcons();
+                                    return showToast('已拦截上传操作，保护了云端数据', 'warning');
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 阶段二：安全上传
+                btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> 上传中...';
+                lucide.createIcons();
+                
+                const currentSyncTime = new Date().toISOString();
+                const exportData = buildExportData();
+                exportData.lastSyncTime = currentSyncTime; // 给这批打包的数据盖上最新的时间戳
+
+                const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `token ${githubToken}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    },
+                    body: JSON.stringify({
+                        files: {
+                            'workspace_data.json': {
+                                content: JSON.stringify(exportData, null, 2)
+                            }
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    updateLocalSyncTime(currentSyncTime); // 上传成功后，更新本地的记忆时间
+                    showToast('✅ 成功同步至云端！', 'success');
+                } else {
+                    showToast('❌ 上传失败，请检查配置信息。', 'error');
+                }
+            } catch (error) {
+                showToast('🌐 网络请求失败：' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                lucide.createIcons();
+            }
+        });
+
+        document.getElementById('pull-cloud-btn').addEventListener('click', async () => {
+            //if (!githubToken || !gistId) return alert('请先配置并保存 GitHub Token 和 Gist ID');
+            if (!githubToken || !gistId) return showToast('请先配置并保存 GitHub Token 和 Gist ID', 'error');
+            
+            if(!confirm('⚠️ 拉取云端数据将覆盖你当前的本地数据！确定要继续吗？')) return;
+
+            const btn = document.getElementById('pull-cloud-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> 拉取中...';
+            lucide.createIcons();
+
+            try {
+                const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+                    headers: {
+                        'Authorization': `token ${githubToken}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const file = data.files['workspace_data.json'];
+                    if (file && file.content) {
+                        const cloudData = JSON.parse(file.content);
+                        
+                        checkinData = cloudData.checkinData || {};
+                        phoneResistData = cloudData.phoneResistData || { totalCount: 0, records: {} };
+                        taskData = cloudData.taskData || {};
+                        leaveData = cloudData.leaveData || [];
+                        achievements = cloudData.achievements || [];
+                        //quickNotesData = cloudData.quickNotesData || {}; 
+                        if (cloudData.quickNotesData) quickNotesData = cloudData.quickNotesData;
+                        
+                        const today = getTodayString();
+                        if (!checkinData[today]) {
+                            checkinData[today] = {
+                                morning: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+                                afternoon: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+                                evening: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+                                leave: false, leaveReason: ''
+                            };
+                        }
+                        if (!phoneResistData.records[today]) phoneResistData.records[today] = { count: 0, times: [] };
+                        if (!taskData[today]) taskData[today] = [];
+                        if (typeof quickNotesData !== 'undefined' && !quickNotesData[today]) quickNotesData[today] = [];
+                        
+                        
+                        saveData(true);
+                        updateLocalSyncTime(cloudData.lastSyncTime || new Date().toISOString());
+                        //initCheckin();
+                        //initPhoneResist();
+
+                        updateCheckinButtons();
+                        updateTodayCheckinTable();
+
+                        document.getElementById('phone-resist-count').textContent = phoneResistData.totalCount;
+                        if (phoneResistData.records[today]) {
+                            document.getElementById('today-phone-resist-count').textContent = phoneResistData.records[today].count;
+                            updateTodayPhoneResistTimes();
+                        }
+                        updateAchievementsList();
+                        
+                        updateTodayTasksList(); 
+                        updateSchedule();
+                        updateLeaveRecordsList();
+                        updateSummaryStatistics();
+                        updateTodayStatus();
+                        if(typeof updateQuickNotesList === 'function') updateQuickNotesList();
+                        
+                        //alert('✅ 成功从云端拉取并应用数据！');
+                        showToast('✅ 成功从云端拉取并应用数据！', 'success');
+                    } else {
+                        //alert('❌ 在该 Gist 中未找到 workspace_data.json 文件。');
+                        showToast('❌ 未找到云端数据文件。', 'error');
+                    }
+                } else {
+                    //alert('❌ 拉取失败，请检查 Token 和 Gist ID。');
+                    showToast('❌ 拉取失败，请检查配置。', 'error');
+                }
+            } catch (error) {
+                alert('🌐 网络请求失败：' + error.message);
+            } finally {
+                btn.innerHTML = originalText;
+                lucide.createIcons();
+            }
+        });
+
+        let autoSyncTimer = null;
+
+        function triggerAutoSync() {
+            if (!githubToken || !gistId) return; 
+            
+            if (autoSyncTimer) clearTimeout(autoSyncTimer); 
+            
+            autoSyncTimer = setTimeout(async () => {
+                try {
+                    const currentSyncTime = new Date().toISOString();
+                    const exportData = buildExportData();
+                    exportData.lastSyncTime = currentSyncTime;
+
+                    const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+                        method: 'PATCH',
+                        headers: { 'Authorization': `token ${githubToken}`, 'Accept': 'application/vnd.github.v3+json' },
+                        body: JSON.stringify({ files: { 'workspace_data.json': { content: JSON.stringify(exportData, null, 2) } } })
+                    });
+                    
+                    if (response.ok) {
+                        updateLocalSyncTime(currentSyncTime);
+                        console.log('☁️ 后台自动同步成功');
+                    }
+                } catch (error) {
+                    console.error('☁️ 后台同步失败:', error);
+                }
+            }, 600000); 
+        }
+
+        async function autoPullOnStartup() {
+            if (!githubToken || !gistId) return;
+            
+            try {
+                const getRes = await fetch(`https://api.github.com/gists/${gistId}`, {
+                    headers: { 'Authorization': `token ${githubToken}`, 'Accept': 'application/vnd.github.v3+json' }
+                });
+                
+                if (getRes.ok) {
+                    const data = await getRes.json();
+                    const file = data.files['workspace_data.json'];
+                    if (file && file.content) {
+                        const cloudData = JSON.parse(file.content);
+                        
+                        if (cloudData.lastSyncTime && localLastSyncTime) {
+                            if (new Date(cloudData.lastSyncTime) > new Date(localLastSyncTime)) {
+                                
+                                checkinData = cloudData.checkinData || {};
+                                phoneResistData = cloudData.phoneResistData || { totalCount: 0, records: {} };
+                                taskData = cloudData.taskData || {};
+                                leaveData = cloudData.leaveData || [];
+                                achievements = cloudData.achievements || [];
+                                if (cloudData.quickNotesData) quickNotesData = cloudData.quickNotesData;
+                                
+                                const today = getTodayString();
+                                if (!checkinData[today]) checkinData[today] = { morning: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } }, afternoon: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } }, evening: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } }, leave: false, leaveReason: '' };
+                                if (!phoneResistData.records[today]) phoneResistData.records[today] = { count: 0, times: [] };
+                                if (!taskData[today]) taskData[today] = [];
+                                if (typeof quickNotesData !== 'undefined' && !quickNotesData[today]) quickNotesData[today] = [];
+                                
+                                saveData(true); 
+                                updateLocalSyncTime(cloudData.lastSyncTime);
+                                
+                                updateCheckinButtons(); updateTodayCheckinTable();
+                                document.getElementById('phone-resist-count').textContent = phoneResistData.totalCount;
+                                if (phoneResistData.records[today]) document.getElementById('today-phone-resist-count').textContent = phoneResistData.records[today].count;
+                                updateAchievementsList(); updateTodayTasksList(); updateSchedule();
+                                updateLeaveRecordsList(); updateSummaryStatistics(); updateTodayStatus();
+                                if(typeof updateQuickNotesList === 'function') updateQuickNotesList();
+                                
+                                showToast('已自动为您同步云端最新数据 ☁️', 'success');
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('☁️ [Auto-Sync] 启动检查失败:', error);
+            }
+        }
+    
+    </script>
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[60] flex flex-col gap-3 pointer-events-none"></div>
+</body>
+</html>
