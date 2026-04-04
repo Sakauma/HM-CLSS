@@ -42,6 +42,7 @@
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
         
         .achievement-popup { animation: popup 0.5s ease-out, fadeOut 0.5s ease-in 3.5s forwards; }
+        .modal-popup { animation: popup 0.5s ease-out forwards; }
         @keyframes popup {
             0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
             70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
@@ -606,6 +607,9 @@
             updateTodayStatus();
             updateQuickNotesList();
             autoPullOnStartup();
+
+            document.getElementById('close-daily-modal').addEventListener('click', () => document.getElementById('daily-summary-modal').classList.add('hidden'));
+            document.getElementById('close-weekly-modal').addEventListener('click', () => document.getElementById('weekly-summary-modal').classList.add('hidden'));
         });
         
         function initData() {
@@ -814,9 +818,6 @@
             return true;
         }
 
-        document.getElementById('close-daily-modal').addEventListener('click', () => document.getElementById('daily-summary-modal').classList.add('hidden'));
-        document.getElementById('close-weekly-modal').addEventListener('click', () => document.getElementById('weekly-summary-modal').classList.add('hidden'));
-        
         function checkIn(period) {
             const today = getTodayString(), now = getCurrentTime();
             checkinData[today][period].checkIn = getCurrentTimeString();
@@ -1777,7 +1778,7 @@
         }
     </script>
     <div id="daily-summary-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-md z-[70] hidden flex flex-col items-center justify-center transition-opacity">
-        <div class="bg-cardLight dark:bg-cardDark w-full max-w-md rounded-2xl shadow-2xl border border-primary/30 p-8 transform transition-all text-center achievement-popup">
+        <div class="bg-cardLight dark:bg-cardDark w-full max-w-md rounded-2xl shadow-2xl border border-primary/30 p-8 transform transition-all text-center modal-popup">
             <div class="text-6xl mb-4 animate-bounce">🌌</div>
             <h2 class="text-2xl font-bold text-primary mb-2">一个地球日结束</h2>
             <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">管理员，今日维生系统已满载运转，您的努力正在点亮太阳。</p>
@@ -1796,7 +1797,7 @@
     </div>
 
     <div id="weekly-summary-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-md z-[70] hidden flex flex-col items-center justify-center transition-opacity">
-        <div class="bg-cardLight dark:bg-cardDark w-full max-w-md rounded-2xl shadow-2xl border border-warning/50 p-8 transform transition-all text-center achievement-popup">
+        <div class="bg-cardLight dark:bg-cardDark w-full max-w-md rounded-2xl shadow-2xl border border-warning/50 p-8 transform transition-all text-center modal-popup">
             <div class="text-6xl mb-4 animate-pulse">🚀</div>
             <h2 class="text-2xl font-bold text-warning mb-2">鲸鱼座τ星航线·全周度达成！</h2>
             <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">不可思议的意志力！本周维生系统7个地球日均保持完美运转，未发生任何故障。</p>
