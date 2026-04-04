@@ -71,7 +71,7 @@
             <div class="p-6 pb-2">
                 <div class="flex items-center justify-between mb-2">
                     <h1 class="text-xl font-bold text-primary flex items-center gap-2">
-                        <i data-lucide="graduation-cap"></i> HM-CLSS
+                        <i data-lucide="rocket"></i> HM-CLSS
                     </h1>
                     <button id="theme-toggle" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 transition-colors">
                         <i data-lucide="moon" id="theme-icon-dark" class="w-5 h-5 hidden"></i>
@@ -86,7 +86,7 @@
                     <i data-lucide="radar" class="w-4 h-4"></i> 舰桥值班日志
                 </button>
                 <button id="nav-phone" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
-                    <i data-lucide="shield-check" class="w-4 h-4"></i> 认知拦截干扰
+                    <i data-lucide="shield-check" class="w-4 h-4"></i> 认知干扰拦截
                 </button>
                 <button id="nav-tasks" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
                     <i data-lucide="terminal" class="w-4 h-4"></i> 全舰任务管理
@@ -98,7 +98,7 @@
                     <i data-lucide="bar-chart-2" class="w-4 h-4"></i> 维生统计分析
                 </button>
                 <button id="nav-settings" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
-                    <i data-lucide="settings" class="w-4 h-4"></i> 云端同步设置
+                    <i data-lucide="settings" class="w-4 h-4"></i> 深空通讯设置
                 </button>
             </nav>
 
@@ -106,19 +106,19 @@
                 <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">今日概况</h3>
                 <div class="space-y-2 text-sm">
                     <div class="flex justify-between items-center">
-                        <span class="text-slate-500">上午打卡</span>
+                        <span class="text-slate-500">Alpha 班次</span>
                         <span id="today-morning-status" class="font-medium">-</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-slate-500">下午打卡</span>
+                        <span class="text-slate-500">Beta 班次</span>
                         <span id="today-afternoon-status" class="font-medium">-</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-slate-500">晚上打卡</span>
+                        <span class="text-slate-500">Gamma 班次</span>
                         <span id="today-evening-status" class="font-medium">-</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-slate-500">手机克制</span>
+                        <span class="text-slate-500">干扰拦截次数</span>
                         <span id="today-phone-count" class="font-medium text-warning">0 次</span>
                     </div>
                     <div class="flex justify-between items-center">
@@ -134,92 +134,92 @@
                 
                 <section id="checkin-section" class="mb-8">
                     <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-                        <i data-lucide="clock" class="text-primary"></i> 日志记录系统
+                        <i data-lucide="clock" class="text-primary"></i> 航行日志记录系统
                     </h2>
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-5 shadow-soft dark:shadow-soft-dark border border-slate-100 dark:border-slate-800">
-                            <h3 class="text-lg font-semibold text-primary mb-3">上午打卡</h3>
+                            <h3 class="text-lg font-semibold text-primary mb-3">Alpha 班次</h3>
                             <div class="text-xs text-slate-500 dark:text-slate-400 mb-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl space-y-1">
-                                <div>上班: 06:00 - 12:00</div>
-                                <div>下班: 09:00 - 14:00</div>
-                                <div class="text-success font-medium">合格: 08:00前上, 12:00前下</div>
+                                <div>唤醒: 06:00 - 12:00</div>
+                                <div>休眠: 09:00 - 14:00</div>
+                                <div class="text-success font-medium">合格: 08:00开始, 12:00结束</div>
                             </div>
                             <div class="space-y-3">
-                                <button id="morning-checkin" class="w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200">上午上班</button>
-                                <button id="morning-checkout" class="w-full bg-slate-100 dark:bg-slate-900 text-slate-500 py-3 rounded-xl font-medium transition-all duration-200" disabled>上午下班</button>
+                                <button id="morning-checkin" class="w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200">早班连线</button>
+                                <button id="morning-checkout" class="w-full bg-slate-100 dark:bg-slate-900 text-slate-500 py-3 rounded-xl font-medium transition-all duration-200" disabled>早班登出</button>
                             </div>
                             <div class="mt-4 flex justify-between text-xs text-slate-400 font-mono">
-                                <span id="morning-checkin-time">上班: -</span>
-                                <span id="morning-checkout-time">下班: -</span>
+                                <span id="morning-checkin-time">解除休眠: -</span>
+                                <span id="morning-checkout-time">注入镇定剂: -</span>
                             </div>
                         </div>
                         
                         <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-5 shadow-soft dark:shadow-soft-dark border border-slate-100 dark:border-slate-800">
-                            <h3 class="text-lg font-semibold text-primary mb-3">下午打卡</h3>
+                            <h3 class="text-lg font-semibold text-primary mb-3">Beta 班次</h3>
                             <div class="text-xs text-slate-500 dark:text-slate-400 mb-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl space-y-1">
-                                <div>上班: 12:00 - 17:00</div>
-                                <div>下班: 14:00 - 20:00</div>
-                                <div class="text-success font-medium">合格: 14:00前上, 18:00前下</div>
+                                <div>唤醒: 12:00 - 17:00</div>
+                                <div>休眠: 14:00 - 20:00</div>
+                                <div class="text-success font-medium">合格: 14:00前开始, 18:00前结束</div>
                             </div>
                             <div class="space-y-3">
-                                <button id="afternoon-checkin" class="w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200">下午上班</button>
-                                <button id="afternoon-checkout" class="w-full bg-slate-100 dark:bg-slate-900 text-slate-500 py-3 rounded-xl font-medium transition-all duration-200" disabled>下午下班</button>
+                                <button id="afternoon-checkin" class="w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200">午班连线</button>
+                                <button id="afternoon-checkout" class="w-full bg-slate-100 dark:bg-slate-900 text-slate-500 py-3 rounded-xl font-medium transition-all duration-200" disabled>午班登出</button>
                             </div>
                             <div class="mt-4 flex justify-between text-xs text-slate-400 font-mono">
-                                <span id="afternoon-checkin-time">上班: -</span>
-                                <span id="afternoon-checkout-time">下班: -</span>
+                                <span id="afternoon-checkin-time">解除休眠: -</span>
+                                <span id="afternoon-checkout-time">注入镇定剂: -</span>
                             </div>
                         </div>
                         
                         <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-5 shadow-soft dark:shadow-soft-dark border border-slate-100 dark:border-slate-800">
-                            <h3 class="text-lg font-semibold text-primary mb-3">晚上打卡</h3>
+                            <h3 class="text-lg font-semibold text-primary mb-3">Gamma 班次</h3>
                             <div class="text-xs text-slate-500 dark:text-slate-400 mb-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl space-y-1">
-                                <div>上班: 17:00 - 22:00</div>
-                                <div>下班: 20:00 - 24:00</div>
-                                <div class="text-success font-medium">合格: 19:00前上, 21-22点下</div>
+                                <div>唤醒: 17:00 - 22:00</div>
+                                <div>休眠: 20:00 - 24:00</div>
+                                <div class="text-success font-medium">合格: 19:00前开始, 21-22点结束</div>
                             </div>
                             <div class="space-y-3">
-                                <button id="evening-checkin" class="w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200">晚上上班</button>
-                                <button id="evening-checkout" class="w-full bg-slate-100 dark:bg-slate-900 text-slate-500 py-3 rounded-xl font-medium transition-all duration-200" disabled>晚上下班</button>
+                                <button id="evening-checkin" class="w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200">晚班连线</button>
+                                <button id="evening-checkout" class="w-full bg-slate-100 dark:bg-slate-900 text-slate-500 py-3 rounded-xl font-medium transition-all duration-200" disabled>晚班登出</button>
                             </div>
                             <div class="mt-4 flex justify-between text-xs text-slate-400 font-mono">
-                                <span id="evening-checkin-time">上班: -</span>
-                                <span id="evening-checkout-time">下班: -</span>
+                                <span id="evening-checkin-time">解除休眠: -</span>
+                                <span id="evening-checkout-time">注入镇定剂: -</span>
                             </div>
                         </div>
                     </div>
                     
                     <div class="mt-8 bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft dark:shadow-soft-dark border border-slate-100 dark:border-slate-800 overflow-hidden">
-                        <h3 class="text-lg font-semibold mb-4">今日打卡记录</h3>
+                        <h3 class="text-lg font-semibold mb-4">今日值班记录</h3>
                         <div class="overflow-x-auto">
                             <table class="min-w-full text-sm">
                                 <thead>
                                     <tr class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400">
                                         <th class="py-3 px-4 text-left rounded-l-lg font-medium">时段</th>
-                                        <th class="py-3 px-4 text-left font-medium">上班时间</th>
-                                        <th class="py-3 px-4 text-left font-medium">下班时间</th>
-                                        <th class="py-3 px-4 text-left font-medium">上班状态</th>
-                                        <th class="py-3 px-4 text-left rounded-r-lg font-medium">下班状态</th>
+                                        <th class="py-3 px-4 text-left font-medium">唤醒时间</th>
+                                        <th class="py-3 px-4 text-left font-medium">休眠时间</th>
+                                        <th class="py-3 px-4 text-left font-medium">唤醒状态</th>
+                                        <th class="py-3 px-4 text-left rounded-r-lg font-medium">休眠状态</th>
                                     </tr>
                                 </thead>
                                 <tbody id="today-checkin-table" class="divide-y divide-slate-100 dark:divide-slate-800">
                                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
-                                        <td class="py-3 px-4 font-medium">上午</td>
+                                        <td class="py-3 px-4 font-medium">Alpha 班次</td>
                                         <td class="py-3 px-4 font-mono text-slate-500" id="table-morning-checkin">-</td>
                                         <td class="py-3 px-4 font-mono text-slate-500" id="table-morning-checkout">-</td>
                                         <td class="py-3 px-4" id="table-morning-checkin-status">-</td>
                                         <td class="py-3 px-4" id="table-morning-checkout-status">-</td>
                                     </tr>
                                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
-                                        <td class="py-3 px-4 font-medium">下午</td>
+                                        <td class="py-3 px-4 font-medium">Beta 班次</td>
                                         <td class="py-3 px-4 font-mono text-slate-500" id="table-afternoon-checkin">-</td>
                                         <td class="py-3 px-4 font-mono text-slate-500" id="table-afternoon-checkout">-</td>
                                         <td class="py-3 px-4" id="table-afternoon-checkin-status">-</td>
                                         <td class="py-3 px-4" id="table-afternoon-checkout-status">-</td>
                                     </tr>
                                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
-                                        <td class="py-3 px-4 font-medium">晚上</td>
+                                        <td class="py-3 px-4 font-medium">Gamma 班次</td>
                                         <td class="py-3 px-4 font-mono text-slate-500" id="table-evening-checkin">-</td>
                                         <td class="py-3 px-4 font-mono text-slate-500" id="table-evening-checkout">-</td>
                                         <td class="py-3 px-4" id="table-evening-checkin-status">-</td>
@@ -248,7 +248,7 @@
                         <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
                             <h3 class="text-lg font-semibold mb-3">今日记录</h3>
                             <div class="text-4xl font-bold text-primary mb-2" id="today-phone-resist-count">0</div>
-                            <p class="text-slate-500 text-sm">今日忍住次数</p>
+                            <p class="text-slate-500 text-sm">今日拦截次数</p>
                             <div class="mt-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl text-xs text-slate-500 font-mono" id="today-phone-resist-times">
                                 暂无记录
                             </div>
@@ -328,7 +328,7 @@
 
                     <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 mb-6">
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-semibold flex items-center gap-2"><i data-lucide="lightbulb" class="w-5 h-5 text-warning"></i> 灵感碎片池</h3>
+                            <h3 class="text-lg font-semibold flex items-center gap-2"><i data-lucide="lightbulb" class="w-5 h-5 text-warning"></i> 噬星体捕捉池</h3>
                             <span class="text-xs text-slate-400 font-mono">全局快捷键: Ctrl + K</span>
                         </div>
                         <div id="quick-notes-container" class="space-y-3">
@@ -336,7 +336,7 @@
                     </div>
                     
                     <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
-                        <h3 class="text-lg font-semibold mb-4">时间轴映射</h3>
+                        <h3 class="text-lg font-semibold mb-4">事件视界映射</h3>
                         <div class="relative h-96 bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
                             <div class="absolute left-0 top-0 bottom-0 w-16 border-r border-slate-200 dark:border-slate-700">
                                 <div class="h-full flex flex-col justify-between py-2 text-xs text-slate-400 font-mono text-center">
@@ -355,11 +355,11 @@
 
                 <section id="leave-section" class="mb-8 hidden">
                     <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-                        <i data-lucide="calendar-off" class="text-primary"></i> 审批与请假
+                        <i data-lucide="calendar-off" class="text-primary"></i> 审批与离舰
                     </h2>
                     
                     <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 mb-6">
-                        <h3 class="text-lg font-semibold mb-4">记录脱产</h3>
+                        <h3 class="text-lg font-semibold mb-4">记录离舰</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-sm font-medium text-slate-500 mb-2">日期</label>
@@ -371,7 +371,7 @@
                             </div>
                         </div>
                         <div class="flex justify-end">
-                            <button id="add-leave" class="bg-primary hover:bg-primaryHover text-white py-2 px-6 rounded-xl font-medium transition-all shadow-md">归档请假</button>
+                            <button id="add-leave" class="bg-primary hover:bg-primaryHover text-white py-2 px-6 rounded-xl font-medium transition-all shadow-md">归档离舰</button>
                         </div>
                     </div>
                     
@@ -381,8 +381,8 @@
                             <table class="min-w-full text-sm">
                                 <thead>
                                     <tr class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400">
-                                        <th class="py-3 px-4 text-left rounded-l-lg font-medium">请假日期</th>
-                                        <th class="py-3 px-4 text-left font-medium">请假理由</th>
+                                        <th class="py-3 px-4 text-left rounded-l-lg font-medium">离舰日期</th>
+                                        <th class="py-3 px-4 text-left font-medium">离舰理由</th>
                                         <th class="py-3 px-4 text-left rounded-r-lg font-medium">操作</th>
                                     </tr>
                                 </thead>
@@ -425,7 +425,7 @@
                             <div class="h-64"><canvas id="task-tag-chart"></canvas></div>
                         </div>
                         <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
-                            <h3 class="text-sm font-semibold text-slate-500 mb-4">多巴胺克制指数</h3>
+                            <h3 class="text-sm font-semibold text-slate-500 mb-4">认知干扰拦截指数</h3>
                             <div class="h-64"><canvas id="phone-resist-chart"></canvas></div>
                         </div>
                     </div>
@@ -461,7 +461,7 @@
                     <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 mb-6">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-lg font-semibold">GitHub Gist API 配置</h3>
-                            <span class="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg text-xs font-bold">极客专享</span>
+                            <span class="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg text-xs font-bold">管理员专享</span>
                         </div>
                         <p class="text-sm text-slate-500 mb-6">配置你的 Personal Access Token 和 Gist ID，实现数据的跨设备云端覆盖与拉取，告别数据丢失。</p>
                         
@@ -501,7 +501,7 @@
         <div id="quick-capture-content" class="bg-cardLight dark:bg-cardDark w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-all duration-200">
             <div class="p-4 flex items-center gap-3">
                 <i data-lucide="zap" class="text-warning w-6 h-6 shrink-0"></i>
-                <input type="text" id="quick-capture-input" autocomplete="off" placeholder="速记灵感、DOI、调参记录... (按 Enter 归档，Esc 退出)" class="flex-1 bg-transparent border-none focus:outline-none text-lg text-slate-800 dark:text-white placeholder-slate-400 font-medium">
+                <input type="text" id="quick-capture-input" autocomplete="off" placeholder="记录漫长航行中的任何微小异常或灵感... (按 Enter 归档，Esc 退出)" class="flex-1 bg-transparent border-none focus:outline-none text-lg text-slate-800 dark:text-white placeholder-slate-400 font-medium">
                 <span class="text-xs font-mono text-slate-400 bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700 shrink-0">Ctrl+K</span>
             </div>
         </div>
@@ -572,18 +572,25 @@
         
         // 成就列表
         const achievementList = [
-            { id: 'first_resist', name: '初次克制', description: '第一次忍住玩手机', requirement: 1 },
-            { id: 'small_achievement', name: '小有成就', description: '忍住玩手机10次', requirement: 10 },
-            { id: 'strong_will', name: '意志坚强', description: '忍住玩手机50次', requirement: 50 },
-            { id: 'phone_killer', name: '手机克星', description: '忍住玩手机100次', requirement: 100 },
-            { id: 'focus_master', name: '专注大师', description: '忍住玩手机365次', requirement: 365 },
-            { id: 'first_checkin', name: '初次打卡', description: '第一次完成打卡', requirement: 1, type: 'checkin' },
-            { id: 'week_streak', name: '一周坚持', description: '连续打卡7天', requirement: 7, type: 'streak' },
-            { id: 'month_streak', name: '月度达人', description: '连续打卡30天', requirement: 30, type: 'streak' },
-            { id: 'task_master', name: '任务大师', description: '完成100个任务', requirement: 100, type: 'task' },
-            { id: 'time_master', name: '时间大师', description: '累计任务时间达到1000小时', requirement: 1000, type: 'task_hour' },
-            { id: 'vectorize_all', name: '万物皆可向量化', description: '连续打卡30天，你的生物钟已完全转化为高维张量', requirement: 30, type: 'streak' },
-            { id: 'hacker_mind', name: '神经直连', description: '累计捕捉50个灵感碎片，脑机接口正在形成', requirement: 50, type: 'notes' }
+            { id: 'first_resist', name: '初次戒断', description: '第一次成功阻断认知(手机)干扰', requirement: 1 },
+            { id: 'small_achievement', name: '初步适应', description: '成功阻断干扰10次，你开始适应孤独', requirement: 10 },
+            { id: 'strong_will', name: '意志装甲', description: '成功阻断干扰50次，注意力护盾已建立', requirement: 50 },
+            { id: 'phone_killer', name: '模因粉碎机', description: '成功阻断干扰100次，碎片化信息无法再触及你', requirement: 100 },
+            { id: 'focus_master', name: '绝对静默', description: '成功阻断干扰365次，你的精神处于绝对真空状态', requirement: 365 },
+            { id: 'deep_space_meditation', name: '超凡入圣', description: '累计阻断干扰500次，你的思维已与宇宙同频', requirement: 500 }, // 新增
+            
+            { id: 'first_checkin', name: '系统激活', description: '第一次成功唤醒维生系统', requirement: 1, type: 'checkin' },
+            { id: 'week_streak', name: '平稳巡航', description: '连续维持系统运转7个地球日', requirement: 7, type: 'streak' },
+            { id: 'month_streak', name: '深空漂流', description: '连续维持系统运转30个地球日', requirement: 30, type: 'streak' },
+            { id: 'hail_mary_hero', name: '还回来吃饭吗', description: '连续维持维生系统运转100天，现在你再也不用吃流食了！', requirement: 100, type: 'streak' }, 
+
+            { id: 'first_blood_task', name: '首次点火', description: '完成第一个科研任务，迈出第一步', requirement: 1, type: 'task' }, // 新增
+            { id: 'task_master', name: '核心工程师', description: '累计完成100个科研阵列任务', requirement: 100, type: 'task' },
+            { id: 'astrophage_overload', name: '引擎超载', description: '累计完成500个科研任务，反应堆能量溢出！', requirement: 500, type: 'task' }, // 新增
+            { id: 'time_master', name: '相对论时间膨胀', description: '科研供能达到1000小时，时间在你身上变慢了', requirement: 1000, type: 'task_hour' },
+            
+            { id: 'hacker_mind', name: '捕虫大师', description: '捕捉50个噬星体碎片，离探查这种星际生命的起源又近了一步', requirement: 50, type: 'notes' },
+            { id: 'eridani_contact', name: '水基就是一切', description: '捕捉100个噬星体碎片，现在你知道这种小玩意是怎么运动、繁殖的了，当然最关键的是，它们依然是水基的', requirement: 100, type: 'notes' } // 新增
         ];
         
         document.addEventListener('DOMContentLoaded', function() {
@@ -736,22 +743,79 @@
             const m = checkinData[today].morning, a = checkinData[today].afternoon, e = checkinData[today].evening;
             
             document.getElementById('morning-checkin').disabled = m.checkIn !== null || currentHour < 6 || currentHour >= 12;
-            document.getElementById('morning-checkout').disabled = m.checkOut !== null || m.checkIn === null || currentHour < 9 || currentHour >= 14;
-            
             document.getElementById('afternoon-checkin').disabled = a.checkIn !== null || currentHour < 12 || currentHour >= 17;
-            document.getElementById('afternoon-checkout').disabled = a.checkOut !== null || a.checkIn === null || currentHour < 14 || currentHour >= 20;
-            
             document.getElementById('evening-checkin').disabled = e.checkIn !== null || currentHour < 17 || currentHour >= 22;
-            document.getElementById('evening-checkout').disabled = e.checkOut !== null || e.checkIn === null || currentHour < 20 || currentHour >= 24;
+            
+            document.getElementById('morning-checkout').disabled = m.checkOut !== null || m.checkIn === null || currentHour >= 14;
+            document.getElementById('afternoon-checkout').disabled = a.checkOut !== null || a.checkIn === null || currentHour >= 20;
+            document.getElementById('evening-checkout').disabled = e.checkOut !== null || e.checkIn === null;
             
             ['morning', 'afternoon', 'evening'].forEach(period => {
-                const cIn = document.getElementById(`${period}-checkin`), cOut = document.getElementById(`${period}-checkout`);
-                cIn.className = cIn.disabled ? "w-full bg-slate-100 dark:bg-slate-900 text-slate-400 py-3 rounded-xl font-medium transition-all duration-200 cursor-not-allowed" : "w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200 shadow-md";
-                cOut.className = cOut.disabled ? "w-full bg-slate-100 dark:bg-slate-900 text-slate-400 py-3 rounded-xl font-medium transition-all duration-200 cursor-not-allowed" : "w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200 shadow-md";
+                const cIn = document.getElementById(`${period}-checkin`);
+                const cOut = document.getElementById(`${period}-checkout`);
+                
+                cIn.className = cIn.disabled 
+                    ? "w-full bg-slate-100 dark:bg-slate-900 text-slate-400 py-3 rounded-xl font-medium transition-all duration-200 cursor-not-allowed" 
+                    : "w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200 shadow-md";
+                    
+                cOut.className = cOut.disabled 
+                    ? "w-full bg-slate-100 dark:bg-slate-900 text-slate-400 py-3 rounded-xl font-medium transition-all duration-200 cursor-not-allowed" 
+                    : "w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200 shadow-md";
             });
             
             updateCheckinTimeDisplay();
         }
+
+        function triggerEndOfDayEasterEgg() {
+            const today = getTodayString();
+            
+            const todayTasks = taskData[today] || [];
+            const todayMins = todayTasks.reduce((sum, t) => sum + t.duration, 0);
+            const todayHours = (todayMins / 60).toFixed(1);
+            const todayResist = (phoneResistData.records[today] || {count: 0}).count;
+            
+            document.getElementById('daily-stat-hours').textContent = todayHours + 'h';
+            document.getElementById('daily-stat-resist').textContent = todayResist + '次';
+            
+            const now = new Date();
+            if (now.getDay() === 0 && isThisWeekPerfect()) {
+                let weekMins = 0;
+                let weekResist = 0;
+                for (let i = 0; i < 7; i++) {
+                    const checkDate = new Date();
+                    checkDate.setDate(checkDate.getDate() - i);
+                    const ds = formatLocalDate(checkDate);
+                    const dayTasks = taskData[ds] || [];
+                    weekMins += dayTasks.reduce((sum, t) => sum + t.duration, 0);
+                    weekResist += (phoneResistData.records[ds] || {count: 0}).count;
+                }
+                document.getElementById('weekly-stat-hours').textContent = (weekMins / 60).toFixed(1) + 'h';
+                document.getElementById('weekly-stat-resist').textContent = weekResist + '次';
+                
+                document.getElementById('weekly-summary-modal').classList.remove('hidden');
+            } else {
+                document.getElementById('daily-summary-modal').classList.remove('hidden');
+            }
+        }
+
+        function isThisWeekPerfect() {
+            const todayDate = new Date();
+            for (let i = 0; i < 7; i++) {
+                const checkDate = new Date(todayDate);
+                checkDate.setDate(todayDate.getDate() - i);
+                const dayData = checkinData[formatLocalDate(checkDate)];
+                
+                if (!dayData) return false;
+                if (dayData.leave) continue; 
+                
+                const checkedIn = dayData.morning.checkIn && dayData.afternoon.checkIn && dayData.evening.checkIn;
+                if (!checkedIn) return false;
+            }
+            return true;
+        }
+
+        document.getElementById('close-daily-modal').addEventListener('click', () => document.getElementById('daily-summary-modal').classList.add('hidden'));
+        document.getElementById('close-weekly-modal').addEventListener('click', () => document.getElementById('weekly-summary-modal').classList.add('hidden'));
         
         function checkIn(period) {
             const today = getTodayString(), now = getCurrentTime();
@@ -767,19 +831,44 @@
         function checkOut(period) {
             const today = getTodayString(), now = getCurrentTime();
             checkinData[today][period].checkOut = getCurrentTimeString();
-            let status = false;
-            if (period === 'morning') status = now.hour < 12 || (now.hour === 12 && now.minute === 0);
-            else if (period === 'afternoon') status = now.hour < 18 || (now.hour === 18 && now.minute === 0);
-            else if (period === 'evening') status = (now.hour === 21 && now.minute >= 0) || (now.hour === 22 && now.minute === 0);
-            checkinData[today][period].status.checkOut = status;
-            saveData(); updateCheckinButtons(); updateTodayCheckinTable(); updateTodayStatus(); checkAchievements();
+            
+            const inTimeStr = checkinData[today][period].checkIn;
+            const [inHour, inMinute] = inTimeStr.split(':').map(Number);
+            const durationMins = (now.hour * 60 + now.minute) - (inHour * 60 + inMinute);
+            
+            let outStatus = 'danger';
+            
+            if (durationMins < 30) {
+                outStatus = 'danger'; 
+            } else {
+                let isWithinRecommended = false;
+                if (period === 'morning') {
+                    isWithinRecommended = now.hour < 12 || (now.hour === 12 && now.minute === 0);
+                } else if (period === 'afternoon') {
+                    isWithinRecommended = now.hour < 18 || (now.hour === 18 && now.minute === 0);
+                } else if (period === 'evening') {
+                    isWithinRecommended = (now.hour >= 21 && now.hour < 22) || (now.hour === 22 && now.minute === 0);
+                }
+                
+                outStatus = isWithinRecommended ? 'success' : 'warning';
+            }
+            
+            checkinData[today][period].status.checkOut = outStatus;
+            saveData(); 
+            updateCheckinButtons(); 
+            updateTodayCheckinTable(); 
+            updateTodayStatus(); 
+            checkAchievements();
+            if (period === 'evening') {
+                setTimeout(() => triggerEndOfDayEasterEgg(), 500);
+            }
         }
         
         function updateCheckinTimeDisplay() {
             const t = getTodayString();
             ['morning', 'afternoon', 'evening'].forEach(p => {
-                document.getElementById(`${p}-checkin-time`).textContent = `上班: ${checkinData[t][p].checkIn || '-'}`;
-                document.getElementById(`${p}-checkout-time`).textContent = `下班: ${checkinData[t][p].checkOut || '-'}`;
+                document.getElementById(`${p}-checkin-time`).textContent = `开始: ${checkinData[t][p].checkIn || '-'}`;
+                document.getElementById(`${p}-checkout-time`).textContent = `结束: ${checkinData[t][p].checkOut || '-'}`;
             });
         }
         
@@ -790,12 +879,29 @@
                 document.getElementById(`table-${p}-checkout`).textContent = checkinData[t][p].checkOut || '-';
                 
                 const cInStatus = document.getElementById(`table-${p}-checkin-status`);
-                if (checkinData[t][p].checkIn === null) { cInStatus.textContent = '-'; cInStatus.className = 'py-3 px-4'; }
-                else { cInStatus.textContent = checkinData[t][p].status.checkIn ? '合格' : '不合格'; cInStatus.className = `py-3 px-4 font-medium ${checkinData[t][p].status.checkIn ? 'text-success' : 'text-danger'}`; }
+                if (checkinData[t][p].checkIn === null) { 
+                    cInStatus.textContent = '-'; cInStatus.className = 'py-3 px-4'; 
+                } else { 
+                    cInStatus.textContent = checkinData[t][p].status.checkIn ? '合格' : '不合格'; 
+                    cInStatus.className = `py-3 px-4 font-medium ${checkinData[t][p].status.checkIn ? 'text-success' : 'text-danger'}`; 
+                }
                 
                 const cOutStatus = document.getElementById(`table-${p}-checkout-status`);
-                if (checkinData[t][p].checkOut === null) { cOutStatus.textContent = '-'; cOutStatus.className = 'py-3 px-4'; }
-                else { cOutStatus.textContent = checkinData[t][p].status.checkOut ? '合格' : '不合格'; cOutStatus.className = `py-3 px-4 font-medium ${checkinData[t][p].status.checkOut ? 'text-success' : 'text-danger'}`; }
+                if (checkinData[t][p].checkOut === null) { 
+                    cOutStatus.textContent = '-'; cOutStatus.className = 'py-3 px-4'; 
+                } else { 
+                    const statusVal = checkinData[t][p].status.checkOut;
+                    if (statusVal === true || statusVal === 'success') {
+                        cOutStatus.textContent = '合格';
+                        cOutStatus.className = 'py-3 px-4 font-medium text-success';
+                    } else if (statusVal === 'warning') {
+                        cOutStatus.textContent = '警告';
+                        cOutStatus.className = 'py-3 px-4 font-medium text-warning';
+                    } else { 
+                        cOutStatus.textContent = '时长过短'; 
+                        cOutStatus.className = 'py-3 px-4 font-medium text-danger';
+                    }
+                }
             });
         }
         
@@ -1068,13 +1174,10 @@
                 
                 let startHour = sh + (sm / 60);
                 let endHour = eh + (em / 60);
-                
                 if (endHour <= 6) return; 
-                
                 if (startHour < 6) startHour = 6;
                 if (endHour > 24) endHour = 24;
                 
-                // 重新计算安全的高度和位置
                 const top = (startHour - 6) * hourHeight;
                 const height = (endHour - startHour) * hourHeight;
                 
@@ -1190,12 +1293,23 @@
                 else {
                     let total = 0, q = 0;
                     ['morning','afternoon','evening'].forEach(p => {
-                        if(day[p].checkIn !== null){ total++; if(day[p].status.checkIn) q++; }
-                        if(day[p].checkOut !== null){ total++; if(day[p].status.checkOut) q++; }
+                        if(day[p].checkIn !== null){ 
+                            total++; 
+                            if(day[p].status.checkIn === true || day[p].status.checkIn === 'success') q++; 
+                        }
+                        if(day[p].checkOut !== null){ 
+                            total++; 
+                            if(day[p].status.checkOut === true || 
+                            day[p].status.checkOut === 'success' || 
+                            day[p].status.checkOut === 'warning') {
+                                q++; 
+                            }
+                        }
                     });
                     data.push(total > 0 ? (q/total)*100 : 0);
                 }
-            } return data;
+            } 
+            return data;
         }
 
         function prepareCheckinPeriodData(start, end) {
@@ -1325,7 +1439,7 @@
             const sols = (totalHours * 1.5).toFixed(1);
             const eggElement = document.getElementById('space-survival-egg');
             if (eggElement) {
-                eggElement.innerHTML = `🛸 折合波江座飞船 <b>${sols} Sols</b> 维生能源`;
+                eggElement.innerHTML = `🛸 折合飞船 <b>${sols} Sols</b> 维生能源`;
             }
             
             document.getElementById('total-phone-resist').textContent = phoneResistData.totalCount;
@@ -1336,17 +1450,35 @@
             const today = getTodayString(), dayData = checkinData[today];
             ['morning', 'afternoon', 'evening'].forEach(p => {
                 const el = document.getElementById(`today-${p}-status`);
-                if (dayData.leave) { el.textContent = '脱产请假'; el.className = 'font-medium text-slate-400'; }
+                if (dayData.leave) { 
+                    el.textContent = '脱产请假'; el.className = 'font-medium text-slate-400'; 
+                }
                 else if (dayData[p].checkIn && dayData[p].checkOut) {
-                    const ok = dayData[p].status.checkIn && dayData[p].status.checkOut;
-                    el.textContent = ok ? '合规' : '异常'; el.className = `font-medium ${ok ? 'text-success' : 'text-danger'}`;
-                } else if (dayData[p].checkIn) { el.textContent = '工作中'; el.className = 'font-medium text-primary'; }
-                else { el.textContent = '-'; el.className = 'font-medium text-slate-400'; }
+                    const inOk = dayData[p].status.checkIn === true;
+                    const outVal = dayData[p].status.checkOut;
+                    
+                    if (!inOk || outVal === false || outVal === 'danger') {
+                        el.textContent = '异常'; el.className = 'font-medium text-danger';
+                    } else if (outVal === 'warning') {
+                        el.textContent = '超时警告'; el.className = 'font-medium text-warning';
+                    } else {
+                        el.textContent = '合规'; el.className = 'font-medium text-success';
+                    }
+                } else if (dayData[p].checkIn) { 
+                    el.textContent = '工作中'; el.className = 'font-medium text-primary'; 
+                }
+                else { 
+                    el.textContent = '-'; el.className = 'font-medium text-slate-400'; 
+                }
             });
+            
             document.getElementById('today-phone-count').textContent = `${phoneResistData.records[today].count} 次`;
             const activeTaskEl = document.getElementById('today-active-task');
-            if (currentTask) { activeTaskEl.textContent = currentTask.name; activeTaskEl.className = 'font-medium text-primary truncate max-w-[120px]'; }
-            else { activeTaskEl.textContent = '空闲'; activeTaskEl.className = 'font-medium text-slate-400'; }
+            if (currentTask) { 
+                activeTaskEl.textContent = currentTask.name; activeTaskEl.className = 'font-medium text-primary truncate max-w-[120px]'; 
+            } else { 
+                activeTaskEl.textContent = '空闲'; activeTaskEl.className = 'font-medium text-slate-400'; 
+            }
         }
 
         function showToast(message, type = 'success') {
@@ -1643,8 +1775,48 @@
                 console.error('☁️ [Auto-Sync] 启动检查失败:', error);
             }
         }
-    
     </script>
+    <div id="daily-summary-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-md z-[70] hidden flex flex-col items-center justify-center transition-opacity">
+        <div class="bg-cardLight dark:bg-cardDark w-full max-w-md rounded-2xl shadow-2xl border border-primary/30 p-8 transform transition-all text-center achievement-popup">
+            <div class="text-6xl mb-4 animate-bounce">🌌</div>
+            <h2 class="text-2xl font-bold text-primary mb-2">一个地球日结束</h2>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">管理员，今日维生系统已满载运转，您的努力正在点亮太阳。</p>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div class="text-xs text-slate-500 mb-1">今日科研供能</div>
+                    <div class="text-3xl font-black text-indigo-500" id="daily-stat-hours">0h</div>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div class="text-xs text-slate-500 mb-1">成功抵御干扰</div>
+                    <div class="text-3xl font-black text-orange-500" id="daily-stat-resist">0次</div>
+                </div>
+            </div>
+            <button id="close-daily-modal" class="w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all shadow-md">确认数据并休眠</button>
+        </div>
+    </div>
+
+    <div id="weekly-summary-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-md z-[70] hidden flex flex-col items-center justify-center transition-opacity">
+        <div class="bg-cardLight dark:bg-cardDark w-full max-w-md rounded-2xl shadow-2xl border border-warning/50 p-8 transform transition-all text-center achievement-popup">
+            <div class="text-6xl mb-4 animate-pulse">🚀</div>
+            <h2 class="text-2xl font-bold text-warning mb-2">鲸鱼座τ星航线·全周度达成！</h2>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">不可思议的意志力！本周维生系统7个地球日均保持完美运转，未发生任何故障。</p>
+            <div class="grid grid-cols-3 gap-3 mb-6">
+                <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div class="text-xs text-slate-500 mb-1">引擎连转</div>
+                    <div class="text-xl font-black text-success">7天</div>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div class="text-xs text-slate-500 mb-1">累计科研</div>
+                    <div class="text-xl font-black text-indigo-500" id="weekly-stat-hours">0h</div>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div class="text-xs text-slate-500 mb-1">总计拦截</div>
+                    <div class="text-xl font-black text-orange-500" id="weekly-stat-resist">0次</div>
+                </div>
+            </div>
+            <button id="close-weekly-modal" class="w-full bg-warning hover:bg-yellow-600 text-slate-900 py-3 rounded-xl font-bold transition-all shadow-md">引擎出力提升1&#37 (归档本周)</button>
+        </div>
+    </div>
     <div id="toast-container" class="fixed bottom-6 right-6 z-[60] flex flex-col gap-3 pointer-events-none"></div>
 </body>
 </html>
