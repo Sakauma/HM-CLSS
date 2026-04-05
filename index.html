@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -63,6 +64,21 @@
         }
         .animate-toast-in { animation: toastSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
         .animate-toast-out { animation: toastFadeOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+        .md-content h1 { font-size: 1.25em; font-weight: bold; margin-top: 0.5em; margin-bottom: 0.5em; }
+        .md-content h2 { font-size: 1.1em; font-weight: bold; margin-top: 0.5em; margin-bottom: 0.5em; }
+        .md-content ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 0.5em; }
+        .md-content ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 0.5em; }
+        .md-content p { margin-bottom: 0.5em; }
+        .md-content p:last-child { margin-bottom: 0; }
+        .md-content code { background-color: rgba(100,116,139,0.1); padding: 0.1em 0.3em; border-radius: 0.25em; font-family: monospace; font-size: 0.9em; color: #6366f1; }
+        .dark .md-content code { color: #818cf8; }
+        .md-content pre { background-color: rgba(15,23,42,0.05); padding: 0.75em; border-radius: 0.5em; overflow-x: auto; margin-bottom: 0.5em; }
+        .dark .md-content pre { background-color: rgba(255,255,255,0.05); }
+        .md-content pre code { background-color: transparent; padding: 0; color: inherit; }
+        .md-content blockquote { border-left: 3px solid #cbd5e1; padding-left: 0.75em; color: #64748b; font-style: italic; }
+        .dark .md-content blockquote { border-left-color: #475569; color: #94a3b8; }
+        .md-content a { color: #6366f1; text-decoration: underline; }
     </style>
 </head>
 <body class="bg-bgLight dark:bg-bgDark text-slate-800 dark:text-slate-200 font-sans h-screen overflow-hidden transition-colors duration-300">
@@ -499,13 +515,39 @@
     </div>
 
     <div id="quick-capture-modal" class="fixed inset-0 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-start justify-center pt-[15vh] transition-opacity">
-        <div id="quick-capture-content" class="bg-cardLight dark:bg-cardDark w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-all duration-200">
+        <!-- <div id="quick-capture-content" class="bg-cardLight dark:bg-cardDark w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-all duration-200">
             <div class="p-4 flex items-center gap-3">
                 <i data-lucide="zap" class="text-warning w-6 h-6 shrink-0"></i>
                 <input type="text" id="quick-capture-input" autocomplete="off" placeholder="记录漫长航行中的任何微小异常或灵感... (按 Enter 归档，Esc 退出)" class="flex-1 bg-transparent border-none focus:outline-none text-lg text-slate-800 dark:text-white placeholder-slate-400 font-medium">
+                <textarea id="quick-capture-input" rows="3" placeholder="记录漫长航行中的任何微小异常或灵感... 支持 Markdown 语法 (按 Ctrl+Enter 归档，Esc 退出)" class="flex-1 bg-transparent border-none focus:outline-none text-base text-slate-800 dark:text-white placeholder-slate-400 font-medium resize-none overflow-y-auto mt-1"></textarea>
                 <span class="text-xs font-mono text-slate-400 bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700 shrink-0">Ctrl+K</span>
             </div>
+        </div> -->
+        <div id="quick-capture-modal" class="fixed inset-0 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-start justify-center pt-[15vh] transition-opacity">
+        <div id="quick-capture-content" class="bg-cardLight dark:bg-cardDark w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-all duration-200 flex flex-col">
+            
+            <div class="p-6 flex items-start gap-4">
+                <i data-lucide="zap" class="text-warning w-6 h-6 mt-1 shrink-0"></i>
+                <textarea id="quick-capture-input" rows="5" placeholder="记录漫长航行中的微小异常或灵感...&#10;支持使用 Markdown 语法，例如 **加粗** 或 - 列表" class="flex-1 bg-transparent border-none focus:outline-none text-base md:text-lg text-slate-800 dark:text-white placeholder-slate-400 font-medium resize-none overflow-y-auto leading-relaxed"></textarea>
+            </div>
+            
+            <div class="bg-slate-50 dark:bg-slate-900/80 px-6 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                <div class="flex gap-4">
+                    <span class="flex items-center gap-1.5"><i data-lucide="file-code" class="w-4 h-4"></i> 支持 Markdown</span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="x" class="w-4 h-4"></i> Esc 取消</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span>保存并归档</span>
+                    <div class="flex items-center gap-1">
+                        <kbd class="font-mono bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 px-2 py-1 rounded shadow-sm text-slate-600 dark:text-slate-300">Ctrl</kbd>
+                        <span>+</span>
+                        <kbd class="font-mono bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 px-2 py-1 rounded shadow-sm text-slate-600 dark:text-slate-300">Enter</kbd>
+                    </div>
+                </div>
+            </div>
+
         </div>
+    </div>
     </div>
 
     <script>
@@ -812,7 +854,7 @@
                 if (!dayData) return false;
                 if (dayData.leave) continue; 
                 
-                const checkedIn = dayData.morning.checkIn && dayData.afternoon.checkIn && dayData.evening.checkIn;
+                const checkedIn = dayData.morning.checkIn || dayData.afternoon.checkIn || dayData.evening.checkIn;
                 if (!checkedIn) return false;
             }
             return true;
@@ -1054,13 +1096,14 @@
             }
         });
 
-        quickInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
+        quickInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
                 const text = quickInput.value.trim();
                 if (text) {
                     const today = getTodayString();
                     if (!quickNotesData[today]) quickNotesData[today] = [];
-                    quickNotesData[today].unshift({ time: getCurrentTimeString(), text: text }); // 最新的排前面
+                    quickNotesData[today].unshift({ time: getCurrentTimeString(), text: text }); 
                     saveData();
                     quickInput.value = '';
                     quickModal.classList.add('hidden');
@@ -1072,6 +1115,20 @@
             }
         });
 
+        // function updateQuickNotesList() {
+        //     const container = document.getElementById('quick-notes-container');
+        //     const notes = quickNotesData[getTodayString()] || [];
+        //     if (!notes.length) {
+        //         container.innerHTML = '<div class="text-sm text-slate-400 text-center py-4 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl">今天还没有任何火花... 按 Ctrl+K 记录。</div>';
+        //         return;
+        //     }
+        //     container.innerHTML = notes.map(n => `
+        //         <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 group hover:border-primary/30 transition-colors">
+        //             <span class="text-xs font-mono text-slate-400 mt-0.5">${n.time}</span>
+        //             <span class="text-sm text-slate-700 dark:text-slate-300">${n.text}</span>
+        //         </div>
+        //     `).join('');
+        // }
         function updateQuickNotesList() {
             const container = document.getElementById('quick-notes-container');
             const notes = quickNotesData[getTodayString()] || [];
@@ -1081,8 +1138,10 @@
             }
             container.innerHTML = notes.map(n => `
                 <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 group hover:border-primary/30 transition-colors">
-                    <span class="text-xs font-mono text-slate-400 mt-0.5">${n.time}</span>
-                    <span class="text-sm text-slate-700 dark:text-slate-300">${n.text}</span>
+                    <span class="text-xs font-mono text-slate-400 mt-1 shrink-0">${n.time}</span>
+                    <div class="text-sm text-slate-700 dark:text-slate-300 md-content w-full overflow-hidden break-words">
+                        ${marked.parse(n.text)}
+                    </div>
                 </div>
             `).join('');
         }
