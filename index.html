@@ -111,7 +111,7 @@
                     <i data-lucide="terminal" class="w-4 h-4"></i> 全舰任务管理
                 </button>
                 <button id="nav-archive" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
-                    <i data-lucide="book-open" class="w-4 h-4"></i> 航行日志归档
+                    <i data-lucide="book-open" class="w-4 h-4"></i> 全舰日志归档
                 </button>
                 <button id="nav-leave" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
                     <i data-lucide="power-off" class="w-4 h-4"></i> 离舰活动审批
@@ -377,7 +377,7 @@
 
                 <section id="archive-section" class="mb-8 hidden">
                     <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-                        <i data-lucide="book-open" class="text-primary"></i> 航行日志归档
+                        <i data-lucide="book-open" class="text-primary"></i> 全舰日志归档
                     </h2>
                     
                     <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 mb-6">
@@ -535,16 +535,6 @@
         </div>
     </div>
 
-    <!-- <div id="quick-capture-modal" class="fixed inset-0 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-start justify-center pt-[15vh] transition-opacity">
-        <div id="quick-capture-content" class="bg-cardLight dark:bg-cardDark w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-all duration-200">
-            <div class="p-4 flex items-center gap-3">
-                <i data-lucide="zap" class="text-warning w-6 h-6 shrink-0"></i>
-                <input type="text" id="quick-capture-input" autocomplete="off" placeholder="记录漫长航行中的任何微小异常或灵感... (按 Enter 归档，Esc 退出)" class="flex-1 bg-transparent border-none focus:outline-none text-lg text-slate-800 dark:text-white placeholder-slate-400 font-medium">
-                <textarea id="quick-capture-input" rows="3" placeholder="记录漫长航行中的任何微小异常或灵感... 支持 Markdown 语法 (按 Ctrl+Enter 归档，Esc 退出)" class="flex-1 bg-transparent border-none focus:outline-none text-base text-slate-800 dark:text-white placeholder-slate-400 font-medium resize-none overflow-y-auto mt-1"></textarea>
-                <span class="text-xs font-mono text-slate-400 bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700 shrink-0">Ctrl+K</span>
-            </div>
-        </div>
-    </div> -->
     <div id="quick-capture-modal" class="fixed inset-0 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-start justify-center pt-[15vh] transition-opacity">
         <div id="quick-capture-content" class="bg-cardLight dark:bg-cardDark w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-all duration-200 flex flex-col">
             
@@ -554,10 +544,6 @@
             </div>
             
             <div class="bg-slate-50 dark:bg-slate-900/80 px-6 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                <!-- <div class="flex gap-4">
-                    <span class="flex items-center gap-1.5"><i data-lucide="file-code" class="w-4 h-4"></i> 支持 Markdown</span>
-                    <span class="flex items-center gap-1.5"><i data-lucide="x" class="w-4 h-4"></i> Esc 取消</span>
-                </div> -->
                 <div class="flex gap-4 items-center">
                     <select id="quick-capture-tag" class="text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded px-2 py-1 outline-none cursor-pointer">
                         <option value="idea">💡 灵感闪现</option>
@@ -584,7 +570,6 @@
     <script>
         lucide.createIcons();
 
-        // 暗黑模式切换逻辑
         const themeToggleBtn = document.getElementById('theme-toggle');
         const htmlElement = document.documentElement;
 
@@ -775,31 +760,6 @@
         function getTodayString() { return formatLocalDate(new Date()); }
         function getCurrentTimeString() { return new Date().toTimeString().slice(0, 5); }
         function getCurrentTime() { const now = new Date(); return { hour: now.getHours(), minute: now.getMinutes() }; }
-        
-        // function initNavigation() {
-        //     const sections = ['checkin-section', 'phone-section', 'tasks-section', 'leave-section', 'stats-section', 'settings-section'];
-        //     const navButtons = ['nav-checkin', 'nav-phone', 'nav-tasks', 'nav-leave', 'nav-stats', 'nav-settings'];
-
-        //     navButtons.forEach((btnId, index) => {
-        //         document.getElementById(btnId).addEventListener('click', function() {
-        //             sections.forEach(sectionId => document.getElementById(sectionId).classList.add('hidden'));
-        //             document.getElementById(sections[index]).classList.remove('hidden');
-                    
-        //             navButtons.forEach(id => {
-        //                 const btn = document.getElementById(id);
-        //                 btn.className = "w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all";
-        //             });
-                    
-        //             const currentBtn = document.getElementById(btnId);
-        //             currentBtn.className = "w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all bg-primary/10 text-primary dark:bg-primary/20";
-                    
-        //             if (sections[index] === 'stats-section') {
-        //                 const activePeriod = document.querySelector('.stats-period-btn.bg-white, .stats-period-btn.bg-slate-700').getAttribute('data-period');
-        //                 updateStatisticsCharts(activePeriod);
-        //             }
-        //         });
-        //     });
-        // }
 
         function initNavigation() {
             const sections = ['checkin-section', 'phone-section', 'tasks-section', 'archive-section', 'leave-section', 'stats-section', 'settings-section'];
@@ -879,14 +839,6 @@
             document.getElementById('afternoon-checkout').disabled = a.checkOut !== null || a.checkIn === null || currentHour >= eCfg.startHour + 3; // 午班不晚于20点
             document.getElementById('evening-checkout').disabled = e.checkOut !== null || e.checkIn === null;
             
-            // document.getElementById('morning-checkin').disabled = m.checkIn !== null || currentHour < 6 || currentHour >= 12;
-            // document.getElementById('afternoon-checkin').disabled = a.checkIn !== null || currentHour < 12 || currentHour >= 17;
-            // document.getElementById('evening-checkin').disabled = e.checkIn !== null || currentHour < 17 || currentHour >= 22;
-            
-            // document.getElementById('morning-checkout').disabled = m.checkOut !== null || m.checkIn === null || currentHour >= 14;
-            // document.getElementById('afternoon-checkout').disabled = a.checkOut !== null || a.checkIn === null || currentHour >= 20;
-            // document.getElementById('evening-checkout').disabled = e.checkOut !== null || e.checkIn === null;
-            
             ['morning', 'afternoon', 'evening'].forEach(period => {
                 const cIn = document.getElementById(`${period}-checkin`);
                 const cOut = document.getElementById(`${period}-checkout`);
@@ -957,11 +909,6 @@
             let status = false;
             const cfg = CONFIG.schedule[period];
             if (period === 'morning') status = now.hour < 8 || (now.hour === 8 && now.minute === 0);
-        //     else if (period === 'afternoon') status = now.hour < 14 || (now.hour === 14 && now.minute === 0);
-        //     else if (period === 'evening') status = now.hour < 19 || (now.hour === 19 && now.minute === 0);
-        //     checkinData[today][period].status.checkIn = status;
-        //     saveData(); updateCheckinButtons(); updateTodayCheckinTable(); updateTodayStatus(); checkAchievements();
-        // }
                 status = now.hour < cfg.okCheckInBefore || (now.hour === cfg.okCheckInBefore && now.minute === 0);
                 checkinData[today][period].status.checkIn = status;
                 saveData(); updateCheckinButtons(); updateTodayCheckinTable(); updateTodayStatus(); checkAchievements();
@@ -978,7 +925,6 @@
             let outStatus = 'danger';
             const cfg = CONFIG.schedule[period];
 
-            // 使用配置项的最短时长
             if (durationMins < CONFIG.task.minDurationMins) {
                 outStatus = 'danger'; 
             } else {
@@ -993,31 +939,6 @@
                 setTimeout(() => triggerEndOfDayEasterEgg(), 500);
             }
         }
-        //     if (durationMins < 30) {
-        //         outStatus = 'danger'; 
-        //     } else {
-        //         let isWithinRecommended = false;
-        //         if (period === 'morning') {
-        //             isWithinRecommended = now.hour < 12 || (now.hour === 12 && now.minute === 0);
-        //         } else if (period === 'afternoon') {
-        //             isWithinRecommended = now.hour < 18 || (now.hour === 18 && now.minute === 0);
-        //         } else if (period === 'evening') {
-        //             isWithinRecommended = (now.hour >= 21 && now.hour < 22) || (now.hour === 22 && now.minute === 0);
-        //         }
-                
-        //         outStatus = isWithinRecommended ? 'success' : 'warning';
-        //     }
-            
-        //     checkinData[today][period].status.checkOut = outStatus;
-        //     saveData(); 
-        //     updateCheckinButtons(); 
-        //     updateTodayCheckinTable(); 
-        //     updateTodayStatus(); 
-        //     checkAchievements();
-        //     if (period === 'evening') {
-        //         setTimeout(() => triggerEndOfDayEasterEgg(), 500);
-        //     }
-        // }
         
         function updateCheckinTimeDisplay() {
             const t = getTodayString();
@@ -1208,24 +1129,6 @@
             }
         });
 
-        // quickInput.addEventListener('keydown', (e) => {
-        //     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-        //         e.preventDefault();
-        //         const text = quickInput.value.trim();
-        //         if (text) {
-        //             const today = getTodayString();
-        //             if (!quickNotesData[today]) quickNotesData[today] = [];
-        //             quickNotesData[today].unshift({ time: getCurrentTimeString(), text: text }); 
-        //             saveData();
-        //             quickInput.value = '';
-        //             quickModal.classList.add('hidden');
-        //             updateQuickNotesList();
-        //             checkAchievements();
-                    
-        //             lucide.createIcons();
-        //         }
-        //     }
-        // });
         quickInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
                 e.preventDefault();
@@ -1275,16 +1178,6 @@
                             <div class="space-y-4">
                     `;
                     
-                    // filteredNotes.forEach(n => {
-                    //     html += `
-                    //         <div class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 hover:border-primary/30 transition-colors">
-                    //             <span class="text-sm font-mono text-slate-400 mt-1 shrink-0 bg-slate-200/50 dark:bg-slate-800/50 px-2 py-0.5 rounded">${n.time}</span>
-                    //             <div class="text-sm text-slate-700 dark:text-slate-300 md-content w-full overflow-hidden break-words">
-                    //                 ${DOMPurify.sanitize(marked.parse(n.text))}
-                    //             </div>
-                    //         </div>
-                    //     `;
-                    // });
                     filteredNotes.forEach((n, index) => {
                         const tagKey = n.tag || 'idea';
                         const tagCfg = noteTagConfig[tagKey] || noteTagConfig['idea'];
@@ -1328,36 +1221,6 @@
             renderArchive(e.target.value.trim());
         });
 
-        // function updateQuickNotesList() {
-        //     const container = document.getElementById('quick-notes-container');
-        //     const notes = quickNotesData[getTodayString()] || [];
-        //     if (!notes.length) {
-        //         container.innerHTML = '<div class="text-sm text-slate-400 text-center py-4 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl">今天还没有任何火花... 按 Ctrl+K 记录。</div>';
-        //         return;
-        //     }
-        //     container.innerHTML = notes.map(n => `
-        //         <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 group hover:border-primary/30 transition-colors">
-        //             <span class="text-xs font-mono text-slate-400 mt-0.5">${n.time}</span>
-        //             <span class="text-sm text-slate-700 dark:text-slate-300">${n.text}</span>
-        //         </div>
-        //     `).join('');
-        // }
-        // function updateQuickNotesList() {
-        //     const container = document.getElementById('quick-notes-container');
-        //     const notes = quickNotesData[getTodayString()] || [];
-        //     if (!notes.length) {
-        //         container.innerHTML = '<div class="text-sm text-slate-400 text-center py-4 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl">今天还没有任何火花... 按 Ctrl+K 记录。</div>';
-        //         return;
-        //     }
-        //     container.innerHTML = notes.map(n => `
-        //         <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 group hover:border-primary/30 transition-colors">
-        //             <span class="text-xs font-mono text-slate-400 mt-1 shrink-0">${n.time}</span>
-        //             <div class="text-sm text-slate-700 dark:text-slate-300 md-content w-full overflow-hidden break-words">
-        //                 ${DOMPurify.sanitize(marked.parse(n.text))}
-        //             </div>
-        //         </div>
-        //     `).join('');
-        // }
         function updateQuickNotesList() {
             const container = document.getElementById('quick-notes-container');
             const notes = quickNotesData[getTodayString()] || [];
@@ -1520,11 +1383,6 @@
             });
         }
         
-        // function initLeaveManagement() {
-        //     document.getElementById('leave-date').value = getTodayString();
-        //     document.getElementById('add-leave').addEventListener('click', addLeave);
-        //     updateLeaveRecordsList();
-        // }
         function initLeaveManagement() {
          document.getElementById('leave-date').value = getTodayString();
          document.getElementById('add-leave').addEventListener('click', addLeave);
@@ -1566,31 +1424,7 @@
             updateLeaveRecordsList();
             if (date === getTodayString()) { updateCheckinButtons(); updateTodayStatus(); }
         }
-        
-        // function updateLeaveRecordsList() {
-        //     const tbody = document.getElementById('leave-records-table');
-        //     if (!leaveData.length) return tbody.innerHTML = '<tr><td colspan="3" class="py-4 px-4 text-center text-slate-400">暂无历史归档</td></tr>';
-        //     tbody.innerHTML = '';
-        //     [...leaveData].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(l => {
-        //         const tr = document.createElement('tr');
-        //         tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors";
-        //         tr.innerHTML = `
-        //             <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-400">${l.date}</td>
-        //             <td class="py-3 px-4 font-medium">${l.reason}</td>
-        //             <td class="py-3 px-4"><button class="delete-leave px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-lg text-xs font-bold transition-all" data-date="${l.date}">撤销</button></td>
-        //         `;
-        //         tbody.appendChild(tr);
-        //     });
-        //     document.querySelectorAll('.delete-leave').forEach(btn => btn.addEventListener('click', function() {
-        //         if(confirm('确定撤销该记录吗？')) {
-        //             const date = this.getAttribute('data-date');
-        //             leaveData = leaveData.filter(l => l.date !== date);
-        //             if (checkinData[date]) { checkinData[date].leave = false; checkinData[date].leaveReason = ''; }
-        //             saveData(); updateLeaveRecordsList();
-        //             if (date === getTodayString()) { updateCheckinButtons(); updateTodayStatus(); }
-        //         }
-        //     }));
-        // }
+    
         function updateLeaveRecordsList() {
          const tbody = document.getElementById('leave-records-table');
          if (!leaveData.length) return tbody.innerHTML = '<tr><td colspan="3" class="py-4 px-4 text-center text-slate-400">暂无历史归档</td></tr>';
