@@ -95,9 +95,23 @@ colors: {
 如果你要修改时间段，需要修改早中晚的打卡判定时间，你需要同时修改两处：
 1. **界面显示**：在 HTML 代码中搜索 `06:00 - 12:00` 等文本，修改为你想要的提示文案。
 2. **底层判定逻辑**：
-   - 搜索 `function updateCheckinButtons()`：修改里面的 `currentHour < 6 || currentHour >= 12` 限制按钮能否点击的时间范围。
-   - 搜索 `function checkIn(period)`：修改里面的 `now.hour < 8` 判定上班是否合规。
-   - 搜索 `function checkOut(period)`：修改里面的 `now.hour < 12` 判定下班是否合规。
+   用编辑器打开 `index.html`，在 `<script>` 标签的最开头找到 `const CONFIG = {...}` 配置项。你可以直接修改里面的数字（采用 24 小时制）来适配你的生物钟：
+
+    ```javascript
+    const CONFIG = {
+        schedule: {
+            // startHour: 该班次可以开始打卡的最早时间
+            // endHour: 该班次可以打卡的最后期限
+            // okCheckInBefore: 在此时间前“上班连线”被视为【合格】
+            // okCheckOutBefore: “下班登出”的最晚/标准时间
+            morning:   { startHour: 6,  endHour: 12, okCheckInBefore: 8,  okCheckOutBefore: 12 },
+            afternoon: { startHour: 12, endHour: 17, okCheckInBefore: 14, okCheckOutBefore: 18 },
+            evening:   { startHour: 17, endHour: 22, okCheckInBefore: 19, okCheckOutBefore: 22 }
+        },
+        task: {
+            minDurationMins: 30 // 打卡最短有效专注时间（分钟）
+        }
+    };
 
 
 ## 🗺️ 航星路线图 (Todo List)

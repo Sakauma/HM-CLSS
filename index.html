@@ -633,6 +633,16 @@
         let taskStartTime = null; 
         let quickNotesData = {}; // 结构: { 'YYYY-MM-DD': [{ time: '10:00', text: 'idea' }] }
         const tagMap = { 'paper': '文献阅读', 'code': '代码构建', 'experiment': '实验跑数', 'write': '文档撰写', 'other': '杂项事务' };
+        const CONFIG = {
+            schedule: {
+                morning:   { startHour: 6,  endHour: 12, okCheckInBefore: 8,  okCheckOutBefore: 12 },
+                afternoon: { startHour: 12, endHour: 17, okCheckInBefore: 14, okCheckOutBefore: 18 },
+                evening:   { startHour: 17, endHour: 22, okCheckInBefore: 19, okCheckOutBefore: 22 }
+            },
+            task: {
+                minDurationMins: 30 // 打卡最短有效时间（分钟）
+            }
+        };
         
         // 成就列表
         const achievementList = [
@@ -837,14 +847,26 @@
             }
             
             const m = checkinData[today].morning, a = checkinData[today].afternoon, e = checkinData[today].evening;
-            
-            document.getElementById('morning-checkin').disabled = m.checkIn !== null || currentHour < 6 || currentHour >= 12;
-            document.getElementById('afternoon-checkin').disabled = a.checkIn !== null || currentHour < 12 || currentHour >= 17;
-            document.getElementById('evening-checkin').disabled = e.checkIn !== null || currentHour < 17 || currentHour >= 22;
-            
-            document.getElementById('morning-checkout').disabled = m.checkOut !== null || m.checkIn === null || currentHour >= 14;
-            document.getElementById('afternoon-checkout').disabled = a.checkOut !== null || a.checkIn === null || currentHour >= 20;
+
+            const mCfg = CONFIG.schedule.morning;
+            const aCfg = CONFIG.schedule.afternoon;
+            const eCfg = CONFIG.schedule.evening;
+
+            document.getElementById('morning-checkin').disabled = m.checkIn !== null || currentHour < mCfg.startHour || currentHour >= mCfg.endHour;
+            document.getElementById('afternoon-checkin').disabled = a.checkIn !== null || currentHour < aCfg.startHour || currentHour >= aCfg.endHour;
+            document.getElementById('evening-checkin').disabled = e.checkIn !== null || currentHour < eCfg.startHour || currentHour >= eCfg.endHour;
+
+            document.getElementById('morning-checkout').disabled = m.checkOut !== null || m.checkIn === null || currentHour >= aCfg.startHour; // 早班下班不能晚于中班开始(12点后但宽限到14点原逻辑，你可以改为 mCfg.endHour + 2)
+            document.getElementById('afternoon-checkout').disabled = a.checkOut !== null || a.checkIn === null || currentHour >= eCfg.startHour + 3; // 午班不晚于20点
             document.getElementById('evening-checkout').disabled = e.checkOut !== null || e.checkIn === null;
+            
+            // document.getElementById('morning-checkin').disabled = m.checkIn !== null || currentHour < 6 || currentHour >= 12;
+            // document.getElementById('afternoon-checkin').disabled = a.checkIn !== null || currentHour < 12 || currentHour >= 17;
+            // document.getElementById('evening-checkin').disabled = e.checkIn !== null || currentHour < 17 || currentHour >= 22;
+            
+            // document.getElementById('morning-checkout').disabled = m.checkOut !== null || m.checkIn === null || currentHour >= 14;
+            // document.getElementById('afternoon-checkout').disabled = a.checkOut !== null || a.checkIn === null || currentHour >= 20;
+            // document.getElementById('evening-checkout').disabled = e.checkOut !== null || e.checkIn === null;
             
             ['morning', 'afternoon', 'evening'].forEach(period => {
                 const cIn = document.getElementById(`${period}-checkin`);
@@ -914,12 +936,17 @@
             const today = getTodayString(), now = getCurrentTime();
             checkinData[today][period].checkIn = getCurrentTimeString();
             let status = false;
+            const cfg = CONFIG.schedule[period];
             if (period === 'morning') status = now.hour < 8 || (now.hour === 8 && now.minute === 0);
-            else if (period === 'afternoon') status = now.hour < 14 || (now.hour === 14 && now.minute === 0);
-            else if (period === 'evening') status = now.hour < 19 || (now.hour === 19 && now.minute === 0);
-            checkinData[today][period].status.checkIn = status;
-            saveData(); updateCheckinButtons(); updateTodayCheckinTable(); updateTodayStatus(); checkAchievements();
-        }
+        //     else if (period === 'afternoon') status = now.hour < 14 || (now.hour === 14 && now.minute === 0);
+        //     else if (period === 'evening') status = now.hour < 19 || (now.hour === 19 && now.minute === 0);
+        //     checkinData[today][period].status.checkIn = status;
+        //     saveData(); updateCheckinButtons(); updateTodayCheckinTable(); updateTodayStatus(); checkAchievements();
+        // }
+                status = now.hour < cfg.okCheckInBefore || (now.hour === cfg.okCheckInBefore && now.minute === 0);
+                checkinData[today][period].status.checkIn = status;
+                saveData(); updateCheckinButtons(); updateTodayCheckinTable(); updateTodayStatus(); checkAchievements();
+            }
         
         function checkOut(period) {
             const today = getTodayString(), now = getCurrentTime();
@@ -930,32 +957,48 @@
             const durationMins = (now.hour * 60 + now.minute) - (inHour * 60 + inMinute);
             
             let outStatus = 'danger';
-            
-            if (durationMins < 30) {
+            const cfg = CONFIG.schedule[period];
+
+            // 使用配置项的最短时长
+            if (durationMins < CONFIG.task.minDurationMins) {
                 outStatus = 'danger'; 
             } else {
-                let isWithinRecommended = false;
-                if (period === 'morning') {
-                    isWithinRecommended = now.hour < 12 || (now.hour === 12 && now.minute === 0);
-                } else if (period === 'afternoon') {
-                    isWithinRecommended = now.hour < 18 || (now.hour === 18 && now.minute === 0);
-                } else if (period === 'evening') {
-                    isWithinRecommended = (now.hour >= 21 && now.hour < 22) || (now.hour === 22 && now.minute === 0);
-                }
-                
+                let isWithinRecommended = now.hour < cfg.okCheckOutBefore || (now.hour === cfg.okCheckOutBefore && now.minute === 0);
                 outStatus = isWithinRecommended ? 'success' : 'warning';
             }
-            
+
             checkinData[today][period].status.checkOut = outStatus;
             saveData(); 
-            updateCheckinButtons(); 
-            updateTodayCheckinTable(); 
-            updateTodayStatus(); 
-            checkAchievements();
+            updateCheckinButtons(); updateTodayCheckinTable(); updateTodayStatus(); checkAchievements();
             if (period === 'evening') {
                 setTimeout(() => triggerEndOfDayEasterEgg(), 500);
             }
         }
+        //     if (durationMins < 30) {
+        //         outStatus = 'danger'; 
+        //     } else {
+        //         let isWithinRecommended = false;
+        //         if (period === 'morning') {
+        //             isWithinRecommended = now.hour < 12 || (now.hour === 12 && now.minute === 0);
+        //         } else if (period === 'afternoon') {
+        //             isWithinRecommended = now.hour < 18 || (now.hour === 18 && now.minute === 0);
+        //         } else if (period === 'evening') {
+        //             isWithinRecommended = (now.hour >= 21 && now.hour < 22) || (now.hour === 22 && now.minute === 0);
+        //         }
+                
+        //         outStatus = isWithinRecommended ? 'success' : 'warning';
+        //     }
+            
+        //     checkinData[today][period].status.checkOut = outStatus;
+        //     saveData(); 
+        //     updateCheckinButtons(); 
+        //     updateTodayCheckinTable(); 
+        //     updateTodayStatus(); 
+        //     checkAchievements();
+        //     if (period === 'evening') {
+        //         setTimeout(() => triggerEndOfDayEasterEgg(), 500);
+        //     }
+        // }
         
         function updateCheckinTimeDisplay() {
             const t = getTodayString();
