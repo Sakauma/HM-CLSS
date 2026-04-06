@@ -554,7 +554,17 @@
             </div>
             
             <div class="bg-slate-50 dark:bg-slate-900/80 px-6 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                <div class="flex gap-4">
+                <!-- <div class="flex gap-4">
+                    <span class="flex items-center gap-1.5"><i data-lucide="file-code" class="w-4 h-4"></i> 支持 Markdown</span>
+                    <span class="flex items-center gap-1.5"><i data-lucide="x" class="w-4 h-4"></i> Esc 取消</span>
+                </div> -->
+                <div class="flex gap-4 items-center">
+                    <select id="quick-capture-tag" class="text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded px-2 py-1 outline-none cursor-pointer">
+                        <option value="idea">💡 灵感闪现</option>
+                        <option value="bug">🐛 异常报告</option>
+                        <option value="todo">✅ 待办备忘</option>
+                        <option value="log">📖 航行日志</option>
+                    </select>
                     <span class="flex items-center gap-1.5"><i data-lucide="file-code" class="w-4 h-4"></i> 支持 Markdown</span>
                     <span class="flex items-center gap-1.5"><i data-lucide="x" class="w-4 h-4"></i> Esc 取消</span>
                 </div>
@@ -633,6 +643,7 @@
         let taskStartTime = null; 
         let quickNotesData = {}; // 结构: { 'YYYY-MM-DD': [{ time: '10:00', text: 'idea' }] }
         const tagMap = { 'paper': '文献阅读', 'code': '代码构建', 'experiment': '实验跑数', 'write': '文档撰写', 'other': '杂项事务' };
+
         const CONFIG = {
             schedule: {
                 morning:   { startHour: 6,  endHour: 12, okCheckInBefore: 8,  okCheckOutBefore: 12 },
@@ -643,6 +654,14 @@
                 minDurationMins: 30 // 打卡最短有效时间（分钟）
             }
         };
+
+        const noteTagConfig = {
+            'idea': { icon: 'lightbulb', label: '灵感', color: 'text-warning bg-warning/10 border-warning/20' },
+            'bug': { icon: 'bug', label: '异常', color: 'text-danger bg-danger/10 border-danger/20' },
+            'todo': { icon: 'check-square', label: '待办', color: 'text-success bg-success/10 border-success/20' },
+            'log': { icon: 'book', label: '日志', color: 'text-primary bg-primary/10 border-primary/20' }
+        };
+
         
         // 成就列表
         const achievementList = [
@@ -1189,20 +1208,44 @@
             }
         });
 
+        // quickInput.addEventListener('keydown', (e) => {
+        //     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        //         e.preventDefault();
+        //         const text = quickInput.value.trim();
+        //         if (text) {
+        //             const today = getTodayString();
+        //             if (!quickNotesData[today]) quickNotesData[today] = [];
+        //             quickNotesData[today].unshift({ time: getCurrentTimeString(), text: text }); 
+        //             saveData();
+        //             quickInput.value = '';
+        //             quickModal.classList.add('hidden');
+        //             updateQuickNotesList();
+        //             checkAchievements();
+                    
+        //             lucide.createIcons();
+        //         }
+        //     }
+        // });
         quickInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
                 e.preventDefault();
                 const text = quickInput.value.trim();
+                const tag = document.getElementById('quick-capture-tag').value;
+                
                 if (text) {
                     const today = getTodayString();
                     if (!quickNotesData[today]) quickNotesData[today] = [];
-                    quickNotesData[today].unshift({ time: getCurrentTimeString(), text: text }); 
+                    quickNotesData[today].unshift({ time: getCurrentTimeString(), text: text, tag: tag }); 
                     saveData();
                     quickInput.value = '';
                     quickModal.classList.add('hidden');
                     updateQuickNotesList();
-                    checkAchievements();
                     
+                    if(typeof renderArchive === 'function' && !document.getElementById('archive-section').classList.contains('hidden')) {
+                        renderArchive(document.getElementById('archive-search-input').value.trim());
+                    }
+                    
+                    checkAchievements();
                     lucide.createIcons();
                 }
             }
@@ -1232,13 +1275,33 @@
                             <div class="space-y-4">
                     `;
                     
-                    filteredNotes.forEach(n => {
+                    // filteredNotes.forEach(n => {
+                    //     html += `
+                    //         <div class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 hover:border-primary/30 transition-colors">
+                    //             <span class="text-sm font-mono text-slate-400 mt-1 shrink-0 bg-slate-200/50 dark:bg-slate-800/50 px-2 py-0.5 rounded">${n.time}</span>
+                    //             <div class="text-sm text-slate-700 dark:text-slate-300 md-content w-full overflow-hidden break-words">
+                    //                 ${DOMPurify.sanitize(marked.parse(n.text))}
+                    //             </div>
+                    //         </div>
+                    //     `;
+                    // });
+                    filteredNotes.forEach((n, index) => {
+                        const tagKey = n.tag || 'idea';
+                        const tagCfg = noteTagConfig[tagKey] || noteTagConfig['idea'];
                         html += `
-                            <div class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 hover:border-primary/30 transition-colors">
-                                <span class="text-sm font-mono text-slate-400 mt-1 shrink-0 bg-slate-200/50 dark:bg-slate-800/50 px-2 py-0.5 rounded">${n.time}</span>
-                                <div class="text-sm text-slate-700 dark:text-slate-300 md-content w-full overflow-hidden break-words">
+                            <div class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 hover:border-primary/30 transition-colors relative group">
+                                <div class="flex flex-col gap-2 mt-1 shrink-0 w-16 items-center">
+                                    <span class="text-sm font-mono text-slate-400 bg-slate-200/50 dark:bg-slate-800/50 px-2 py-0.5 rounded w-full text-center">${n.time}</span>
+                                    <span class="text-[10px] flex items-center justify-center gap-1 border px-1.5 py-0.5 rounded w-full ${tagCfg.color}">
+                                        <i data-lucide="${tagCfg.icon}" class="w-3 h-3"></i> ${tagCfg.label}
+                                    </span>
+                                </div>
+                                <div class="text-sm text-slate-700 dark:text-slate-300 md-content w-full overflow-hidden break-words pr-8">
                                     ${DOMPurify.sanitize(marked.parse(n.text))}
                                 </div>
+                                <button class="delete-note-btn absolute top-4 right-4 text-slate-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity" data-date="${date}" data-index="${index}" title="删除记录">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
                             </div>
                         `;
                     });
@@ -1279,6 +1342,22 @@
         //         </div>
         //     `).join('');
         // }
+        // function updateQuickNotesList() {
+        //     const container = document.getElementById('quick-notes-container');
+        //     const notes = quickNotesData[getTodayString()] || [];
+        //     if (!notes.length) {
+        //         container.innerHTML = '<div class="text-sm text-slate-400 text-center py-4 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl">今天还没有任何火花... 按 Ctrl+K 记录。</div>';
+        //         return;
+        //     }
+        //     container.innerHTML = notes.map(n => `
+        //         <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 group hover:border-primary/30 transition-colors">
+        //             <span class="text-xs font-mono text-slate-400 mt-1 shrink-0">${n.time}</span>
+        //             <div class="text-sm text-slate-700 dark:text-slate-300 md-content w-full overflow-hidden break-words">
+        //                 ${DOMPurify.sanitize(marked.parse(n.text))}
+        //             </div>
+        //         </div>
+        //     `).join('');
+        // }
         function updateQuickNotesList() {
             const container = document.getElementById('quick-notes-container');
             const notes = quickNotesData[getTodayString()] || [];
@@ -1286,15 +1365,55 @@
                 container.innerHTML = '<div class="text-sm text-slate-400 text-center py-4 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl">今天还没有任何火花... 按 Ctrl+K 记录。</div>';
                 return;
             }
-            container.innerHTML = notes.map(n => `
-                <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 group hover:border-primary/30 transition-colors">
-                    <span class="text-xs font-mono text-slate-400 mt-1 shrink-0">${n.time}</span>
-                    <div class="text-sm text-slate-700 dark:text-slate-300 md-content w-full overflow-hidden break-words">
-                        ${DOMPurify.sanitize(marked.parse(n.text))}
+            container.innerHTML = notes.map((n, index) => {
+                const tagKey = n.tag || 'idea';
+                const tagCfg = noteTagConfig[tagKey] || noteTagConfig['idea'];
+                return `
+                    <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 group hover:border-primary/30 transition-colors relative">
+                        <div class="flex flex-col gap-1.5 mt-1 shrink-0 w-12 items-center">
+                            <span class="text-xs font-mono text-slate-400">${n.time}</span>
+                            <span class="text-[9px] border px-1 rounded w-full text-center ${tagCfg.color}">${tagCfg.label}</span>
+                        </div>
+                        <div class="text-sm text-slate-700 dark:text-slate-300 md-content w-full overflow-hidden break-words pr-6">
+                            ${DOMPurify.sanitize(marked.parse(n.text))}
+                        </div>
+                        <button class="delete-note-btn absolute top-3 right-3 text-slate-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity p-1" data-date="${getTodayString()}" data-index="${index}">
+                            <i data-lucide="trash-2" class="w-3 h-3"></i>
+                        </button>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
+            lucide.createIcons();
         }
+
+        function handleNoteDeletion(e) {
+            const btn = e.target.closest('.delete-note-btn');
+            if (btn) {
+                if(confirm('警告：确定要将这条记录从存储核心中永久抹除吗？')) {
+                    const date = btn.getAttribute('data-date');
+                    const index = parseInt(btn.getAttribute('data-index'), 10);
+                    
+                    if(quickNotesData[date]) {
+                        quickNotesData[date].splice(index, 1);
+                        
+                        if(quickNotesData[date].length === 0) {
+                            delete quickNotesData[date];
+                        }
+                        
+                        saveData();
+                        showToast('记录已抹除', 'success');
+                        
+                        updateQuickNotesList();
+                        if(typeof renderArchive === 'function' && !document.getElementById('archive-section').classList.contains('hidden')) {
+                            renderArchive(document.getElementById('archive-search-input').value.trim());
+                        }
+                    }
+                }
+            }
+        }
+
+        document.getElementById('archive-list-container')?.addEventListener('click', handleNoteDeletion);
+        document.getElementById('quick-notes-container')?.addEventListener('click', handleNoteDeletion);
         
         function startTask() {
             const name = document.getElementById('task-name').value.trim();
