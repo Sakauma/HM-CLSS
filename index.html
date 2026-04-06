@@ -108,6 +108,9 @@
                 <button id="nav-tasks" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
                     <i data-lucide="terminal" class="w-4 h-4"></i> 全舰任务管理
                 </button>
+                <button id="nav-archive" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                    <i data-lucide="book-open" class="w-4 h-4"></i> 航行日志归档
+                </button>
                 <button id="nav-leave" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
                     <i data-lucide="power-off" class="w-4 h-4"></i> 离舰活动审批
                 </button>
@@ -370,6 +373,22 @@
                     </div>
                 </section>
 
+                <section id="archive-section" class="mb-8 hidden">
+                    <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                        <i data-lucide="book-open" class="text-primary"></i> 航行日志归档
+                    </h2>
+                    
+                    <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 mb-6">
+                        <div class="relative">
+                            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                            <input type="text" id="archive-search-input" autocomplete="off" placeholder="检索历史日志、灵感或异常记录..." class="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all text-sm font-medium">
+                        </div>
+                    </div>
+
+                    <div id="archive-list-container" class="space-y-6">
+                        </div>
+                </section>
+
                 <section id="leave-section" class="mb-8 hidden">
                     <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
                         <i data-lucide="calendar-off" class="text-primary"></i> 审批与离舰
@@ -514,16 +533,17 @@
         </div>
     </div>
 
-    <div id="quick-capture-modal" class="fixed inset-0 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-start justify-center pt-[15vh] transition-opacity">
-        <!-- <div id="quick-capture-content" class="bg-cardLight dark:bg-cardDark w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-all duration-200">
+    <!-- <div id="quick-capture-modal" class="fixed inset-0 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-start justify-center pt-[15vh] transition-opacity">
+        <div id="quick-capture-content" class="bg-cardLight dark:bg-cardDark w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-all duration-200">
             <div class="p-4 flex items-center gap-3">
                 <i data-lucide="zap" class="text-warning w-6 h-6 shrink-0"></i>
                 <input type="text" id="quick-capture-input" autocomplete="off" placeholder="记录漫长航行中的任何微小异常或灵感... (按 Enter 归档，Esc 退出)" class="flex-1 bg-transparent border-none focus:outline-none text-lg text-slate-800 dark:text-white placeholder-slate-400 font-medium">
                 <textarea id="quick-capture-input" rows="3" placeholder="记录漫长航行中的任何微小异常或灵感... 支持 Markdown 语法 (按 Ctrl+Enter 归档，Esc 退出)" class="flex-1 bg-transparent border-none focus:outline-none text-base text-slate-800 dark:text-white placeholder-slate-400 font-medium resize-none overflow-y-auto mt-1"></textarea>
                 <span class="text-xs font-mono text-slate-400 bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700 shrink-0">Ctrl+K</span>
             </div>
-        </div> -->
-        <div id="quick-capture-modal" class="fixed inset-0 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-start justify-center pt-[15vh] transition-opacity">
+        </div>
+    </div> -->
+    <div id="quick-capture-modal" class="fixed inset-0 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-start justify-center pt-[15vh] transition-opacity">
         <div id="quick-capture-content" class="bg-cardLight dark:bg-cardDark w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-all duration-200 flex flex-col">
             
             <div class="p-6 flex items-start gap-4">
@@ -547,7 +567,6 @@
             </div>
 
         </div>
-    </div>
     </div>
 
     <script>
@@ -726,9 +745,34 @@
         function getCurrentTimeString() { return new Date().toTimeString().slice(0, 5); }
         function getCurrentTime() { const now = new Date(); return { hour: now.getHours(), minute: now.getMinutes() }; }
         
+        // function initNavigation() {
+        //     const sections = ['checkin-section', 'phone-section', 'tasks-section', 'leave-section', 'stats-section', 'settings-section'];
+        //     const navButtons = ['nav-checkin', 'nav-phone', 'nav-tasks', 'nav-leave', 'nav-stats', 'nav-settings'];
+
+        //     navButtons.forEach((btnId, index) => {
+        //         document.getElementById(btnId).addEventListener('click', function() {
+        //             sections.forEach(sectionId => document.getElementById(sectionId).classList.add('hidden'));
+        //             document.getElementById(sections[index]).classList.remove('hidden');
+                    
+        //             navButtons.forEach(id => {
+        //                 const btn = document.getElementById(id);
+        //                 btn.className = "w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all";
+        //             });
+                    
+        //             const currentBtn = document.getElementById(btnId);
+        //             currentBtn.className = "w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all bg-primary/10 text-primary dark:bg-primary/20";
+                    
+        //             if (sections[index] === 'stats-section') {
+        //                 const activePeriod = document.querySelector('.stats-period-btn.bg-white, .stats-period-btn.bg-slate-700').getAttribute('data-period');
+        //                 updateStatisticsCharts(activePeriod);
+        //             }
+        //         });
+        //     });
+        // }
+
         function initNavigation() {
-            const sections = ['checkin-section', 'phone-section', 'tasks-section', 'leave-section', 'stats-section', 'settings-section'];
-            const navButtons = ['nav-checkin', 'nav-phone', 'nav-tasks', 'nav-leave', 'nav-stats', 'nav-settings'];
+            const sections = ['checkin-section', 'phone-section', 'tasks-section', 'archive-section', 'leave-section', 'stats-section', 'settings-section'];
+            const navButtons = ['nav-checkin', 'nav-phone', 'nav-tasks', 'nav-archive', 'nav-leave', 'nav-stats', 'nav-settings'];
 
             navButtons.forEach((btnId, index) => {
                 document.getElementById(btnId).addEventListener('click', function() {
@@ -746,6 +790,10 @@
                     if (sections[index] === 'stats-section') {
                         const activePeriod = document.querySelector('.stats-period-btn.bg-white, .stats-period-btn.bg-slate-700').getAttribute('data-period');
                         updateStatisticsCharts(activePeriod);
+                    }
+                    
+                    if (sections[index] === 'archive-section') {
+                        renderArchive();
                     }
                 });
             });
@@ -1113,6 +1161,63 @@
                     lucide.createIcons();
                 }
             }
+        });
+
+        function renderArchive(filterText = '') {
+            const container = document.getElementById('archive-list-container');
+            const dates = Object.keys(quickNotesData).sort((a, b) => new Date(b) - new Date(a));
+            
+            let html = '';
+            let hasResults = false;
+            const searchText = filterText.toLowerCase();
+
+            dates.forEach(date => {
+                const notes = quickNotesData[date];
+                if (!notes || !notes.length) return;
+
+                const filteredNotes = notes.filter(n => n.text.toLowerCase().includes(searchText));
+                
+                if (filteredNotes.length > 0) {
+                    hasResults = true;
+                    html += `
+                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
+                            <h3 class="text-lg font-bold mb-4 text-primary flex items-center gap-2">
+                                <i data-lucide="calendar" class="w-5 h-5"></i> ${date}
+                            </h3>
+                            <div class="space-y-4">
+                    `;
+                    
+                    filteredNotes.forEach(n => {
+                        html += `
+                            <div class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 hover:border-primary/30 transition-colors">
+                                <span class="text-sm font-mono text-slate-400 mt-1 shrink-0 bg-slate-200/50 dark:bg-slate-800/50 px-2 py-0.5 rounded">${n.time}</span>
+                                <div class="text-sm text-slate-700 dark:text-slate-300 md-content w-full overflow-hidden break-words">
+                                    ${marked.parse(n.text)}
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    html += `</div></div>`;
+                }
+            });
+
+            if (!hasResults) {
+                container.innerHTML = `
+                    <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-10 shadow-soft border border-slate-100 dark:border-slate-800 text-center flex flex-col items-center justify-center text-slate-400">
+                        <i data-lucide="inbox" class="w-12 h-12 mb-3 opacity-50"></i>
+                        <p>${filterText ? '没有找到包含该关键词的记录' : '你的噬星体捕捉池目前空空如也'}</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = html;
+            }
+            
+            lucide.createIcons();
+        }
+
+        document.getElementById('archive-search-input').addEventListener('input', (e) => {
+            renderArchive(e.target.value.trim());
         });
 
         // function updateQuickNotesList() {
