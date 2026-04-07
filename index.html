@@ -81,6 +81,40 @@
         .md-content blockquote { border-left: 3px solid #cbd5e1; padding-left: 0.75em; color: #64748b; font-style: italic; }
         .dark .md-content blockquote { border-left-color: #475569; color: #94a3b8; }
         .md-content a { color: #6366f1; text-decoration: underline; }
+
+        /* --- 深空酒馆专属质感动效 --- */
+        /* 液体注入与颜色流动 */
+        @keyframes liquidFill {
+            0% { height: 10%; opacity: 0.5; filter: hue-rotate(0deg); }
+            100% { height: 85%; opacity: 0.95; filter: hue-rotate(15deg); }
+        }
+        /* 液体表面的涟漪波浪 (利用伪元素旋转) */
+        @keyframes waveSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* 情绪气泡上升 */
+        @keyframes bubbleRise {
+            0% { transform: translateY(20px) scale(0.5); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-80px) scale(1.2); opacity: 0; }
+        }
+
+        .animate-liquid { animation: liquidFill 3.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+        .animate-glass { animation: glassFloat 4s ease-in-out infinite; }
+        .bubble-1 { animation: bubbleRise 2s infinite ease-in; }
+        .bubble-2 { animation: bubbleRise 2.5s infinite ease-in 0.5s; }
+        .bubble-3 { animation: bubbleRise 1.8s infinite ease-in 1s; }
+
+        /* 玻璃高光质感增强 */
+        .glass-effect {
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.02) 100%);
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .dark .glass-effect {
+            background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 100%);
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.05), 0 8px 32px rgba(0,0,0,0.3);
+        }
     </style>
 </head>
 <body class="bg-bgLight dark:bg-bgDark text-slate-800 dark:text-slate-200 font-sans h-screen overflow-hidden transition-colors duration-300">
@@ -115,6 +149,9 @@
                 </button>
                 <button id="nav-leave" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
                     <i data-lucide="power-off" class="w-4 h-4"></i> 离舰活动审批
+                </button>
+                <button id="nav-tavern" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                    <i data-lucide="martini" class="w-4 h-4"></i> 深空特调吧台
                 </button>
                 <button id="nav-stats" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
                     <i data-lucide="bar-chart-2" class="w-4 h-4"></i> 维生统计分析
@@ -398,16 +435,6 @@
                     
                     <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 mb-6">
                         <h3 class="text-lg font-semibold mb-4">记录离舰</h3>
-                        <!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-500 mb-2">日期</label>
-                                <input type="date" id="leave-date" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-500 mb-2">缘由</label>
-                                <input type="text" id="leave-reason" placeholder="如：参加学术会议 / 身体不适" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all">
-                            </div>
-                        </div> -->
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                             <div class="md:col-span-1">
                                 <label class="block text-sm font-medium text-slate-500 mb-2">日期</label>
@@ -516,6 +543,186 @@
                             <div class="text-3xl font-black text-green-500 mb-1" id="achievement-count">0</div>
                             <div class="text-xs text-slate-500 font-medium">解锁成就总量</div>
                         </div>
+                    </div>
+                </section>
+
+                <section id="tavern-section" class="mb-8 hidden h-full flex flex-col">
+                    <div class="flex items-center justify-between mb-4 shrink-0">
+                        <div class="text-[10px] tracking-widest text-slate-500 uppercase flex items-center gap-2">
+                            <div class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div> MOOD LAB
+                        </div>
+                        <button id="btn-view-tavern-history" class="text-slate-400 hover:text-primary transition-colors">
+                            <i data-lucide="history" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <div id="view-tavern-container" class="relative flex-1 min-h-[600px] w-full bg-[#fdfdfd] dark:bg-[#121215] rounded-3xl border border-slate-100 dark:border-white/5 overflow-hidden shadow-soft dark:shadow-2xl transition-all duration-500">
+    
+                        <div id="state-input" class="w-full h-full absolute inset-0 p-8 flex flex-col items-center justify-center z-10 opacity-100 transition-all duration-500">
+                            <!-- <div class="relative w-48 h-48 rounded-full border-[0.5px] border-slate-300/50 dark:border-white/10 flex items-center justify-center mb-12 shadow-[inset_0_0_40px_rgba(0,0,0,0.02)] dark:shadow-[inset_0_0_40px_rgba(255,255,255,0.02)]">
+                                <div class="w-40 h-40 rounded-full bg-gradient-to-tr from-primary/5 to-transparent animate-[waveSpin_10s_linear_infinite]"></div>
+                                <p class="absolute text-sm font-medium text-slate-400 font-mono tracking-wider">Waiting for input...</p>
+                            </div> -->
+                            <div class="relative w-full h-64 flex flex-col items-center justify-center mb-10 transition-all duration-500">
+    
+                                <div class="relative w-40 h-52 rounded-b-[100px] rounded-t-sm border-[0.5px] border-white/60 dark:border-white/10 glass-effect backdrop-blur-2xl flex items-end overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+                                    
+                                    <div class="absolute inset-0 bg-gradient-to-tr from-white/5 via-white/20 to-white/5 z-20 pointer-events-none"></div>
+                                    <div class="absolute left-2 top-2 bottom-12 w-2 bg-gradient-to-b from-white/30 to-transparent rounded-full blur-[1px] z-20 pointer-events-none opacity-50"></div>
+
+                                    <div class="absolute -bottom-10 left-1/2 -translate-x-1/2 w-32 h-32 bg-primary/20 rounded-full blur-3xl z-0"></div>
+
+                                    <div class="relative w-full h-[30%] bg-gradient-to-t from-primary/10 to-transparent transition-all duration-1000 ease-in-out z-10 flex items-end justify-center pb-4">
+                                        
+                                        <div class="relative w-24 h-24 mt-4 rounded-full bg-gradient-to-tr from-primary/10 to-primary/5 animate-[waveSpin_8s_linear_infinite] overflow-hidden mix-blend-screen">
+                                            <div class="absolute inset-0 m-2 rounded-full bg-primary/10 blur-md"></div>
+                                            <div class="absolute top-0 right-0 w-12 h-12 bg-white/10 rounded-full blur-sm"></div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <p class="absolute bottom-[-10px] text-[11px] font-medium text-slate-400 font-mono tracking-widest uppercase opacity-70">
+                                    Waiting for input...
+                                </p>
+
+                            </div>
+
+                            <div class="w-full max-w-sm relative mb-8 group">
+                                <textarea id="mood-text-input" rows="3" class="w-full bg-slate-100/50 dark:bg-[#1a1c23]/50 border border-slate-200 dark:border-white/10 rounded-2xl p-5 text-sm md:text-base focus:ring-1 focus:ring-primary outline-none resize-none text-slate-700 dark:text-slate-200 backdrop-blur-sm transition-all" placeholder="今天感觉有点累，想休息..."></textarea>
+                                <div class="absolute bottom-4 right-5 text-[10px] text-slate-400 font-mono"><span id="mood-char-count">0</span>/50</div>
+                            </div>
+
+                            <button id="btn-start-analyze" class="w-full max-w-sm bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-4 rounded-2xl font-bold shadow-lg hover:opacity-90 transition-all flex justify-center items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                                <i data-lucide="sparkles" class="w-4 h-4"></i> 开始调制 / Start Mixing
+                            </button>
+                        </div>
+
+                        <!-- <div id="state-analyzing" class="w-full h-full absolute inset-0 p-8 flex flex-col items-center justify-center z-0 opacity-0 transition-all duration-500">
+                            <div class="relative w-48 h-48 rounded-full border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-black/20 backdrop-blur-md flex items-center justify-center overflow-hidden shadow-[0_0_40px_rgba(99,102,241,0.15)]">
+                                <div id="analyze-fluid" class="absolute bottom-0 w-full h-[5%] bg-gradient-to-t from-primary to-purple-400 transition-all duration-[3000ms] ease-in-out"></div>
+                            </div>
+                            
+                            <p id="analyze-text" class="mt-10 text-sm font-medium text-slate-500 dark:text-slate-400 animate-pulse tracking-widest uppercase">萃取情绪粒子中...</p>
+                            
+                            <div class="w-64 mt-8 flex flex-col items-center">
+                                <div class="flex justify-between w-full text-[10px] text-slate-400 mb-3 tracking-widest font-mono"><span>DEEP</span><span>NEUTRAL</span><span>BRIGHT</span></div>
+                                <div class="w-full h-0.5 bg-slate-200 dark:bg-slate-800 rounded-full relative">
+                                    <div id="analyze-dot" class="absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary transition-all duration-[2500ms] ease-out shadow-[0_0_10px_currentColor]" style="left: 50%;"></div>
+                                </div>
+                            </div>
+                        </div> -->
+
+                        <div id="state-analyzing" class="w-full h-full absolute inset-0 p-8 flex flex-col items-center justify-center z-0 opacity-0 transition-all duration-500">
+    
+                            <div class="relative w-40 h-52 rounded-b-[100px] rounded-t-sm border-[0.5px] border-white/60 dark:border-white/10 glass-effect backdrop-blur-2xl flex items-end overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] mb-6">
+                                
+                                <div class="absolute inset-0 bg-gradient-to-tr from-white/5 via-white/20 to-white/5 z-20 pointer-events-none"></div>
+                                <div class="absolute left-2 top-2 bottom-12 w-2 bg-gradient-to-b from-white/30 to-transparent rounded-full blur-[1px] z-20 pointer-events-none opacity-50"></div>
+
+                                <div id="realtime-fluid" class="relative w-full h-[5%] bg-gradient-to-t from-transparent to-transparent transition-all duration-[2500ms] ease-in-out z-10 overflow-hidden">
+                                    
+                                    <div id="ripple-layer-1" class="absolute -top-12 -left-12 w-48 h-48 bg-white/20 rounded-[40%] animate-[waveSpin_6s_linear_infinite] mix-blend-overlay"></div>
+                                    <div id="ripple-layer-2" class="absolute -top-14 -left-8 w-48 h-48 bg-black/10 rounded-[45%] animate-[waveSpin_8s_linear_infinite_reverse] mix-blend-overlay"></div>
+                                    <div id="ripple-layer-3" class="absolute -top-8 -left-4 w-48 h-48 bg-white/30 rounded-[35%] animate-[waveSpin_3s_linear_infinite] mix-blend-overlay transition-opacity duration-500 opacity-0"></div>
+
+                                    <div id="realtime-bubbles" class="absolute inset-0 transition-opacity duration-1000 opacity-0">
+                                        <div class="absolute bottom-2 left-1/4 w-1.5 h-1.5 bg-white/60 rounded-full bubble-1"></div>
+                                        <div class="absolute bottom-6 left-1/2 w-2.5 h-2.5 bg-white/40 rounded-full bubble-2"></div>
+                                        <div class="absolute bottom-3 right-1/4 w-1 h-1 bg-white/70 rounded-full bubble-3"></div>
+                                        <div class="absolute bottom-10 right-1/3 w-1.5 h-1.5 bg-white/50 rounded-full bubble-1" style="animation-delay: 0.5s"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <p id="analyze-text" class="text-[11px] font-medium text-slate-400 dark:text-slate-500 animate-pulse tracking-widest font-mono uppercase mt-4">
+                                Synthesizing emotions...
+                            </p>
+                        </div>
+
+                        <div id="state-result" class="w-full h-full absolute inset-0 pt-10 pb-6 px-6 flex flex-col items-center z-0 opacity-0 transition-all duration-500 overflow-y-auto bg-gradient-to-b from-transparent to-slate-50 dark:to-[#0f1115]">
+                            <div class="text-[9px] text-slate-400 tracking-[0.2em] uppercase mb-3">Your Exclusive Blend</div>
+                            <h3 id="res-title" class="text-2xl md:text-3xl font-serif font-bold text-center text-slate-800 dark:text-slate-100 mb-1 tracking-wide">青柠气泡的期待感</h3>
+                            <p id="res-subtitle" class="text-[11px] text-slate-500 italic mb-10 font-serif opacity-80">Sunshine Sparkle Special</p>
+                            
+                            <!-- <div class="relative w-36 h-44 rounded-b-[100px] rounded-t-sm border-[0.5px] border-white/60 dark:border-white/10 glass-effect backdrop-blur-xl flex items-end overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] mb-10 mx-auto">
+                                <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 z-10 pointer-events-none"></div>
+                                <div id="res-fluid" class="relative w-full h-[60%] bg-gradient-to-t from-amber-400 to-orange-300 transition-all duration-1000 ease-out">
+                                    <div id="res-bubbles" class="absolute inset-0">
+                                        <div class="absolute bottom-2 left-6 w-1.5 h-1.5 bg-white/60 rounded-full bubble-1"></div>
+                                        <div class="absolute bottom-5 right-8 w-1 h-1 bg-white/40 rounded-full bubble-3"></div>
+                                        <div class="absolute bottom-8 left-1/2 w-2 h-2 bg-white/30 rounded-full bubble-2"></div>
+                                    </div>
+                                </div>
+                            </div> -->
+                            <div class="relative w-40 h-56 rounded-b-[80px] rounded-t-sm border-[0.5px] border-white/60 dark:border-white/10 glass-effect backdrop-blur-xl flex items-end overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] mb-10 mx-auto">
+                                <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 z-10 pointer-events-none"></div>
+                                <div class="absolute left-2 top-2 bottom-12 w-2 bg-gradient-to-b from-white/30 to-transparent rounded-full blur-[1px] z-10 pointer-events-none opacity-50"></div>
+
+                                <div id="res-fluid" class="relative w-full h-[60%] bg-gradient-to-t from-amber-400 to-orange-300 transition-all duration-1000 ease-out">
+                                    <div id="res-bubbles" class="absolute inset-0">
+                                        <div class="absolute bottom-2 left-6 w-1.5 h-1.5 bg-white/60 rounded-full bubble-1"></div>
+                                        <div class="absolute bottom-5 right-8 w-1 h-1 bg-white/40 rounded-full bubble-3"></div>
+                                        <div class="absolute bottom-8 left-1/2 w-2 h-2 bg-white/30 rounded-full bubble-2"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="w-full max-w-sm bg-white/60 dark:bg-[#1a1c23]/60 backdrop-blur-xl rounded-3xl border border-slate-100 dark:border-white/5 p-6 shadow-sm mb-8 text-left relative">
+                                <div class="flex justify-between items-end border-b border-slate-200/60 dark:border-slate-700/50 pb-3 mb-4">
+                                    <span class="text-[11px] text-slate-500 tracking-wider">基酒 Base</span>
+                                    <span id="res-base" class="text-sm font-bold text-slate-800 dark:text-slate-200">深色朗姆</span>
+                                </div>
+                                
+                                <div class="grid grid-cols-3 gap-2 text-center mb-6">
+                                    <div>
+                                        <div class="text-[10px] text-slate-400 mb-1.5 font-mono">Top</div>
+                                        <div id="res-top" class="text-xs font-medium text-slate-700 dark:text-slate-300">薄荷叶</div>
+                                    </div>
+                                    <div class="border-l border-r border-slate-200/60 dark:border-slate-700/50">
+                                        <div class="text-[10px] text-slate-400 mb-1.5 font-mono">Mid</div>
+                                        <div id="res-mid" class="text-xs font-medium text-slate-700 dark:text-slate-300">可可</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[10px] text-slate-400 mb-1.5 font-mono">Base</div>
+                                        <div id="res-bot" class="text-xs font-medium text-slate-700 dark:text-slate-300">香草</div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between mb-5">
+                                    <span class="text-[10px] text-slate-500 tracking-wider">浓度</span>
+                                    <div class="flex-1 mx-4 h-1 bg-slate-200 dark:bg-slate-800 rounded-full relative overflow-hidden">
+                                        <div id="res-bar" class="absolute left-0 top-0 bottom-0 bg-slate-400 dark:bg-slate-500 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                                    </div>
+                                    <span id="res-params" class="text-[10px] font-mono text-slate-600 dark:text-slate-400">0.00%</span>
+                                </div>
+                                
+                                <div class="text-center mt-4">
+                                    <p id="res-quote" class="text-[11px] text-slate-500 italic opacity-80">"一杯简单的特调，回应你此刻的留白。"</p>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3 w-full max-w-sm mt-auto">
+                                <button id="btn-remix" class="flex-1 bg-white dark:bg-white text-slate-900 py-4 rounded-2xl font-bold shadow-md hover:opacity-90 transition-all flex justify-center items-center gap-2">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> 再调一杯
+                                </button>
+                                <button id="btn-save-drink" class="w-16 shrink-0 bg-slate-100 dark:bg-[#2a2d36] text-slate-700 dark:text-slate-300 py-4 rounded-2xl flex justify-center items-center transition-all hover:bg-slate-200 dark:hover:bg-[#363a45]">
+                                    <i data-lucide="download" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="state-history" class="w-full h-full absolute inset-0 p-6 flex flex-col z-0 opacity-0 bg-[#fdfdfd] dark:bg-[#121215] transition-all duration-500">
+                            <div class="flex items-center justify-between mb-6 shrink-0">
+                                <h3 class="text-lg font-serif font-bold text-slate-800 dark:text-slate-200">历史酒单 Archive</h3>
+                                <button id="btn-close-history" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2">
+                                    <i data-lucide="x" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                            <div id="tavern-history-list" class="flex-1 overflow-y-auto space-y-4 pr-2 pb-4 text-left">
+                            </div>
+                        </div>
+
                     </div>
                 </section>
 
@@ -655,6 +862,8 @@
         let taskTimer = null; 
         let taskStartTime = null; 
         let quickNotesData = {}; // 结构: { 'YYYY-MM-DD': [{ time: '10:00', text: 'idea' }] }
+        let tavernData = []; // 存储结构: [{ id, date, time, name, base, top, middle, bottom, params }]
+        let currentDrinkInfo = null; // 用于临时存放正在调制的这杯酒
         const tagMap = { 'paper': '文献阅读', 'code': '代码构建', 'experiment': '实验跑数', 'write': '文档撰写', 'other': '杂项事务' };
 
         const CONFIG = {
@@ -698,6 +907,23 @@
             { id: 'hacker_mind', name: '捕虫大师', description: '捕捉50个噬星体碎片，离探查这种星际生命的起源又近了一步', requirement: 50, type: 'notes' },
             { id: 'eridani_contact', name: '水基就是一切', description: '捕捉100个噬星体碎片，现在你知道这种小玩意是怎么运动、繁殖的了，当然最关键的是，它们依然是水基的', requirement: 100, type: 'notes' } // 新增
         ];
+
+        const emotionDictionary = [
+            { id: 'emo_1', label: '焦躁', efi: -0.8, eii: 0.9, style: 'text-red-600 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-900/20 dark:border-red-900/50' },
+            { id: 'emo_2', label: '平静', efi: 0.5, eii: 0.2, style: 'text-teal-600 bg-teal-50 border-teal-200 dark:text-teal-400 dark:bg-teal-900/20 dark:border-teal-900/50' },
+            { id: 'emo_3', label: '疲惫', efi: -0.4, eii: 0.3, style: 'text-slate-600 bg-slate-50 border-slate-200 dark:text-slate-400 dark:bg-slate-800 dark:border-slate-700' },
+            { id: 'emo_4', label: '雀跃', efi: 0.9, eii: 0.8, style: 'text-amber-600 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-900/20 dark:border-amber-900/50' },
+            { id: 'emo_5', label: '紧绷', efi: -0.6, eii: 0.7, style: 'text-orange-600 bg-orange-50 border-orange-200 dark:text-orange-400 dark:bg-orange-900/20 dark:border-orange-900/50' },
+            { id: 'emo_6', label: '灵感迸发', efi: 0.8, eii: 0.7, style: 'text-indigo-600 bg-indigo-50 border-indigo-200 dark:text-indigo-400 dark:bg-indigo-900/20 dark:border-indigo-900/50' },
+            { id: 'emo_7', label: '孤独', efi: -0.5, eii: 0.4, style: 'text-blue-600 bg-blue-50 border-blue-200 dark:text-blue-400 dark:bg-blue-900/20 dark:border-blue-900/50' },
+            { id: 'emo_8', label: '充满希望', efi: 0.7, eii: 0.5, style: 'text-green-600 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-900/20 dark:border-green-900/50' },
+            { id: 'emo_9', label: '迷茫', efi: -0.3, eii: 0.5, style: 'text-purple-600 bg-purple-50 border-purple-200 dark:text-purple-400 dark:bg-purple-900/20 dark:border-purple-900/50' },
+            { id: 'emo_10', label: '专注', efi: 0.6, eii: 0.6, style: 'text-cyan-600 bg-cyan-50 border-cyan-200 dark:text-cyan-400 dark:bg-cyan-900/20 dark:border-cyan-900/50' },
+            { id: 'emo_11', label: '压抑', efi: -0.7, eii: 0.6, style: 'text-stone-600 bg-stone-50 border-stone-200 dark:text-stone-400 dark:bg-stone-900/20 dark:border-stone-900/50' },
+            { id: 'emo_12', label: '成就感', efi: 0.9, eii: 0.6, style: 'text-rose-600 bg-rose-50 border-rose-200 dark:text-rose-400 dark:bg-rose-900/20 dark:border-rose-900/50' }
+        ];
+
+        let selectedEmotions = [];
         
         document.addEventListener('DOMContentLoaded', function() {
             initData();
@@ -732,6 +958,7 @@
                 taskData = savedTaskData ? JSON.parse(savedTaskData) : {};
                 leaveData = savedLeaveData ? JSON.parse(savedLeaveData) : [];
                 achievements = savedAchievements ? JSON.parse(savedAchievements) : [];
+                tavernData = savedTavernData ? JSON.parse(savedTavernData) : [];
             } catch (e) {
                 quickNotesData = {};
                 checkinData = {};
@@ -739,6 +966,7 @@
                 taskData = {};
                 leaveData = [];
                 achievements = [];
+                tavernData = [];
             }
             
             if (!phoneResistData.records) phoneResistData.records = {};
@@ -766,6 +994,7 @@
             localStorage.setItem('leaveData', JSON.stringify(leaveData));
             localStorage.setItem('achievements', JSON.stringify(achievements));
             localStorage.setItem('quickNotesData', JSON.stringify(quickNotesData));
+            localStorage.setItem('tavernData', JSON.stringify(tavernData));
 
             if (!preventAutoSync && typeof triggerAutoSync === 'function') {
                 triggerAutoSync();
@@ -827,61 +1056,6 @@
             updateTodayCheckinTable();
         }
         
-        // function updateCheckinButtons() {
-        //     const today = getTodayString();
-        //     if (!checkinData[today]) {
-        //         checkinData[today] = {
-        //             morning: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
-        //             afternoon: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
-        //             evening: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
-        //             leave: false,
-        //             leaveReason: ''
-        //         };
-        //         saveData();
-        //     }
-        //     const now = getCurrentTime();
-        //     const currentHour = now.hour;
-            
-        //     const isLeave = checkinData[today] && checkinData[today].leave;
-        //     if (isLeave) {
-        //         ['morning', 'afternoon', 'evening'].forEach(period => {
-        //             const checkinBtn = document.getElementById(`${period}-checkin`);
-        //             const checkoutBtn = document.getElementById(`${period}-checkout`);
-        //             checkinBtn.disabled = true; checkoutBtn.disabled = true;
-        //             checkinBtn.className = checkoutBtn.className = "w-full bg-slate-100 dark:bg-slate-900 text-slate-400 py-3 rounded-xl font-medium transition-all duration-200 cursor-not-allowed";
-        //         });
-        //         return;
-        //     }
-            
-        //     const m = checkinData[today].morning, a = checkinData[today].afternoon, e = checkinData[today].evening;
-
-        //     const mCfg = CONFIG.schedule.morning;
-        //     const aCfg = CONFIG.schedule.afternoon;
-        //     const eCfg = CONFIG.schedule.evening;
-
-        //     document.getElementById('morning-checkin').disabled = m.checkIn !== null || currentHour < mCfg.startHour || currentHour >= mCfg.endHour;
-        //     document.getElementById('afternoon-checkin').disabled = a.checkIn !== null || currentHour < aCfg.startHour || currentHour >= aCfg.endHour;
-        //     document.getElementById('evening-checkin').disabled = e.checkIn !== null || currentHour < eCfg.startHour || currentHour >= eCfg.endHour;
-
-        //     document.getElementById('morning-checkout').disabled = m.checkOut !== null || m.checkIn === null || currentHour >= aCfg.startHour; // 早班下班不能晚于中班开始(12点后但宽限到14点原逻辑，你可以改为 mCfg.endHour + 2)
-        //     document.getElementById('afternoon-checkout').disabled = a.checkOut !== null || a.checkIn === null || currentHour >= eCfg.startHour + 3; // 午班不晚于20点
-        //     document.getElementById('evening-checkout').disabled = e.checkOut !== null || e.checkIn === null;
-            
-        //     ['morning', 'afternoon', 'evening'].forEach(period => {
-        //         const cIn = document.getElementById(`${period}-checkin`);
-        //         const cOut = document.getElementById(`${period}-checkout`);
-                
-        //         cIn.className = cIn.disabled 
-        //             ? "w-full bg-slate-100 dark:bg-slate-900 text-slate-400 py-3 rounded-xl font-medium transition-all duration-200 cursor-not-allowed" 
-        //             : "w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200 shadow-md";
-                    
-        //         cOut.className = cOut.disabled 
-        //             ? "w-full bg-slate-100 dark:bg-slate-900 text-slate-400 py-3 rounded-xl font-medium transition-all duration-200 cursor-not-allowed" 
-        //             : "w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200 shadow-md";
-        //     });
-            
-        //     updateCheckinTimeDisplay();
-        // }
         function updateCheckinButtons() {
             const today = getTodayString();
             if (!checkinData[today]) {
@@ -982,6 +1156,286 @@
             
             updateCheckinTimeDisplay();
         }
+        
+        // --- 深空酒馆 (Mood Mixology) 核心逻辑 ---
+        const MAX_MOOD_CHARS = 50;
+
+        // 词库配置：根据文本计算出的伪随机哈希值映射
+        const flavorDB = {
+            bases: [
+                { name: "深色朗姆", en: "Dark Rum", style: "from-amber-700 to-orange-900" },
+                { name: "冰川伏特加", en: "Glacier Vodka", style: "from-blue-200 to-cyan-50" },
+                { name: "植物金酒", en: "Botanic Gin", style: "from-emerald-300 to-teal-100" },
+                { name: "烟熏威士忌", en: "Smoked Whiskey", style: "from-orange-400 to-amber-700" },
+                { name: "星云气泡水", en: "Nebula Sparkling", style: "from-purple-300 to-indigo-200" }
+            ],
+            notes: ["薄荷叶", "可可", "香草", "柠檬皮", "迷迭香", "肉桂", "海盐", "乌龙茶", "咖啡豆", "橙花", "小豆蔻", "百里香"],
+            adjectives: ["午夜的", "沉睡的", "仲夏的", "青柠的", "焦糖的", "深海的", "拂晓的"],
+            nouns: ["气泡", "晚风", "呢喃", "碎片", "极光", "篝火"],
+            feelings: ["期待感", "释放", "留白", "拥抱", "沉淀", "失重感"]
+        };
+
+        // 简单的字符串哈希函数，确保同样的输入生成同样的酒
+        function hashString(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return Math.abs(hash);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const tavernBtn = document.getElementById('nav-tavern');
+            const inputEl = document.getElementById('mood-text-input');
+            const countEl = document.getElementById('mood-char-count');
+            const analyzeBtn = document.getElementById('btn-start-analyze');
+            
+            if(tavernBtn) {
+                tavernBtn.addEventListener('click', () => {
+                    const sections = ['checkin-section', 'phone-section', 'tasks-section', 'archive-section', 'leave-section', 'stats-section', 'settings-section', 'tavern-section'];
+                    sections.forEach(id => document.getElementById(id)?.classList.add('hidden'));
+                    document.getElementById('tavern-section').classList.remove('hidden');
+                    
+                    // 每次进入重置到输入状态
+                    switchTavernState('state-input');
+                    inputEl.value = '';
+                    countEl.textContent = '0';
+                    analyzeBtn.disabled = true;
+                });
+            }
+
+            // 监听输入，控制按钮状态
+            inputEl?.addEventListener('input', (e) => {
+                let text = e.target.value;
+                if (text.length > MAX_MOOD_CHARS) {
+                    text = text.slice(0, MAX_MOOD_CHARS);
+                    e.target.value = text;
+                }
+                countEl.textContent = text.length;
+                analyzeBtn.disabled = text.trim().length === 0;
+            });
+
+            // 状态切换工具 (z-index 与 opacity 配合控制层级与淡入淡出)
+            function switchTavernState(targetId) {
+                ['state-input', 'state-analyzing', 'state-result', 'state-history'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (id === targetId) {
+                        el.style.zIndex = '10';
+                        el.classList.remove('opacity-0');
+                        el.classList.add('opacity-100');
+                    } else {
+                        el.style.zIndex = '0';
+                        el.classList.remove('opacity-100');
+                        el.classList.add('opacity-0');
+                    }
+                });
+            }
+
+            // 开始分析并生成配方
+            analyzeBtn?.addEventListener('click', () => {
+                const text = inputEl.value.trim();
+                switchTavernState('state-analyzing');
+                
+                // 基于文字生成伪随机种子
+                const seed = hashString(text);
+                
+                // 算法：映射各项参数
+                const baseIndex = seed % flavorDB.bases.length;
+                const topIndex = (seed * 2) % flavorDB.notes.length;
+                const midIndex = (seed * 3) % flavorDB.notes.length;
+                const botIndex = (seed * 5) % flavorDB.notes.length;
+                
+                const baseItem = flavorDB.bases[baseIndex];
+                const efi = ((seed % 100) / 100) * 2 - 1; // -1 to 1 (Mood Direction)
+                const eii = ((seed * 7 % 100) / 100);     // 0 to 1 (Intensity/Concentration)
+                
+                const title = `${flavorDB.adjectives[seed % flavorDB.adjectives.length]}${flavorDB.nouns[(seed*2) % flavorDB.nouns.length]}的${flavorDB.feelings[(seed*3) % flavorDB.feelings.length]}`;
+                
+                // // 动画阶段 1：液体注入与雷达游走
+                // const fluid = document.getElementById('analyze-fluid');
+                // const dot = document.getElementById('analyze-dot');
+                // const mixText = document.getElementById('analyze-text');
+                
+                // fluid.className = `absolute bottom-0 w-full h-[5%] bg-gradient-to-t ${baseItem.style} transition-all duration-[3000ms] ease-in-out`;
+                // setTimeout(() => fluid.style.height = '85%', 100);
+                // setTimeout(() => dot.style.left = `${((efi + 1) / 2) * 100}%`, 100);
+
+                // setTimeout(() => mixText.textContent = "混入前调与隐秘情绪...", 1000);
+                // setTimeout(() => mixText.textContent = "装瓶酝酿...", 2000);
+                
+                // 1. 颜色变化：基于情绪方向 (Bright / Calm / Deep)
+                let fluidGradient = '';
+                if (efi > 0.3) {
+                    fluidGradient = 'from-amber-300 to-orange-400'; // Bright (正向明亮)
+                } else if (efi < -0.3) {
+                    fluidGradient = 'from-slate-800 to-indigo-900'; // Deep (负向深沉)
+                } else {
+                    fluidGradient = 'from-teal-300 to-emerald-500'; // Calm (中性平静)
+                }
+
+                // 获取实时动画 DOM
+                const fluid = document.getElementById('realtime-fluid');
+                const ripple1 = document.getElementById('ripple-layer-1');
+                const ripple2 = document.getElementById('ripple-layer-2');
+                const ripple3 = document.getElementById('ripple-layer-3');
+                const bubbles = document.getElementById('realtime-bubbles');
+                const mixText = document.getElementById('analyze-text');
+                
+                // 注入颜色
+                fluid.className = `relative w-full h-[5%] bg-gradient-to-t ${fluidGradient} transition-all duration-[2500ms] ease-in-out z-10 overflow-hidden`;
+                
+                // 2. 液体波动 (涟漪)：根据情绪波动绝对值 (|EFI|)
+                const fluctuation = Math.abs(efi);
+                if (fluctuation > 0.6) {
+                    // 剧烈涟漪 (大幅度、快流速)
+                    ripple1.style.animationDuration = '2s';
+                    ripple2.style.animationDuration = '3s';
+                    ripple3.style.opacity = '1'; // 开启第三层剧烈波浪
+                    mixText.textContent = "感受剧烈情绪波动...";
+                } else {
+                    // 轻微涟漪 (平缓流动)
+                    ripple1.style.animationDuration = '6s';
+                    ripple2.style.animationDuration = '8s';
+                    ripple3.style.opacity = '0'; // 隐藏剧烈波浪
+                    mixText.textContent = "捕捉平缓思绪...";
+                }
+
+                // 3. 气泡与渐层：基于情绪强度 (EII)
+                if (eii > 0.6) {
+                    bubbles.style.opacity = '1'; // 情绪浓烈，气泡大量上涌
+                } else if (eii > 0.3) {
+                    bubbles.style.opacity = '0.4'; // 中等强度
+                } else {
+                    bubbles.style.opacity = '0'; // 情绪稀薄，清澈无气泡
+                }
+
+                // 触发液体注入动画
+                setTimeout(() => fluid.style.height = '65%', 100);
+                setTimeout(() => mixText.textContent = "装瓶酝酿...", 1500);
+
+                // 动画阶段 2：转场到结果页
+                setTimeout(() => {
+                    // 组装数据
+                    document.getElementById('res-title').textContent = title;
+                    document.getElementById('res-subtitle').textContent = "Exclusive Blend";
+                    document.getElementById('res-base').textContent = baseItem.name;
+                    document.getElementById('res-top').textContent = flavorDB.notes[topIndex];
+                    document.getElementById('res-mid').textContent = flavorDB.notes[midIndex];
+                    document.getElementById('res-bot').textContent = flavorDB.notes[botIndex];
+                    
+                    const concentration = (eii * 100).toFixed(2);
+                    document.getElementById('res-params').textContent = `${concentration}%`;
+                    
+                    // 渲染结果杯子的液体与动画
+                    const resFluid = document.getElementById('res-fluid');
+                    resFluid.className = `relative w-full h-[10%] bg-gradient-to-t ${baseItem.style} transition-all duration-[1500ms] ease-out`;
+                    
+                    switchTavernState('state-result');
+                    
+                    // 杯子液体上涨动画
+                    setTimeout(() => {
+                        resFluid.style.height = `${40 + (eii * 40)}%`; 
+                        document.getElementById('res-bar').style.width = `${concentration}%`;
+                    }, 300);
+
+                    // 缓存这杯酒的信息用于保存
+                    currentDrinkInfo = {
+                        id: 'drink_' + Date.now(),
+                        date: getTodayString(),
+                        time: getCurrentTimeString(),
+                        name: title,
+                        base: baseItem.name,
+                        top: flavorDB.notes[topIndex],
+                        middle: flavorDB.notes[midIndex],
+                        bottom: flavorDB.notes[botIndex],
+                        params: `浓度 ${concentration}%`
+                    };
+
+                    // 重置分析层动画
+                    setTimeout(() => {
+                        fluid.style.height = '5%';
+                        dot.style.left = '50%';
+                        mixText.textContent = "萃取情绪粒子中...";
+                    }, 1000);
+                    
+                    lucide.createIcons();
+                }, 3200);
+            });
+
+            // 按钮交互绑定
+            document.getElementById('btn-remix')?.addEventListener('click', () => {
+                inputEl.value = ''; countEl.textContent = '0'; analyzeBtn.disabled = true;
+                switchTavernState('state-input');
+            });
+
+            document.getElementById('btn-save-drink')?.addEventListener('click', () => {
+                if (currentDrinkInfo) {
+                    tavernData.unshift(currentDrinkInfo);
+                    saveData();
+                    showToast('特调已封存入库 🍸', 'success');
+                    switchTavernState('state-history');
+                    renderTavernHistory();
+                    currentDrinkInfo = null; 
+                }
+            });
+
+            document.getElementById('btn-view-tavern-history')?.addEventListener('click', () => {
+                switchTavernState('state-history');
+                renderTavernHistory();
+            });
+
+            document.getElementById('btn-close-history')?.addEventListener('click', () => {
+                switchTavernState('state-input');
+            });
+
+            // 历史酒单渲染 (复用原有逻辑，微调样式适配深色)
+            function renderTavernHistory() {
+                const container = document.getElementById('tavern-history-list');
+                if (!tavernData.length) {
+                    container.innerHTML = `
+                        <div class="h-full flex flex-col items-center justify-center text-slate-400 mt-20 opacity-50">
+                            <i data-lucide="wine" class="w-10 h-10 mb-4"></i>
+                            <p class="text-xs tracking-wider">酒柜空空如也</p>
+                        </div>`;
+                    lucide.createIcons();
+                    return;
+                }
+
+                container.innerHTML = tavernData.map((drink) => `
+                    <div class="bg-white/50 dark:bg-[#1a1c23]/50 rounded-2xl p-5 border border-slate-100 dark:border-white/5 relative group transition-all hover:border-primary/30 backdrop-blur-md">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h4 class="font-serif font-bold text-slate-800 dark:text-slate-100 text-base mb-1 tracking-wide">${drink.name}</h4>
+                                <div class="text-[10px] text-slate-400 font-mono">${drink.date} ${drink.time}</div>
+                            </div>
+                            <button class="delete-drink-btn text-slate-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity p-1" data-id="${drink.id}">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 space-y-1.5 font-mono">
+                            <div><span class="opacity-70 mr-2">Base</span>${drink.base}</div>
+                            <div><span class="opacity-70 mr-2">Note</span>${drink.top} / ${drink.middle} / ${drink.bottom}</div>
+                            <div class="mt-2 inline-block bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-[10px] border border-slate-200 dark:border-slate-700">${drink.params}</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                lucide.createIcons();
+
+                container.querySelectorAll('.delete-drink-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        if(confirm('确定要倒掉这杯情绪特调吗？')) {
+                            const id = this.getAttribute('data-id');
+                            tavernData = tavernData.filter(d => d.id !== id);
+                            saveData();
+                            renderTavernHistory();
+                        }
+                    });
+                });
+            }
+        });
 
         function triggerEndOfDayEasterEgg() {
             const today = getTodayString();
@@ -1037,42 +1491,6 @@
             return h * 60 + m;
         }
 
-        // function checkIn(period) {
-        //     const today = getTodayString(), now = getCurrentTime();
-        //     checkinData[today][period].checkIn = getCurrentTimeString();
-        //     let status = false;
-        //     const cfg = CONFIG.schedule[period];
-        //     if (period === 'morning') status = now.hour < 8 || (now.hour === 8 && now.minute === 0);
-        //         status = now.hour < cfg.okCheckInBefore || (now.hour === cfg.okCheckInBefore && now.minute === 0);
-        //         checkinData[today][period].status.checkIn = status;
-        //         saveData(); updateCheckinButtons(); updateTodayCheckinTable(); updateTodayStatus(); checkAchievements();
-        //     }
-        
-        // function checkOut(period) {
-        //     const today = getTodayString(), now = getCurrentTime();
-        //     checkinData[today][period].checkOut = getCurrentTimeString();
-            
-        //     const inTimeStr = checkinData[today][period].checkIn;
-        //     const [inHour, inMinute] = inTimeStr.split(':').map(Number);
-        //     const durationMins = (now.hour * 60 + now.minute) - (inHour * 60 + inMinute);
-            
-        //     let outStatus = 'danger';
-        //     const cfg = CONFIG.schedule[period];
-
-        //     if (durationMins < CONFIG.task.minDurationMins) {
-        //         outStatus = 'danger'; 
-        //     } else {
-        //         let isWithinRecommended = now.hour < cfg.okCheckOutBefore || (now.hour === cfg.okCheckOutBefore && now.minute === 0);
-        //         outStatus = isWithinRecommended ? 'success' : 'warning';
-        //     }
-
-        //     checkinData[today][period].status.checkOut = outStatus;
-        //     saveData(); 
-        //     updateCheckinButtons(); updateTodayCheckinTable(); updateTodayStatus(); checkAchievements();
-        //     if (period === 'evening') {
-        //         setTimeout(() => triggerEndOfDayEasterEgg(), 500);
-        //     }
-        // }
         function checkIn(period) {
             const today = getTodayString(), now = getCurrentTime();
             const currentMins = now.hour * 60 + now.minute;
@@ -1161,38 +1579,6 @@
             });
         }
         
-        // function updateTodayCheckinTable() {
-        //     const t = getTodayString();
-        //     ['morning', 'afternoon', 'evening'].forEach(p => {
-        //         document.getElementById(`table-${p}-checkin`).textContent = checkinData[t][p].checkIn || '-';
-        //         document.getElementById(`table-${p}-checkout`).textContent = checkinData[t][p].checkOut || '-';
-                
-        //         const cInStatus = document.getElementById(`table-${p}-checkin-status`);
-        //         if (checkinData[t][p].checkIn === null) { 
-        //             cInStatus.textContent = '-'; cInStatus.className = 'py-3 px-4'; 
-        //         } else { 
-        //             cInStatus.textContent = checkinData[t][p].status.checkIn ? '合格' : '不合格'; 
-        //             cInStatus.className = `py-3 px-4 font-medium ${checkinData[t][p].status.checkIn ? 'text-success' : 'text-danger'}`; 
-        //         }
-                
-        //         const cOutStatus = document.getElementById(`table-${p}-checkout-status`);
-        //         if (checkinData[t][p].checkOut === null) { 
-        //             cOutStatus.textContent = '-'; cOutStatus.className = 'py-3 px-4'; 
-        //         } else { 
-        //             const statusVal = checkinData[t][p].status.checkOut;
-        //             if (statusVal === true || statusVal === 'success') {
-        //                 cOutStatus.textContent = '合格';
-        //                 cOutStatus.className = 'py-3 px-4 font-medium text-success';
-        //             } else if (statusVal === 'warning') {
-        //                 cOutStatus.textContent = '警告';
-        //                 cOutStatus.className = 'py-3 px-4 font-medium text-warning';
-        //             } else { 
-        //                 cOutStatus.textContent = '时长过短'; 
-        //                 cOutStatus.className = 'py-3 px-4 font-medium text-danger';
-        //             }
-        //         }
-        //     });
-        // }
         function updateTodayCheckinTable() {
             const t = getTodayString();
             ['morning', 'afternoon', 'evening'].forEach(p => {
@@ -1635,25 +2021,6 @@
             });
         }
         
-        // function initLeaveManagement() {
-        //     document.getElementById('leave-date').value = getTodayString();
-        //     document.getElementById('add-leave').addEventListener('click', addLeave);
-
-        //     document.getElementById('leave-records-table').addEventListener('click', function(e) {
-        //         const btn = e.target.closest('.delete-leave');
-        //         if (btn) {
-        //             if(confirm('确定撤销该记录吗？')) {
-        //                 const date = btn.getAttribute('data-date');
-        //                 leaveData = leaveData.filter(l => l.date !== date);
-        //                 if (checkinData[date]) { checkinData[date].leave = false; checkinData[date].leaveReason = ''; }
-        //                 saveData(); 
-        //                 updateLeaveRecordsList();
-        //                 if (date === getTodayString()) { updateCheckinButtons(); updateTodayStatus(); }
-        //             }
-        //         }
-        //     });
-        //     updateLeaveRecordsList();
-        // }
         function initLeaveManagement() {
             document.getElementById('leave-date').value = getTodayString();
             document.getElementById('add-leave').addEventListener('click', addLeave);
@@ -1739,27 +2106,6 @@
             updateLeaveRecordsList();
         }
         
-        // function addLeave() {
-        //     const date = document.getElementById('leave-date').value, reason = document.getElementById('leave-reason').value.trim();
-        //     if (!date || !reason) return showToast('请完整填写请假信息', 'warning');
-        //     const idx = leaveData.findIndex(l => l.date === date);
-        //     if (idx !== -1) leaveData[idx].reason = reason; else leaveData.push({ date, reason });
-            
-        //     if (!checkinData[date]) {
-        //         checkinData[date] = {
-        //             morning: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
-        //             afternoon: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
-        //             evening: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
-        //             leave: false,
-        //             leaveReason: ''
-        //         };
-        //     }
-
-        //     checkinData[date].leave = true; checkinData[date].leaveReason = reason;
-        //     saveData(); document.getElementById('leave-reason').value = '';
-        //     updateLeaveRecordsList();
-        //     if (date === getTodayString()) { updateCheckinButtons(); updateTodayStatus(); }
-        // }
         function addLeave() {
             const date = document.getElementById('leave-date').value;
             const reason = document.getElementById('leave-reason').value.trim();
@@ -1809,22 +2155,6 @@
             showToast('离舰报备归档成功', 'success');
         }
     
-        // function updateLeaveRecordsList() {
-        //     const tbody = document.getElementById('leave-records-table');
-        //     if (!leaveData.length) return tbody.innerHTML = '<tr><td colspan="3" class="py-4 px-4 text-center text-slate-400">暂无历史归档</td></tr>';
-        //     tbody.innerHTML = '';
-
-        //     [...leaveData].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(l => {
-        //         const tr = document.createElement('tr');
-        //         tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors";
-        //         tr.innerHTML = `
-        //             <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-400">${l.date}</td>
-        //             <td class="py-3 px-4 font-medium">${l.reason}</td>
-        //             <td class="py-3 px-4"><button class="delete-leave px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-lg text-xs font-bold transition-all" data-date="${l.date}">撤销</button></td>
-        //         `;
-        //         tbody.appendChild(tr);
-        //     });
-        // }
         function updateLeaveRecordsList() {
             const tbody = document.getElementById('leave-records-table');
             if (!leaveData.length) return tbody.innerHTML = '<tr><td colspan="3" class="py-4 px-4 text-center text-slate-400">暂无历史归档</td></tr>';
@@ -2058,40 +2388,6 @@
             document.getElementById('achievement-count').textContent = achievements.length;
         }
 
-        // function updateTodayStatus() {
-        //     const today = getTodayString(), dayData = checkinData[today];
-        //     ['morning', 'afternoon', 'evening'].forEach(p => {
-        //         const el = document.getElementById(`today-${p}-status`);
-        //         if (dayData.leave) { 
-        //             el.textContent = '脱产请假'; el.className = 'font-medium text-slate-400'; 
-        //         }
-        //         else if (dayData[p].checkIn && dayData[p].checkOut) {
-        //             const inOk = dayData[p].status.checkIn === true;
-        //             const outVal = dayData[p].status.checkOut;
-                    
-        //             if (!inOk || outVal === false || outVal === 'danger') {
-        //                 el.textContent = '异常'; el.className = 'font-medium text-danger';
-        //             } else if (outVal === 'warning') {
-        //                 el.textContent = '超时警告'; el.className = 'font-medium text-warning';
-        //             } else {
-        //                 el.textContent = '合规'; el.className = 'font-medium text-success';
-        //             }
-        //         } else if (dayData[p].checkIn) { 
-        //             el.textContent = '工作中'; el.className = 'font-medium text-primary'; 
-        //         }
-        //         else { 
-        //             el.textContent = '-'; el.className = 'font-medium text-slate-400'; 
-        //         }
-        //     });
-            
-        //     document.getElementById('today-phone-count').textContent = `${phoneResistData.records[today].count} 次`;
-        //     const activeTaskEl = document.getElementById('today-active-task');
-        //     if (currentTask) { 
-        //         activeTaskEl.textContent = currentTask.name; activeTaskEl.className = 'font-medium text-primary truncate max-w-[120px]'; 
-        //     } else { 
-        //         activeTaskEl.textContent = '空闲'; activeTaskEl.className = 'font-medium text-slate-400'; 
-        //     }
-        // }
         function updateTodayStatus() {
             const today = getTodayString(), dayData = checkinData[today];
             ['morning', 'afternoon', 'evening'].forEach(p => {
@@ -2191,6 +2487,7 @@
                 leaveData,
                 achievements,
                 quickNotesData,
+                tavernData,
                 lastSyncTime: new Date().toISOString()
             };
         }
@@ -2292,6 +2589,7 @@
                         taskData = cloudData.taskData || {};
                         leaveData = cloudData.leaveData || [];
                         achievements = cloudData.achievements || [];
+                        tavernData = cloudData.tavernData || [];
                         if (cloudData.quickNotesData) quickNotesData = cloudData.quickNotesData;
                         
                         const today = getTodayString();
