@@ -398,12 +398,40 @@
                     
                     <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 mb-6">
                         <h3 class="text-lg font-semibold mb-4">记录离舰</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-sm font-medium text-slate-500 mb-2">日期</label>
                                 <input type="date" id="leave-date" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all">
                             </div>
                             <div>
+                                <label class="block text-sm font-medium text-slate-500 mb-2">缘由</label>
+                                <input type="text" id="leave-reason" placeholder="如：参加学术会议 / 身体不适" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all">
+                            </div>
+                        </div> -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                            <div class="md:col-span-1">
+                                <label class="block text-sm font-medium text-slate-500 mb-2">日期</label>
+                                <input type="date" id="leave-date" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all">
+                            </div>
+                            <div class="md:col-span-1">
+                                <label class="block text-sm font-medium text-slate-500 mb-2">模式</label>
+                                <select id="leave-type" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all cursor-pointer">
+                                    <option value="full">全天离舰</option>
+                                    <option value="partial">暂时离舰</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2 hidden" id="leave-time-container">
+                                <label class="block text-sm font-medium text-slate-500 mb-2 flex justify-between items-center">
+                                    <span>时间段 (30分钟间隔)</span>
+                                    <button id="btn-current-time" class="text-primary hover:text-primaryHover text-xs flex items-center gap-1 transition-colors"><i data-lucide="clock" class="w-3 h-3"></i>从当前开始</button>
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <select id="leave-start-time" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all cursor-pointer"></select>
+                                    <span class="text-slate-400">-</span>
+                                    <select id="leave-end-time" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all cursor-pointer"></select>
+                                </div>
+                            </div>
+                            <div class="md:col-span-4">
                                 <label class="block text-sm font-medium text-slate-500 mb-2">缘由</label>
                                 <input type="text" id="leave-reason" placeholder="如：参加学术会议 / 身体不适" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all">
                             </div>
@@ -799,6 +827,61 @@
             updateTodayCheckinTable();
         }
         
+        // function updateCheckinButtons() {
+        //     const today = getTodayString();
+        //     if (!checkinData[today]) {
+        //         checkinData[today] = {
+        //             morning: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+        //             afternoon: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+        //             evening: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+        //             leave: false,
+        //             leaveReason: ''
+        //         };
+        //         saveData();
+        //     }
+        //     const now = getCurrentTime();
+        //     const currentHour = now.hour;
+            
+        //     const isLeave = checkinData[today] && checkinData[today].leave;
+        //     if (isLeave) {
+        //         ['morning', 'afternoon', 'evening'].forEach(period => {
+        //             const checkinBtn = document.getElementById(`${period}-checkin`);
+        //             const checkoutBtn = document.getElementById(`${period}-checkout`);
+        //             checkinBtn.disabled = true; checkoutBtn.disabled = true;
+        //             checkinBtn.className = checkoutBtn.className = "w-full bg-slate-100 dark:bg-slate-900 text-slate-400 py-3 rounded-xl font-medium transition-all duration-200 cursor-not-allowed";
+        //         });
+        //         return;
+        //     }
+            
+        //     const m = checkinData[today].morning, a = checkinData[today].afternoon, e = checkinData[today].evening;
+
+        //     const mCfg = CONFIG.schedule.morning;
+        //     const aCfg = CONFIG.schedule.afternoon;
+        //     const eCfg = CONFIG.schedule.evening;
+
+        //     document.getElementById('morning-checkin').disabled = m.checkIn !== null || currentHour < mCfg.startHour || currentHour >= mCfg.endHour;
+        //     document.getElementById('afternoon-checkin').disabled = a.checkIn !== null || currentHour < aCfg.startHour || currentHour >= aCfg.endHour;
+        //     document.getElementById('evening-checkin').disabled = e.checkIn !== null || currentHour < eCfg.startHour || currentHour >= eCfg.endHour;
+
+        //     document.getElementById('morning-checkout').disabled = m.checkOut !== null || m.checkIn === null || currentHour >= aCfg.startHour; // 早班下班不能晚于中班开始(12点后但宽限到14点原逻辑，你可以改为 mCfg.endHour + 2)
+        //     document.getElementById('afternoon-checkout').disabled = a.checkOut !== null || a.checkIn === null || currentHour >= eCfg.startHour + 3; // 午班不晚于20点
+        //     document.getElementById('evening-checkout').disabled = e.checkOut !== null || e.checkIn === null;
+            
+        //     ['morning', 'afternoon', 'evening'].forEach(period => {
+        //         const cIn = document.getElementById(`${period}-checkin`);
+        //         const cOut = document.getElementById(`${period}-checkout`);
+                
+        //         cIn.className = cIn.disabled 
+        //             ? "w-full bg-slate-100 dark:bg-slate-900 text-slate-400 py-3 rounded-xl font-medium transition-all duration-200 cursor-not-allowed" 
+        //             : "w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200 shadow-md";
+                    
+        //         cOut.className = cOut.disabled 
+        //             ? "w-full bg-slate-100 dark:bg-slate-900 text-slate-400 py-3 rounded-xl font-medium transition-all duration-200 cursor-not-allowed" 
+        //             : "w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200 shadow-md";
+        //     });
+            
+        //     updateCheckinTimeDisplay();
+        // }
         function updateCheckinButtons() {
             const today = getTodayString();
             if (!checkinData[today]) {
@@ -811,32 +894,77 @@
                 };
                 saveData();
             }
+            
             const now = getCurrentTime();
             const currentHour = now.hour;
+            const currentMins = now.hour * 60 + now.minute;
             
+            // 1. 检查全天脱产状态
             const isLeave = checkinData[today] && checkinData[today].leave;
-            if (isLeave) {
+            
+            // 2. 检查当前时刻是否处于分时段请假中
+            let isCurrentlyOnPartialLeave = false;
+            if (checkinData[today] && checkinData[today].partialLeaves) {
+                for (let leave of checkinData[today].partialLeaves) {
+                    // 使用之前定义的 timeStrToMins 工具函数
+                    const leaveStartMins = timeStrToMins(leave.startTime);
+                    const leaveEndMins = timeStrToMins(leave.endTime);
+                    
+                    // 如果当前时间大于等于请假开始，且小于请假结束时间
+                    if (currentMins >= leaveStartMins && currentMins < leaveEndMins) {
+                        isCurrentlyOnPartialLeave = true;
+                        break;
+                    }
+                }
+            }
+            
+            // 按钮的默认文案映射
+            const btnTexts = {
+                morning: { in: '早班连线', out: '早班登出' },
+                afternoon: { in: '午班连线', out: '午班登出' },
+                evening: { in: '晚班连线', out: '晚班登出' }
+            };
+
+            // 拦截逻辑：处于请假状态时，全面锁定打卡面板
+            if (isLeave || isCurrentlyOnPartialLeave) {
                 ['morning', 'afternoon', 'evening'].forEach(period => {
                     const checkinBtn = document.getElementById(`${period}-checkin`);
                     const checkoutBtn = document.getElementById(`${period}-checkout`);
-                    checkinBtn.disabled = true; checkoutBtn.disabled = true;
+                    
+                    checkinBtn.disabled = true; 
+                    checkoutBtn.disabled = true;
+                    
+                    // 动态变更按钮提示文字
+                    const text = isLeave ? "全天脱产" : "🕒 请假中...";
+                    checkinBtn.textContent = text;
+                    checkoutBtn.textContent = text;
+                    
+                    // 变灰不可点击状态
                     checkinBtn.className = checkoutBtn.className = "w-full bg-slate-100 dark:bg-slate-900 text-slate-400 py-3 rounded-xl font-medium transition-all duration-200 cursor-not-allowed";
                 });
-                return;
+                updateCheckinTimeDisplay();
+                return; // 提前退出，不执行后续的按钮解锁逻辑
             }
             
+            // 恢复文案逻辑：当请假时间结束，秒级刷新会重新赋予按钮原本的名字
+            ['morning', 'afternoon', 'evening'].forEach(period => {
+                document.getElementById(`${period}-checkin`).textContent = btnTexts[period].in;
+                document.getElementById(`${period}-checkout`).textContent = btnTexts[period].out;
+            });
+
             const m = checkinData[today].morning, a = checkinData[today].afternoon, e = checkinData[today].evening;
 
             const mCfg = CONFIG.schedule.morning;
             const aCfg = CONFIG.schedule.afternoon;
             const eCfg = CONFIG.schedule.evening;
 
+            // 常规的时间与打卡状态限制逻辑
             document.getElementById('morning-checkin').disabled = m.checkIn !== null || currentHour < mCfg.startHour || currentHour >= mCfg.endHour;
             document.getElementById('afternoon-checkin').disabled = a.checkIn !== null || currentHour < aCfg.startHour || currentHour >= aCfg.endHour;
             document.getElementById('evening-checkin').disabled = e.checkIn !== null || currentHour < eCfg.startHour || currentHour >= eCfg.endHour;
 
-            document.getElementById('morning-checkout').disabled = m.checkOut !== null || m.checkIn === null || currentHour >= aCfg.startHour; // 早班下班不能晚于中班开始(12点后但宽限到14点原逻辑，你可以改为 mCfg.endHour + 2)
-            document.getElementById('afternoon-checkout').disabled = a.checkOut !== null || a.checkIn === null || currentHour >= eCfg.startHour + 3; // 午班不晚于20点
+            document.getElementById('morning-checkout').disabled = m.checkOut !== null || m.checkIn === null || currentHour >= aCfg.startHour;
+            document.getElementById('afternoon-checkout').disabled = a.checkOut !== null || a.checkIn === null || currentHour >= eCfg.startHour + 3;
             document.getElementById('evening-checkout').disabled = e.checkOut !== null || e.checkIn === null;
             
             ['morning', 'afternoon', 'evening'].forEach(period => {
@@ -903,38 +1031,130 @@
             return true;
         }
 
+        function timeStrToMins(timeStr) {
+            if (!timeStr) return 0;
+            const [h, m] = timeStr.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+        // function checkIn(period) {
+        //     const today = getTodayString(), now = getCurrentTime();
+        //     checkinData[today][period].checkIn = getCurrentTimeString();
+        //     let status = false;
+        //     const cfg = CONFIG.schedule[period];
+        //     if (period === 'morning') status = now.hour < 8 || (now.hour === 8 && now.minute === 0);
+        //         status = now.hour < cfg.okCheckInBefore || (now.hour === cfg.okCheckInBefore && now.minute === 0);
+        //         checkinData[today][period].status.checkIn = status;
+        //         saveData(); updateCheckinButtons(); updateTodayCheckinTable(); updateTodayStatus(); checkAchievements();
+        //     }
+        
+        // function checkOut(period) {
+        //     const today = getTodayString(), now = getCurrentTime();
+        //     checkinData[today][period].checkOut = getCurrentTimeString();
+            
+        //     const inTimeStr = checkinData[today][period].checkIn;
+        //     const [inHour, inMinute] = inTimeStr.split(':').map(Number);
+        //     const durationMins = (now.hour * 60 + now.minute) - (inHour * 60 + inMinute);
+            
+        //     let outStatus = 'danger';
+        //     const cfg = CONFIG.schedule[period];
+
+        //     if (durationMins < CONFIG.task.minDurationMins) {
+        //         outStatus = 'danger'; 
+        //     } else {
+        //         let isWithinRecommended = now.hour < cfg.okCheckOutBefore || (now.hour === cfg.okCheckOutBefore && now.minute === 0);
+        //         outStatus = isWithinRecommended ? 'success' : 'warning';
+        //     }
+
+        //     checkinData[today][period].status.checkOut = outStatus;
+        //     saveData(); 
+        //     updateCheckinButtons(); updateTodayCheckinTable(); updateTodayStatus(); checkAchievements();
+        //     if (period === 'evening') {
+        //         setTimeout(() => triggerEndOfDayEasterEgg(), 500);
+        //     }
+        // }
         function checkIn(period) {
             const today = getTodayString(), now = getCurrentTime();
+            const currentMins = now.hour * 60 + now.minute;
             checkinData[today][period].checkIn = getCurrentTimeString();
-            let status = false;
+            
             const cfg = CONFIG.schedule[period];
-            if (period === 'morning') status = now.hour < 8 || (now.hour === 8 && now.minute === 0);
-                status = now.hour < cfg.okCheckInBefore || (now.hour === cfg.okCheckInBefore && now.minute === 0);
-                checkinData[today][period].status.checkIn = status;
-                saveData(); updateCheckinButtons(); updateTodayCheckinTable(); updateTodayStatus(); checkAchievements();
+            const thresholdMins = cfg.okCheckInBefore * 60;
+            
+            // 基础判定：是否在规定时间之前连线 (包含整点)
+            let status = currentMins <= thresholdMins;
+
+            // 🛡️ 豁免判定：如果不合格（迟到），检查是否有分时段请假覆盖
+            if (!status && checkinData[today].partialLeaves) {
+                for (let leave of checkinData[today].partialLeaves) {
+                    const leaveStartMins = timeStrToMins(leave.startTime);
+                    const leaveEndMins = timeStrToMins(leave.endTime);
+                    
+                    // 豁免逻辑：
+                    // 1. 如果请假正好覆盖了原本应该上班的死线，并且你回来打卡的时间在请假结束的 30 分钟宽限期内。
+                    // 2. 或者，你打卡的时间正好就在你请假的这个时间段内部。
+                    if ((leaveStartMins <= thresholdMins && currentMins <= leaveEndMins + 30) || 
+                        (currentMins >= leaveStartMins && currentMins <= leaveEndMins)) {
+                        status = true; // 触发豁免，状态改判为合格！
+                        break;
+                    }
+                }
             }
-        
+            
+            checkinData[today][period].status.checkIn = status;
+            saveData(); 
+            updateCheckinButtons(); 
+            updateTodayCheckinTable(); 
+            updateTodayStatus(); 
+            checkAchievements();
+        }
+
         function checkOut(period) {
             const today = getTodayString(), now = getCurrentTime();
+            const currentMins = now.hour * 60 + now.minute;
             checkinData[today][period].checkOut = getCurrentTimeString();
             
-            const inTimeStr = checkinData[today][period].checkIn;
-            const [inHour, inMinute] = inTimeStr.split(':').map(Number);
-            const durationMins = (now.hour * 60 + now.minute) - (inHour * 60 + inMinute);
+            const inMins = timeStrToMins(checkinData[today][period].checkIn);
+            const durationMins = currentMins - inMins;
             
             let outStatus = 'danger';
             const cfg = CONFIG.schedule[period];
+            const thresholdMins = cfg.okCheckOutBefore * 60;
 
-            if (durationMins < CONFIG.task.minDurationMins) {
-                outStatus = 'danger'; 
+            // 🛡️ 豁免早退判定：检查是否因为请假而提前登出
+            let isExcusedEarlyLeave = false;
+            if (checkinData[today].partialLeaves) {
+                for (let leave of checkinData[today].partialLeaves) {
+                    const leaveStartMins = timeStrToMins(leave.startTime);
+                    const leaveEndMins = timeStrToMins(leave.endTime);
+                    
+                    // 豁免逻辑：如果你的请假开始时间就在现在打卡前后（30分钟内），
+                    // 并且这个请假一直覆盖到了你应该下班的标准时间之后，那么允许你合法早退。
+                    if (leaveStartMins <= currentMins + 30 && leaveEndMins >= thresholdMins) {
+                        isExcusedEarlyLeave = true;
+                        break;
+                    }
+                }
+            }
+
+            // 综合判定
+            if (durationMins < CONFIG.task.minDurationMins && !isExcusedEarlyLeave) {
+                outStatus = 'danger'; // 纯粹的时长太短，不给过
             } else {
-                let isWithinRecommended = now.hour < cfg.okCheckOutBefore || (now.hour === cfg.okCheckOutBefore && now.minute === 0);
-                outStatus = isWithinRecommended ? 'success' : 'warning';
+                let isWithinRecommended = currentMins <= thresholdMins;
+                if (isWithinRecommended || isExcusedEarlyLeave) {
+                    outStatus = 'success'; // 正常下班，或因请假触发了合法早退
+                } else {
+                    outStatus = 'warning'; // 加班熬夜/超时太久
+                }
             }
 
             checkinData[today][period].status.checkOut = outStatus;
             saveData(); 
-            updateCheckinButtons(); updateTodayCheckinTable(); updateTodayStatus(); checkAchievements();
+            updateCheckinButtons(); 
+            updateTodayCheckinTable(); 
+            updateTodayStatus(); 
+            checkAchievements();
             if (period === 'evening') {
                 setTimeout(() => triggerEndOfDayEasterEgg(), 500);
             }
@@ -1383,32 +1603,152 @@
             });
         }
         
-        function initLeaveManagement() {
-         document.getElementById('leave-date').value = getTodayString();
-         document.getElementById('add-leave').addEventListener('click', addLeave);
+        // function initLeaveManagement() {
+        //     document.getElementById('leave-date').value = getTodayString();
+        //     document.getElementById('add-leave').addEventListener('click', addLeave);
 
-         document.getElementById('leave-records-table').addEventListener('click', function(e) {
-             const btn = e.target.closest('.delete-leave');
-             if (btn) {
-                 if(confirm('确定撤销该记录吗？')) {
-                     const date = btn.getAttribute('data-date');
-                     leaveData = leaveData.filter(l => l.date !== date);
-                     if (checkinData[date]) { checkinData[date].leave = false; checkinData[date].leaveReason = ''; }
-                     saveData(); 
-                     updateLeaveRecordsList();
-                     if (date === getTodayString()) { updateCheckinButtons(); updateTodayStatus(); }
-                 }
-             }
-         });
-         updateLeaveRecordsList();
-     }
+        //     document.getElementById('leave-records-table').addEventListener('click', function(e) {
+        //         const btn = e.target.closest('.delete-leave');
+        //         if (btn) {
+        //             if(confirm('确定撤销该记录吗？')) {
+        //                 const date = btn.getAttribute('data-date');
+        //                 leaveData = leaveData.filter(l => l.date !== date);
+        //                 if (checkinData[date]) { checkinData[date].leave = false; checkinData[date].leaveReason = ''; }
+        //                 saveData(); 
+        //                 updateLeaveRecordsList();
+        //                 if (date === getTodayString()) { updateCheckinButtons(); updateTodayStatus(); }
+        //             }
+        //         }
+        //     });
+        //     updateLeaveRecordsList();
+        // }
+        function initLeaveManagement() {
+            document.getElementById('leave-date').value = getTodayString();
+            document.getElementById('add-leave').addEventListener('click', addLeave);
+
+            // 1. 初始化半小时跨度的时间下拉框
+            const startSelect = document.getElementById('leave-start-time');
+            const endSelect = document.getElementById('leave-end-time');
+            let optionsHtml = '';
+            for (let h = 0; h < 24; h++) {
+                const hour = h.toString().padStart(2, '0');
+                optionsHtml += `<option value="${hour}:00">${hour}:00</option>`;
+                optionsHtml += `<option value="${hour}:30">${hour}:30</option>`;
+            }
+            if(startSelect && endSelect) {
+                startSelect.innerHTML = optionsHtml;
+                endSelect.innerHTML = optionsHtml;
+            }
+
+            // 2. 监听模式切换 (全天 / 分时段)
+            document.getElementById('leave-type').addEventListener('change', (e) => {
+                const timeContainer = document.getElementById('leave-time-container');
+                if (e.target.value === 'partial') {
+                    timeContainer.classList.remove('hidden');
+                } else {
+                    timeContainer.classList.add('hidden');
+                }
+            });
+
+            // 3. 监听"从当前时间开始"快捷按钮
+            document.getElementById('btn-current-time').addEventListener('click', (e) => {
+                e.preventDefault();
+                const now = new Date();
+                let h = now.getHours();
+                let m = now.getMinutes();
+                
+                // 向下取整到最近的半小时
+                m = m >= 30 ? 30 : 0; 
+                
+                const timeStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                document.getElementById('leave-start-time').value = timeStr;
+                
+                // 默认结束时间设为两小时后（防呆设计）
+                let endH = h + 2;
+                if (endH > 23) endH = 23;
+                document.getElementById('leave-end-time').value = `${endH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+            });
+
+            // 4. 离舰记录撤销逻辑 (加入对唯一ID的支持)
+            document.getElementById('leave-records-table').addEventListener('click', function(e) {
+                const btn = e.target.closest('.delete-leave');
+                if (btn) {
+                    if(confirm('确定撤销该记录吗？')) {
+                        const id = btn.getAttribute('data-id');
+                        const dateFallback = btn.getAttribute('data-date');
+                        
+                        let leaveObj;
+                        if (id) {
+                            leaveObj = leaveData.find(l => l.id === id);
+                            leaveData = leaveData.filter(l => l.id !== id);
+                        } else {
+                            // 兼容旧数据的按日期撤销
+                            leaveObj = leaveData.find(l => l.date === dateFallback);
+                            leaveData = leaveData.filter(l => l.date !== dateFallback);
+                        }
+
+                        if (leaveObj) {
+                            const date = leaveObj.date;
+                            if (checkinData[date]) { 
+                                if (!leaveObj.type || leaveObj.type === 'full') {
+                                    checkinData[date].leave = false; 
+                                    checkinData[date].leaveReason = ''; 
+                                } else if (checkinData[date].partialLeaves) {
+                                    checkinData[date].partialLeaves = checkinData[date].partialLeaves.filter(l => l.id !== id);
+                                }
+                            }
+                            saveData(); 
+                            updateLeaveRecordsList();
+                            if (date === getTodayString()) { updateCheckinButtons(); updateTodayStatus(); }
+                        }
+                    }
+                }
+            });
+            updateLeaveRecordsList();
+        }
         
-        function addLeave() {
-            const date = document.getElementById('leave-date').value, reason = document.getElementById('leave-reason').value.trim();
-            if (!date || !reason) return showToast('请完整填写请假信息', 'warning');
-            const idx = leaveData.findIndex(l => l.date === date);
-            if (idx !== -1) leaveData[idx].reason = reason; else leaveData.push({ date, reason });
+        // function addLeave() {
+        //     const date = document.getElementById('leave-date').value, reason = document.getElementById('leave-reason').value.trim();
+        //     if (!date || !reason) return showToast('请完整填写请假信息', 'warning');
+        //     const idx = leaveData.findIndex(l => l.date === date);
+        //     if (idx !== -1) leaveData[idx].reason = reason; else leaveData.push({ date, reason });
             
+        //     if (!checkinData[date]) {
+        //         checkinData[date] = {
+        //             morning: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+        //             afternoon: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+        //             evening: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+        //             leave: false,
+        //             leaveReason: ''
+        //         };
+        //     }
+
+        //     checkinData[date].leave = true; checkinData[date].leaveReason = reason;
+        //     saveData(); document.getElementById('leave-reason').value = '';
+        //     updateLeaveRecordsList();
+        //     if (date === getTodayString()) { updateCheckinButtons(); updateTodayStatus(); }
+        // }
+        function addLeave() {
+            const date = document.getElementById('leave-date').value;
+            const reason = document.getElementById('leave-reason').value.trim();
+            const type = document.getElementById('leave-type').value;
+            
+            let startTime = null, endTime = null;
+            if (type === 'partial') {
+                startTime = document.getElementById('leave-start-time').value;
+                endTime = document.getElementById('leave-end-time').value;
+                if (startTime >= endTime) {
+                    return showToast('结束时间必须晚于开始时间，请调整', 'warning');
+                }
+            }
+
+            if (!date || !reason) return showToast('请完整填写离舰信息', 'warning');
+            
+            // 生成唯一ID，允许多次分时段请假
+            const newLeaveId = 'leave_' + Date.now();
+            leaveData.push({ id: newLeaveId, date, reason, type, startTime, endTime });
+            
+            // 初始化当天的考勤数据结构（如果不存在）
             if (!checkinData[date]) {
                 checkinData[date] = {
                     morning: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
@@ -1419,28 +1759,70 @@
                 };
             }
 
-            checkinData[date].leave = true; checkinData[date].leaveReason = reason;
-            saveData(); document.getElementById('leave-reason').value = '';
+            // 根据模式写入底层数据
+            if (type === 'full') {
+                checkinData[date].leave = true; 
+                checkinData[date].leaveReason = reason;
+            } else {
+                if (!checkinData[date].partialLeaves) checkinData[date].partialLeaves = [];
+                checkinData[date].partialLeaves.push({ id: newLeaveId, reason, startTime, endTime });
+            }
+
+            saveData(); 
+            document.getElementById('leave-reason').value = '';
+            
+            // 强制刷新UI
             updateLeaveRecordsList();
             if (date === getTodayString()) { updateCheckinButtons(); updateTodayStatus(); }
+            showToast('离舰报备归档成功', 'success');
         }
     
-        function updateLeaveRecordsList() {
-         const tbody = document.getElementById('leave-records-table');
-         if (!leaveData.length) return tbody.innerHTML = '<tr><td colspan="3" class="py-4 px-4 text-center text-slate-400">暂无历史归档</td></tr>';
-         tbody.innerHTML = '';
+        // function updateLeaveRecordsList() {
+        //     const tbody = document.getElementById('leave-records-table');
+        //     if (!leaveData.length) return tbody.innerHTML = '<tr><td colspan="3" class="py-4 px-4 text-center text-slate-400">暂无历史归档</td></tr>';
+        //     tbody.innerHTML = '';
 
-         [...leaveData].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(l => {
-             const tr = document.createElement('tr');
-             tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors";
-             tr.innerHTML = `
-                 <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-400">${l.date}</td>
-                 <td class="py-3 px-4 font-medium">${l.reason}</td>
-                 <td class="py-3 px-4"><button class="delete-leave px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-lg text-xs font-bold transition-all" data-date="${l.date}">撤销</button></td>
-             `;
-             tbody.appendChild(tr);
-         });
-     }
+        //     [...leaveData].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(l => {
+        //         const tr = document.createElement('tr');
+        //         tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors";
+        //         tr.innerHTML = `
+        //             <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-400">${l.date}</td>
+        //             <td class="py-3 px-4 font-medium">${l.reason}</td>
+        //             <td class="py-3 px-4"><button class="delete-leave px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-lg text-xs font-bold transition-all" data-date="${l.date}">撤销</button></td>
+        //         `;
+        //         tbody.appendChild(tr);
+        //     });
+        // }
+        function updateLeaveRecordsList() {
+            const tbody = document.getElementById('leave-records-table');
+            if (!leaveData.length) return tbody.innerHTML = '<tr><td colspan="3" class="py-4 px-4 text-center text-slate-400">暂无历史归档</td></tr>';
+            tbody.innerHTML = '';
+
+            [...leaveData].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(l => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors";
+                
+                // 动态渲染：兼容旧数据与新版的分时段标签
+                let timeDisplay = '';
+                if (!l.type || l.type === 'full') {
+                    timeDisplay = '<span class="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded ml-2 border border-primary/20">全天</span>';
+                } else {
+                    timeDisplay = `<span class="text-[10px] bg-warning/10 text-warning px-2 py-0.5 rounded ml-2 border border-warning/20">${l.startTime} - ${l.endTime}</span>`;
+                }
+
+                // 优先使用唯一ID进行删除追踪
+                const idAttr = l.id ? `data-id="${l.id}"` : `data-date="${l.date}"`;
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-400">
+                        ${l.date} ${timeDisplay}
+                    </td>
+                    <td class="py-3 px-4 font-medium">${l.reason}</td>
+                    <td class="py-3 px-4"><button class="delete-leave px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-lg text-xs font-bold transition-all" ${idAttr}>撤销</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
 
         function initStatistics() {
             document.querySelectorAll('.stats-period-btn').forEach(btn => {
