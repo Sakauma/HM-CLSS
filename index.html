@@ -935,7 +935,7 @@
                     checkoutBtn.disabled = true;
                     
                     // 动态变更按钮提示文字
-                    const text = isLeave ? "全天脱产" : "🕒 请假中...";
+                    const text = isLeave ? "全天离舰" : "🕒 离舰中...";
                     checkinBtn.textContent = text;
                     checkoutBtn.textContent = text;
                     
@@ -1081,21 +1081,16 @@
             const cfg = CONFIG.schedule[period];
             const thresholdMins = cfg.okCheckInBefore * 60;
             
-            // 基础判定：是否在规定时间之前连线 (包含整点)
-            let status = currentMins <= thresholdMins;
+            let inStatus = currentMins <= thresholdMins ? true : false;
 
-            // 🛡️ 豁免判定：如果不合格（迟到），检查是否有分时段请假覆盖
-            if (!status && checkinData[today].partialLeaves) {
+            if (!inStatus && checkinData[today].partialLeaves) {
                 for (let leave of checkinData[today].partialLeaves) {
                     const leaveStartMins = timeStrToMins(leave.startTime);
                     const leaveEndMins = timeStrToMins(leave.endTime);
                     
-                    // 豁免逻辑：
-                    // 1. 如果请假正好覆盖了原本应该上班的死线，并且你回来打卡的时间在请假结束的 30 分钟宽限期内。
-                    // 2. 或者，你打卡的时间正好就在你请假的这个时间段内部。
                     if ((leaveStartMins <= thresholdMins && currentMins <= leaveEndMins + 30) || 
                         (currentMins >= leaveStartMins && currentMins <= leaveEndMins)) {
-                        status = true; // 触发豁免，状态改判为合格！
+                        inStatus = 'excused';
                         break;
                     }
                 }
@@ -1138,15 +1133,13 @@
             }
 
             // 综合判定
-            if (durationMins < CONFIG.task.minDurationMins && !isExcusedEarlyLeave) {
-                outStatus = 'danger'; // 纯粹的时长太短，不给过
+            if (isExcusedEarlyLeave) {
+                outStatus = 'excused';
+            } else if (durationMins < CONFIG.task.minDurationMins) {
+                outStatus = 'danger';
             } else {
                 let isWithinRecommended = currentMins <= thresholdMins;
-                if (isWithinRecommended || isExcusedEarlyLeave) {
-                    outStatus = 'success'; // 正常下班，或因请假触发了合法早退
-                } else {
-                    outStatus = 'warning'; // 加班熬夜/超时太久
-                }
+                outStatus = isWithinRecommended ? 'success' : 'warning';
             }
 
             checkinData[today][period].status.checkOut = outStatus;
@@ -1168,35 +1161,74 @@
             });
         }
         
+        // function updateTodayCheckinTable() {
+        //     const t = getTodayString();
+        //     ['morning', 'afternoon', 'evening'].forEach(p => {
+        //         document.getElementById(`table-${p}-checkin`).textContent = checkinData[t][p].checkIn || '-';
+        //         document.getElementById(`table-${p}-checkout`).textContent = checkinData[t][p].checkOut || '-';
+                
+        //         const cInStatus = document.getElementById(`table-${p}-checkin-status`);
+        //         if (checkinData[t][p].checkIn === null) { 
+        //             cInStatus.textContent = '-'; cInStatus.className = 'py-3 px-4'; 
+        //         } else { 
+        //             cInStatus.textContent = checkinData[t][p].status.checkIn ? '合格' : '不合格'; 
+        //             cInStatus.className = `py-3 px-4 font-medium ${checkinData[t][p].status.checkIn ? 'text-success' : 'text-danger'}`; 
+        //         }
+                
+        //         const cOutStatus = document.getElementById(`table-${p}-checkout-status`);
+        //         if (checkinData[t][p].checkOut === null) { 
+        //             cOutStatus.textContent = '-'; cOutStatus.className = 'py-3 px-4'; 
+        //         } else { 
+        //             const statusVal = checkinData[t][p].status.checkOut;
+        //             if (statusVal === true || statusVal === 'success') {
+        //                 cOutStatus.textContent = '合格';
+        //                 cOutStatus.className = 'py-3 px-4 font-medium text-success';
+        //             } else if (statusVal === 'warning') {
+        //                 cOutStatus.textContent = '警告';
+        //                 cOutStatus.className = 'py-3 px-4 font-medium text-warning';
+        //             } else { 
+        //                 cOutStatus.textContent = '时长过短'; 
+        //                 cOutStatus.className = 'py-3 px-4 font-medium text-danger';
+        //             }
+        //         }
+        //     });
+        // }
         function updateTodayCheckinTable() {
             const t = getTodayString();
             ['morning', 'afternoon', 'evening'].forEach(p => {
                 document.getElementById(`table-${p}-checkin`).textContent = checkinData[t][p].checkIn || '-';
                 document.getElementById(`table-${p}-checkout`).textContent = checkinData[t][p].checkOut || '-';
                 
+                // 渲染上班状态
                 const cInStatus = document.getElementById(`table-${p}-checkin-status`);
+                const inVal = checkinData[t][p].status.checkIn;
                 if (checkinData[t][p].checkIn === null) { 
                     cInStatus.textContent = '-'; cInStatus.className = 'py-3 px-4'; 
+                } else if (inVal === 'excused') {
+                    cInStatus.textContent = '离舰豁免'; 
+                    cInStatus.className = 'py-3 px-4 font-bold text-blue-500 dark:text-blue-400';
                 } else { 
-                    cInStatus.textContent = checkinData[t][p].status.checkIn ? '合格' : '不合格'; 
-                    cInStatus.className = `py-3 px-4 font-medium ${checkinData[t][p].status.checkIn ? 'text-success' : 'text-danger'}`; 
+                    cInStatus.textContent = (inVal === true || inVal === 'success') ? '合格' : '不合格'; 
+                    cInStatus.className = `py-3 px-4 font-medium ${(inVal === true || inVal === 'success') ? 'text-success' : 'text-danger'}`; 
                 }
                 
+                // 渲染下班状态
                 const cOutStatus = document.getElementById(`table-${p}-checkout-status`);
+                const outVal = checkinData[t][p].status.checkOut;
                 if (checkinData[t][p].checkOut === null) { 
                     cOutStatus.textContent = '-'; cOutStatus.className = 'py-3 px-4'; 
+                } else if (outVal === 'excused') {
+                    cOutStatus.textContent = '离舰豁免';
+                    cOutStatus.className = 'py-3 px-4 font-bold text-blue-500 dark:text-blue-400';
+                } else if (outVal === true || outVal === 'success') {
+                    cOutStatus.textContent = '合格';
+                    cOutStatus.className = 'py-3 px-4 font-medium text-success';
+                } else if (outVal === 'warning') {
+                    cOutStatus.textContent = '警告';
+                    cOutStatus.className = 'py-3 px-4 font-medium text-warning';
                 } else { 
-                    const statusVal = checkinData[t][p].status.checkOut;
-                    if (statusVal === true || statusVal === 'success') {
-                        cOutStatus.textContent = '合格';
-                        cOutStatus.className = 'py-3 px-4 font-medium text-success';
-                    } else if (statusVal === 'warning') {
-                        cOutStatus.textContent = '警告';
-                        cOutStatus.className = 'py-3 px-4 font-medium text-warning';
-                    } else { 
-                        cOutStatus.textContent = '时长过短'; 
-                        cOutStatus.className = 'py-3 px-4 font-medium text-danger';
-                    }
+                    cOutStatus.textContent = '时长过短'; 
+                    cOutStatus.className = 'py-3 px-4 font-medium text-danger';
                 }
             });
         }
@@ -2026,18 +2058,56 @@
             document.getElementById('achievement-count').textContent = achievements.length;
         }
 
+        // function updateTodayStatus() {
+        //     const today = getTodayString(), dayData = checkinData[today];
+        //     ['morning', 'afternoon', 'evening'].forEach(p => {
+        //         const el = document.getElementById(`today-${p}-status`);
+        //         if (dayData.leave) { 
+        //             el.textContent = '脱产请假'; el.className = 'font-medium text-slate-400'; 
+        //         }
+        //         else if (dayData[p].checkIn && dayData[p].checkOut) {
+        //             const inOk = dayData[p].status.checkIn === true;
+        //             const outVal = dayData[p].status.checkOut;
+                    
+        //             if (!inOk || outVal === false || outVal === 'danger') {
+        //                 el.textContent = '异常'; el.className = 'font-medium text-danger';
+        //             } else if (outVal === 'warning') {
+        //                 el.textContent = '超时警告'; el.className = 'font-medium text-warning';
+        //             } else {
+        //                 el.textContent = '合规'; el.className = 'font-medium text-success';
+        //             }
+        //         } else if (dayData[p].checkIn) { 
+        //             el.textContent = '工作中'; el.className = 'font-medium text-primary'; 
+        //         }
+        //         else { 
+        //             el.textContent = '-'; el.className = 'font-medium text-slate-400'; 
+        //         }
+        //     });
+            
+        //     document.getElementById('today-phone-count').textContent = `${phoneResistData.records[today].count} 次`;
+        //     const activeTaskEl = document.getElementById('today-active-task');
+        //     if (currentTask) { 
+        //         activeTaskEl.textContent = currentTask.name; activeTaskEl.className = 'font-medium text-primary truncate max-w-[120px]'; 
+        //     } else { 
+        //         activeTaskEl.textContent = '空闲'; activeTaskEl.className = 'font-medium text-slate-400'; 
+        //     }
+        // }
         function updateTodayStatus() {
             const today = getTodayString(), dayData = checkinData[today];
             ['morning', 'afternoon', 'evening'].forEach(p => {
                 const el = document.getElementById(`today-${p}-status`);
+                
                 if (dayData.leave) { 
-                    el.textContent = '脱产请假'; el.className = 'font-medium text-slate-400'; 
+                    el.textContent = '全天脱产'; el.className = 'font-medium text-slate-400'; 
                 }
                 else if (dayData[p].checkIn && dayData[p].checkOut) {
-                    const inOk = dayData[p].status.checkIn === true;
+                    const inVal = dayData[p].status.checkIn;
                     const outVal = dayData[p].status.checkOut;
                     
-                    if (!inOk || outVal === false || outVal === 'danger') {
+                    // 新增请假优先显示逻辑
+                    if (inVal === 'excused' || outVal === 'excused') {
+                        el.textContent = '已离舰'; el.className = 'font-bold text-blue-500 dark:text-blue-400';
+                    } else if (!inVal || outVal === false || outVal === 'danger') {
                         el.textContent = '异常'; el.className = 'font-medium text-danger';
                     } else if (outVal === 'warning') {
                         el.textContent = '超时警告'; el.className = 'font-medium text-warning';
