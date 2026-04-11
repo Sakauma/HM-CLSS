@@ -1,3 +1,7 @@
+const CHECKIN_ACTIVE_BUTTON_CLASS = 'action-btn action-btn-primary';
+const CHECKOUT_ACTIVE_BUTTON_CLASS = 'action-btn action-btn-secondary';
+const CHECKIN_DISABLED_BUTTON_CLASS = 'action-btn action-btn-disabled';
+
 function initCheckin() {
     ['morning', 'afternoon', 'evening'].forEach((period) => {
         document.getElementById(`${period}-checkin`).addEventListener('click', () => checkIn(period));
@@ -52,10 +56,11 @@ function updateCheckinButtons() {
             checkinBtn.disabled = true;
             checkoutBtn.disabled = true;
 
-            const text = isLeave ? '全天离舰' : '🕒 离舰中...';
+            const text = isLeave ? '全天离舰' : '离舰中...';
             checkinBtn.textContent = text;
             checkoutBtn.textContent = text;
-            checkinBtn.className = checkoutBtn.className = 'w-full bg-slate-100 dark:bg-slate-900 text-slate-400 py-3 rounded-xl font-medium transition-all duration-200 cursor-not-allowed';
+            checkinBtn.className = CHECKIN_DISABLED_BUTTON_CLASS;
+            checkoutBtn.className = CHECKIN_DISABLED_BUTTON_CLASS;
         });
         updateCheckinTimeDisplay();
         return;
@@ -86,13 +91,8 @@ function updateCheckinButtons() {
         const cIn = document.getElementById(`${period}-checkin`);
         const cOut = document.getElementById(`${period}-checkout`);
 
-        cIn.className = cIn.disabled
-            ? 'w-full bg-slate-100 dark:bg-slate-900 text-slate-400 py-3 rounded-xl font-medium transition-all duration-200 cursor-not-allowed'
-            : 'w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200 shadow-md';
-
-        cOut.className = cOut.disabled
-            ? 'w-full bg-slate-100 dark:bg-slate-900 text-slate-400 py-3 rounded-xl font-medium transition-all duration-200 cursor-not-allowed'
-            : 'w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200 shadow-md';
+        cIn.className = cIn.disabled ? CHECKIN_DISABLED_BUTTON_CLASS : CHECKIN_ACTIVE_BUTTON_CLASS;
+        cOut.className = cOut.disabled ? CHECKIN_DISABLED_BUTTON_CLASS : CHECKOUT_ACTIVE_BUTTON_CLASS;
     });
 
     updateCheckinTimeDisplay();
@@ -266,14 +266,14 @@ function updateTodayCheckinTable() {
         } else if (outVal === 'excused') {
             cOutStatus.textContent = '离舰豁免';
             cOutStatus.className = 'py-3 px-4 font-bold text-blue-500 dark:text-blue-400';
-        } else if (outVal === true || outVal === 'success') {
+        } else if (outVal === 'success' || outVal === true) {
             cOutStatus.textContent = '合格';
             cOutStatus.className = 'py-3 px-4 font-medium text-success';
         } else if (outVal === 'warning') {
-            cOutStatus.textContent = '警告';
+            cOutStatus.textContent = '超时';
             cOutStatus.className = 'py-3 px-4 font-medium text-warning';
         } else {
-            cOutStatus.textContent = '时长过短';
+            cOutStatus.textContent = '异常';
             cOutStatus.className = 'py-3 px-4 font-medium text-danger';
         }
     });

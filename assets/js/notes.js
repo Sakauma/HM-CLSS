@@ -1,48 +1,125 @@
 const quickModal = document.getElementById('quick-capture-modal');
+const quickContent = document.getElementById('quick-capture-content');
 const quickInput = document.getElementById('quick-capture-input');
+const quickTagSelect = document.getElementById('quick-capture-tag');
+const quickCount = document.getElementById('quick-capture-count');
+const quickSaveBtn = document.getElementById('quick-capture-save');
+
+function updateQuickCaptureCount() {
+    if (!quickInput || !quickCount || !quickSaveBtn) return;
+
+    const trimmedLength = quickInput.value.trim().length;
+    quickCount.textContent = String(trimmedLength);
+    quickSaveBtn.disabled = trimmedLength === 0;
+    quickSaveBtn.classList.toggle('opacity-60', trimmedLength === 0);
+    quickSaveBtn.classList.toggle('cursor-not-allowed', trimmedLength === 0);
+}
+
+function openQuickCaptureModal() {
+    if (!quickModal || !quickInput) return;
+
+    quickModal.classList.remove('hidden');
+    quickContent?.classList.remove('scale-95');
+    quickContent?.classList.add('scale-100');
+    document.body.classList.add('overflow-hidden');
+    updateQuickCaptureCount();
+    setTimeout(() => quickInput.focus(), 50);
+    lucide.createIcons();
+}
+
+function closeQuickCaptureModal() {
+    if (!quickModal) return;
+
+    quickContent?.classList.remove('scale-100');
+    quickContent?.classList.add('scale-95');
+    quickModal.classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+}
+
+function saveQuickCapture() {
+    if (!quickInput || !quickTagSelect) return;
+
+    const text = quickInput.value.trim();
+    const tag = quickTagSelect.value;
+
+    if (!text) {
+        showToast('先写下一条要捕捉的内容', 'warning');
+        updateQuickCaptureCount();
+        return;
+    }
+
+    const today = getTodayString();
+    if (!quickNotesData[today]) quickNotesData[today] = [];
+
+    quickNotesData[today].unshift({
+        time: getCurrentTimeString(),
+        text,
+        tag
+    });
+
+    saveData();
+    quickInput.value = '';
+    updateQuickCaptureCount();
+    closeQuickCaptureModal();
+    updateQuickNotesList();
+
+    if (typeof renderArchive === 'function' && !document.getElementById('archive-section').classList.contains('hidden')) {
+        renderArchive(document.getElementById('archive-search-input').value.trim());
+    }
+
+    checkAchievements();
+    lucide.createIcons();
+    showToast('记录已收入捕捉池', 'success');
+}
 
 document.addEventListener('keydown', (event) => {
     if (!quickModal || !quickInput) return;
 
-    if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
         if (quickModal.classList.contains('hidden')) {
-            quickModal.classList.remove('hidden');
-            setTimeout(() => quickInput.focus(), 50);
+            openQuickCaptureModal();
         } else {
-            quickModal.classList.add('hidden');
+            closeQuickCaptureModal();
         }
+        return;
     }
 
     if (event.key === 'Escape' && !quickModal.classList.contains('hidden')) {
-        quickModal.classList.add('hidden');
+        closeQuickCaptureModal();
     }
 });
+
+document.addEventListener('click', (event) => {
+    const openBtn = event.target.closest('.open-quick-capture-btn');
+    if (openBtn) {
+        event.preventDefault();
+        openQuickCaptureModal();
+        return;
+    }
+
+    if (event.target === quickModal) {
+        closeQuickCaptureModal();
+    }
+});
+
+quickContent?.addEventListener('click', (event) => {
+    event.stopPropagation();
+});
+
+quickInput?.addEventListener('input', updateQuickCaptureCount);
 
 quickInput?.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
         event.preventDefault();
-        const text = quickInput.value.trim();
-        const tag = document.getElementById('quick-capture-tag').value;
-
-        if (text) {
-            const today = getTodayString();
-            if (!quickNotesData[today]) quickNotesData[today] = [];
-            quickNotesData[today].unshift({ time: getCurrentTimeString(), text, tag });
-            saveData();
-            quickInput.value = '';
-            quickModal?.classList.add('hidden');
-            updateQuickNotesList();
-
-            if (typeof renderArchive === 'function' && !document.getElementById('archive-section').classList.contains('hidden')) {
-                renderArchive(document.getElementById('archive-search-input').value.trim());
-            }
-
-            checkAchievements();
-            lucide.createIcons();
-        }
+        saveQuickCapture();
     }
 });
+
+document.getElementById('quick-capture-close')?.addEventListener('click', closeQuickCaptureModal);
+document.getElementById('quick-capture-cancel')?.addEventListener('click', closeQuickCaptureModal);
+quickSaveBtn?.addEventListener('click', saveQuickCapture);
+updateQuickCaptureCount();
 
 function renderArchive(filterText = '') {
     const container = document.getElementById('archive-list-container');
@@ -119,7 +196,19 @@ function updateQuickNotesList() {
     const container = document.getElementById('quick-notes-container');
     const notes = quickNotesData[getTodayString()] || [];
     if (!notes.length) {
-        container.innerHTML = '<div class="text-sm text-slate-400 text-center py-4 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl">今天还没有任何火花... 按 Ctrl+K 记录。</div>';
+        container.innerHTML = `
+            <div class="rounded-[1.4rem] border border-dashed border-slate-200/80 bg-slate-50/70 px-6 py-8 text-center dark:border-slate-700/70 dark:bg-slate-900/40">
+                <div class="module-eyebrow mb-3">EMPTY CAPTURE POOL</div>
+                <h4 class="tavern-display text-2xl font-semibold text-slate-950 dark:text-slate-50">今天还没有任何火花</h4>
+                <p class="mt-3 text-sm leading-7 text-slate-500 dark:text-slate-400">
+                    先丢下一条灵感、异常或待办，不必整理。捕捉台的职责是先替你记住。
+                </p>
+                <button class="open-quick-capture-btn quick-capture-ghost mt-5">
+                    <i data-lucide="square-pen" class="w-4 h-4"></i> 现在记录一条
+                </button>
+            </div>
+        `;
+        lucide.createIcons();
         return;
     }
 
@@ -128,7 +217,7 @@ function updateQuickNotesList() {
         const tagKey = note.tag || 'idea';
         const tagCfg = noteTagConfig[tagKey] || noteTagConfig.idea;
         return `
-            <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 group hover:border-primary/30 transition-colors relative">
+            <div class="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 transition-colors relative group hover:border-primary/30 dark:border-slate-700/50 dark:bg-slate-900/50">
                 <div class="flex flex-col gap-1.5 mt-1 shrink-0 w-12 items-center">
                     <span class="text-xs font-mono text-slate-400">${escapeHtml(getNoteTime(note))}</span>
                     <span class="text-[9px] border px-1 rounded w-full text-center ${tagCfg.color}">${tagCfg.label}</span>
@@ -136,7 +225,7 @@ function updateQuickNotesList() {
                 <div class="text-sm text-slate-700 dark:text-slate-300 md-content w-full overflow-hidden break-words pr-6">
                     ${DOMPurify.sanitize(marked.parse(noteText))}
                 </div>
-                <button class="delete-note-btn absolute top-3 right-3 text-slate-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity p-1" data-date="${getTodayString()}" data-index="${index}">
+                <button class="delete-note-btn absolute top-3 right-3 text-slate-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity p-1" data-date="${getTodayString()}" data-index="${index}" title="删除记录">
                     <i data-lucide="trash-2" class="w-3 h-3"></i>
                 </button>
             </div>

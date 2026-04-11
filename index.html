@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>万福玛丽号船员维生系统</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
@@ -16,32 +19,1180 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#6366f1',
-                        primaryHover: '#4f46e5',
-                        success: '#10b981',
-                        warning: '#f59e0b',
-                        danger: '#ef4444',
-                        bgLight: '#f8fafc',
-                        bgDark: '#0f172a',
-                        cardLight: '#ffffff',
-                        cardDark: '#1e293b',
+                        primary: '#4da3ff',
+                        primaryHover: '#2d86e3',
+                        accent: '#f3b35b',
+                        success: '#34d399',
+                        warning: '#f6c56d',
+                        danger: '#fb7185',
+                        bgLight: '#eaf1f6',
+                        bgDark: '#07141f',
+                        cardLight: '#f7fbff',
+                        cardDark: '#0f2131',
                     },
                     boxShadow: {
-                        'soft': '0 8px 30px rgba(0, 0, 0, 0.04)',
-                        'soft-dark': '0 8px 30px rgba(0, 0, 0, 0.2)',
+                        'soft': '0 24px 60px rgba(15, 23, 42, 0.08)',
+                        'soft-dark': '0 24px 60px rgba(2, 12, 27, 0.45)',
                     },
                     fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        sans: ['Noto Sans SC', 'system-ui', 'sans-serif'],
+                        serif: ['Noto Serif SC', 'serif'],
+                        mono: ['IBM Plex Mono', 'ui-monospace', 'monospace'],
                     }
                 }
             }
         }
     </script>
     <style>
+        :root { color-scheme: light; }
+        .dark { color-scheme: dark; }
+
+        body {
+            background:
+                radial-gradient(circle at top right, rgba(77, 163, 255, 0.18), transparent 28%),
+                radial-gradient(circle at bottom left, rgba(243, 179, 91, 0.14), transparent 24%),
+                linear-gradient(180deg, #eef4f8 0%, #e8eff5 100%);
+        }
+        .dark body {
+            background:
+                radial-gradient(circle at top right, rgba(77, 163, 255, 0.16), transparent 26%),
+                radial-gradient(circle at bottom left, rgba(243, 179, 91, 0.12), transparent 22%),
+                linear-gradient(180deg, #07141f 0%, #0a1b29 100%);
+        }
+
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
+
+        button, a, input, select, textarea {
+            transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+            transition-duration: 180ms;
+            transition-timing-function: ease;
+        }
+        button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(77, 163, 255, 0.28);
+        }
+
+        .shell-aurora {
+            position: absolute;
+            border-radius: 9999px;
+            filter: blur(80px);
+            opacity: 0.65;
+        }
+        .shell-aurora-a {
+            width: 26rem;
+            height: 26rem;
+            top: -8rem;
+            right: -4rem;
+            background: rgba(77, 163, 255, 0.22);
+        }
+        .shell-aurora-b {
+            width: 20rem;
+            height: 20rem;
+            bottom: -8rem;
+            left: -3rem;
+            background: rgba(243, 179, 91, 0.18);
+        }
+        .shell-grid-mask {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+            background-size: 72px 72px;
+            mask-image: radial-gradient(circle at center, black 35%, transparent 88%);
+            opacity: 0.3;
+        }
+        .dark .shell-grid-mask {
+            background-image:
+                linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+            opacity: 0.2;
+        }
+
+        .shell-panel {
+            background: rgba(247, 251, 255, 0.72);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            box-shadow: 0 28px 60px rgba(15, 23, 42, 0.08);
+        }
+        .dark .shell-panel {
+            background: rgba(9, 23, 35, 0.76);
+            border-color: rgba(148, 163, 184, 0.12);
+            box-shadow: 0 28px 64px rgba(2, 12, 27, 0.44);
+        }
+
+        .module-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: #7c93aa;
+        }
+        .module-eyebrow::before {
+            content: '';
+            width: 0.45rem;
+            height: 0.45rem;
+            border-radius: 9999px;
+            background: linear-gradient(135deg, #4da3ff, #f3b35b);
+            box-shadow: 0 0 0 4px rgba(77, 163, 255, 0.12);
+        }
+
+        .nav-rail-button {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.9rem;
+            width: 100%;
+            padding: 1rem;
+            border-radius: 1.15rem;
+            border: 1px solid transparent;
+            color: #334155;
+            text-align: left;
+            background: transparent;
+        }
+        .nav-rail-button:hover {
+            transform: translateY(-1px);
+            background: rgba(148, 163, 184, 0.12);
+            border-color: rgba(148, 163, 184, 0.16);
+        }
+        .dark .nav-rail-button {
+            color: #d5e3ef;
+        }
+        .dark .nav-rail-button:hover {
+            background: rgba(148, 163, 184, 0.08);
+            border-color: rgba(148, 163, 184, 0.12);
+        }
+        .nav-rail-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.95rem;
+            background: rgba(15, 23, 42, 0.05);
+            color: #5b7087;
+            flex-shrink: 0;
+        }
+        .dark .nav-rail-icon {
+            background: rgba(255, 255, 255, 0.06);
+            color: #89a8c6;
+        }
+        .nav-rail-label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 700;
+            line-height: 1.35;
+        }
+        .nav-rail-desc {
+            display: block;
+            margin-top: 0.18rem;
+            font-size: 0.75rem;
+            line-height: 1.45;
+            color: #7c93aa;
+        }
+        .nav-rail-button-active {
+            background:
+                linear-gradient(135deg, rgba(77, 163, 255, 0.18), rgba(77, 163, 255, 0.06)),
+                rgba(255, 255, 255, 0.3);
+            border-color: rgba(77, 163, 255, 0.24);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 20px 48px rgba(77, 163, 255, 0.14);
+        }
+        .dark .nav-rail-button-active {
+            background:
+                linear-gradient(135deg, rgba(77, 163, 255, 0.18), rgba(77, 163, 255, 0.08)),
+                rgba(9, 23, 35, 0.4);
+            border-color: rgba(77, 163, 255, 0.22);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 24px 56px rgba(5, 12, 24, 0.38);
+        }
+        .nav-rail-button-active .nav-rail-icon {
+            background: linear-gradient(135deg, rgba(77, 163, 255, 0.18), rgba(243, 179, 91, 0.18));
+            color: #1d4ed8;
+        }
+        .dark .nav-rail-button-active .nav-rail-icon {
+            color: #8cc9ff;
+        }
+        .nav-rail-button-active .nav-rail-desc {
+            color: #5f768d;
+        }
+        .dark .nav-rail-button-active .nav-rail-desc {
+            color: #8ea7bf;
+        }
+        @media (min-width: 1024px) {
+            .nav-rail-button {
+                min-height: 5.25rem;
+                padding: 0.85rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.7rem;
+            }
+            .nav-rail-icon {
+                width: 2.35rem;
+                height: 2.35rem;
+            }
+            .nav-rail-label {
+                font-size: 0.85rem;
+                line-height: 1.35;
+            }
+            .nav-rail-desc {
+                display: none;
+            }
+        }
+
+        .mission-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.52)),
+                rgba(247, 251, 255, 0.72);
+            backdrop-filter: blur(18px);
+            box-shadow: 0 24px 64px rgba(15, 23, 42, 0.08);
+        }
+        .mission-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, rgba(77, 163, 255, 0.06), transparent 42%, rgba(243, 179, 91, 0.05));
+            pointer-events: none;
+        }
+        .dark .mission-card {
+            border-color: rgba(148, 163, 184, 0.12);
+            background:
+                linear-gradient(135deg, rgba(20, 38, 56, 0.88), rgba(8, 20, 31, 0.82)),
+                rgba(15, 33, 49, 0.82);
+            box-shadow: 0 28px 70px rgba(2, 12, 27, 0.46);
+        }
+        .dark .mission-card::after {
+            background: linear-gradient(120deg, rgba(77, 163, 255, 0.08), transparent 38%, rgba(243, 179, 91, 0.05));
+        }
+
+        .metric-card {
+            border-radius: 1.25rem;
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            background: rgba(255, 255, 255, 0.44);
+            padding: 1rem;
+        }
+        .dark .metric-card {
+            border-color: rgba(148, 163, 184, 0.1);
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .metric-label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #7c93aa;
+        }
+        .metric-value {
+            display: block;
+            margin-top: 0.65rem;
+            font-size: 1.15rem;
+            font-weight: 800;
+            line-height: 1.3;
+            color: #0f172a;
+        }
+        .dark .metric-value {
+            color: #f8fbff;
+        }
+        .metric-hint {
+            margin-top: 0.45rem;
+            font-size: 0.82rem;
+            line-height: 1.55;
+            color: #6b8096;
+        }
+        .dark .metric-hint {
+            color: #91a8bf;
+        }
+
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.45rem 0.85rem;
+            border-radius: 9999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+        .status-chip::before {
+            content: '';
+            width: 0.48rem;
+            height: 0.48rem;
+            border-radius: 9999px;
+            background: currentColor;
+            opacity: 0.85;
+        }
+        .status-chip-info {
+            color: #1d4ed8;
+            background: rgba(77, 163, 255, 0.12);
+            border-color: rgba(77, 163, 255, 0.18);
+        }
+        .status-chip-success {
+            color: #059669;
+            background: rgba(52, 211, 153, 0.12);
+            border-color: rgba(52, 211, 153, 0.18);
+        }
+        .status-chip-warning {
+            color: #b45309;
+            background: rgba(246, 197, 109, 0.14);
+            border-color: rgba(246, 197, 109, 0.22);
+        }
+        .status-chip-danger {
+            color: #be123c;
+            background: rgba(251, 113, 133, 0.14);
+            border-color: rgba(251, 113, 133, 0.22);
+        }
+        .dark .status-chip-info {
+            color: #8cc9ff;
+            background: rgba(77, 163, 255, 0.15);
+        }
+        .dark .status-chip-success {
+            color: #7ef0c1;
+            background: rgba(52, 211, 153, 0.14);
+        }
+        .dark .status-chip-warning {
+            color: #f8d996;
+            background: rgba(246, 197, 109, 0.12);
+        }
+        .dark .status-chip-danger {
+            color: #fda4af;
+            background: rgba(251, 113, 133, 0.12);
+        }
+
+        .command-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+            min-height: 2.9rem;
+            padding: 0.75rem 1.15rem;
+            border-radius: 1rem;
+            font-size: 0.92rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+        .command-link-primary {
+            color: white;
+            background: linear-gradient(135deg, #4da3ff, #2d86e3);
+            box-shadow: 0 18px 36px rgba(77, 163, 255, 0.24);
+        }
+        .command-link-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 22px 42px rgba(77, 163, 255, 0.3);
+        }
+        .command-link-secondary {
+            color: #1e293b;
+            background: rgba(255, 255, 255, 0.54);
+            border-color: rgba(148, 163, 184, 0.18);
+        }
+        .dark .command-link-secondary {
+            color: #d9e8f4;
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(148, 163, 184, 0.12);
+        }
+        .command-link-secondary:hover {
+            transform: translateY(-1px);
+            border-color: rgba(77, 163, 255, 0.22);
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 3rem;
+            padding: 0.8rem 1rem;
+            border-radius: 1rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+        .action-btn-primary {
+            color: white;
+            background: linear-gradient(135deg, #4da3ff, #2d86e3);
+            box-shadow: 0 16px 34px rgba(77, 163, 255, 0.18);
+        }
+        .action-btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 20px 42px rgba(77, 163, 255, 0.22);
+        }
+        .action-btn-secondary {
+            color: #1e293b;
+            background: rgba(255, 255, 255, 0.7);
+            border-color: rgba(148, 163, 184, 0.18);
+        }
+        .dark .action-btn-secondary {
+            color: #d6e5f1;
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(148, 163, 184, 0.12);
+        }
+        .action-btn-disabled {
+            color: #94a3b8;
+            background: rgba(148, 163, 184, 0.12);
+            border-color: rgba(148, 163, 184, 0.12);
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        .dark .action-btn-disabled {
+            color: #6b8096;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .shift-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1.5rem;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            background: rgba(255, 255, 255, 0.58);
+            padding: 1.35rem;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+        }
+        .shift-card::before {
+            content: '';
+            position: absolute;
+            inset: 0 auto auto 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, rgba(77, 163, 255, 0.9), rgba(243, 179, 91, 0.85));
+            opacity: 0.8;
+        }
+        .dark .shift-card {
+            border-color: rgba(148, 163, 184, 0.12);
+            background: rgba(255, 255, 255, 0.03);
+            box-shadow: 0 20px 44px rgba(2, 12, 27, 0.28);
+        }
+        .shift-window {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.4rem 0.7rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #1d4ed8;
+            background: rgba(77, 163, 255, 0.12);
+        }
+        .dark .shift-window {
+            color: #9acfff;
+            background: rgba(77, 163, 255, 0.12);
+        }
+
+        .ops-table-shell {
+            border-radius: 1.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            background: rgba(255, 255, 255, 0.66);
+            overflow: hidden;
+            box-shadow: 0 20px 48px rgba(15, 23, 42, 0.06);
+        }
+        .dark .ops-table-shell {
+            border-color: rgba(148, 163, 184, 0.12);
+            background: rgba(255, 255, 255, 0.03);
+            box-shadow: 0 24px 48px rgba(2, 12, 27, 0.3);
+        }
+
+        .hidden-flex {
+            display: flex;
+        }
+        .hidden-flex.hidden {
+            display: none !important;
+        }
+        .hidden-flex-col {
+            display: flex;
+            flex-direction: column;
+        }
+        .hidden-flex-col.hidden {
+            display: none !important;
+        }
+
+        .tavern-shell {
+            --tavern-a: #f3b35b;
+            --tavern-b: #db6a55;
+            --tavern-c: #8fbcff;
+            --tavern-ink: rgba(19, 31, 46, 0.84);
+            --tavern-fill: 24%;
+            --tavern-pos: 50%;
+            --tavern-wave: 7s;
+            --tavern-bubble: 0.28;
+            --tavern-tilt: 0;
+            --tavern-slosh: 0.8;
+            --tavern-glow: 0.3;
+            --tavern-foam: 0.24;
+            position: relative;
+            overflow: hidden;
+            border-radius: 2rem;
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            background:
+                radial-gradient(circle at top left, rgba(255, 255, 255, 0.72), transparent 28%),
+                radial-gradient(circle at bottom right, rgba(243, 179, 91, 0.14), transparent 28%),
+                linear-gradient(145deg, rgba(250, 244, 237, 0.96), rgba(237, 241, 246, 0.92));
+            box-shadow: 0 28px 80px rgba(15, 23, 42, 0.08);
+            isolation: isolate;
+        }
+        .tavern-shell::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+            background-size: 56px 56px;
+            mask-image: radial-gradient(circle at center, black 34%, transparent 88%);
+            opacity: 0.36;
+            pointer-events: none;
+        }
+        .tavern-shell::after {
+            content: '';
+            position: absolute;
+            inset: auto auto -6rem -4rem;
+            width: 16rem;
+            height: 16rem;
+            border-radius: 9999px;
+            background: radial-gradient(circle, color-mix(in srgb, var(--tavern-c) 28%, transparent), transparent 68%);
+            filter: blur(18px);
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        .dark .tavern-shell {
+            background:
+                radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 26%),
+                radial-gradient(circle at bottom right, rgba(243, 179, 91, 0.08), transparent 26%),
+                linear-gradient(150deg, rgba(8, 18, 30, 0.98), rgba(12, 26, 38, 0.95));
+            box-shadow: 0 30px 90px rgba(2, 12, 27, 0.48);
+        }
+
+        .tavern-display {
+            font-family: "Noto Serif SC", serif;
+            letter-spacing: 0.01em;
+        }
+        .tavern-panel {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1.5rem;
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            background: rgba(255, 255, 255, 0.54);
+            backdrop-filter: blur(18px);
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+        }
+        .dark .tavern-panel {
+            border-color: rgba(148, 163, 184, 0.12);
+            background: rgba(255, 255, 255, 0.04);
+            box-shadow: 0 20px 44px rgba(2, 12, 27, 0.24);
+        }
+        .tavern-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.55rem 0.85rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: rgba(255, 255, 255, 0.6);
+            font-size: 0.78rem;
+            color: #5f768d;
+        }
+        .dark .tavern-chip {
+            background: rgba(255, 255, 255, 0.04);
+            color: #9cb1c5;
+            border-color: rgba(148, 163, 184, 0.12);
+        }
+        .tavern-chip strong {
+            color: #18293d;
+            font-weight: 700;
+        }
+        .dark .tavern-chip strong {
+            color: #eef7ff;
+        }
+        .tavern-suggestion {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.65rem 0.95rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: rgba(255, 255, 255, 0.56);
+            font-size: 0.78rem;
+            color: #4e657d;
+            cursor: pointer;
+            transition: transform 220ms ease, border-color 220ms ease, color 220ms ease, background 220ms ease, box-shadow 220ms ease;
+        }
+        .tavern-suggestion:hover {
+            transform: translateY(-1px);
+            border-color: rgba(77, 163, 255, 0.24);
+            color: #163457;
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+        }
+        .dark .tavern-suggestion {
+            background: rgba(255, 255, 255, 0.04);
+            color: #a2b5c8;
+        }
+        .dark .tavern-suggestion:hover {
+            color: #f3f9ff;
+        }
+        .tavern-action-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.65rem;
+            min-height: 3.25rem;
+            padding: 0.95rem 1.2rem;
+            border-radius: 1.2rem;
+            background: linear-gradient(135deg, color-mix(in srgb, var(--tavern-a) 92%, white), color-mix(in srgb, var(--tavern-b) 88%, white));
+            color: white;
+            font-weight: 800;
+            box-shadow: 0 20px 40px color-mix(in srgb, var(--tavern-b) 28%, transparent);
+            cursor: pointer;
+            transition: transform 220ms ease, box-shadow 220ms ease, filter 220ms ease;
+        }
+        .tavern-action-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            min-height: 3.25rem;
+            padding: 0.95rem 1.2rem;
+            border-radius: 1.2rem;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: rgba(255, 255, 255, 0.6);
+            color: #22364d;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease, background 220ms ease;
+        }
+        .tavern-action-primary:hover:not(:disabled),
+        .tavern-action-secondary:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+        .tavern-action-primary:hover:not(:disabled) {
+            box-shadow: 0 24px 48px color-mix(in srgb, var(--tavern-b) 34%, transparent);
+            filter: saturate(1.06);
+        }
+        .tavern-action-secondary:hover:not(:disabled) {
+            box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+            border-color: rgba(77, 163, 255, 0.22);
+            background: rgba(255, 255, 255, 0.74);
+        }
+        .dark .tavern-action-secondary {
+            background: rgba(255, 255, 255, 0.04);
+            color: #edf8ff;
+        }
+        .tavern-stage {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100%;
+        }
+        .tavern-stage-aura {
+            position: absolute;
+            width: 22rem;
+            height: 22rem;
+            border-radius: 9999px;
+            background: radial-gradient(circle, color-mix(in srgb, var(--tavern-c) 18%, transparent), transparent 70%);
+            filter: blur(36px);
+            opacity: 0.88;
+            pointer-events: none;
+        }
+        .tavern-vessel-wrap {
+            position: relative;
+            width: min(22rem, 72vw);
+            height: min(27rem, 78vw);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            transform: translateZ(0);
+        }
+        .tavern-vessel {
+            position: relative;
+            width: min(14rem, 48vw);
+            height: min(20rem, 66vw);
+            border-radius: 2.8rem 2.8rem 3.8rem 3.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.34);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.06));
+            backdrop-filter: blur(18px);
+            overflow: hidden;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                inset 0 -24px 40px rgba(255, 255, 255, 0.04),
+                0 26px 70px rgba(15, 23, 42, 0.14);
+        }
+        .dark .tavern-vessel {
+            border-color: rgba(255, 255, 255, 0.16);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.08),
+                inset 0 -24px 40px rgba(255, 255, 255, 0.02),
+                0 28px 72px rgba(2, 12, 27, 0.42);
+        }
+        .tavern-vessel::before {
+            content: '';
+            position: absolute;
+            inset: 0.8rem auto 2rem 1rem;
+            width: 1rem;
+            border-radius: 9999px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.7), transparent);
+            opacity: 0.55;
+            filter: blur(1px);
+            z-index: 4;
+        }
+        .tavern-vessel::after {
+            content: '';
+            position: absolute;
+            inset: 0 auto 0.9rem auto;
+            width: 100%;
+            background:
+                radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.16), transparent 26%),
+                radial-gradient(circle at 50% 108%, rgba(15, 23, 42, 0.18), transparent 52%);
+            opacity: 0.7;
+            pointer-events: none;
+            z-index: 3;
+        }
+        .tavern-liquid {
+            position: absolute;
+            inset: auto -4% -1% -4%;
+            height: var(--tavern-fill);
+            border-radius: 42% 42% 0 0 / 14% 14% 0 0;
+            background:
+                linear-gradient(180deg,
+                    color-mix(in srgb, var(--tavern-a) 72%, white) 0%,
+                    color-mix(in srgb, var(--tavern-a) 88%, white) 16%,
+                    color-mix(in srgb, var(--tavern-b) 86%, transparent) 50%,
+                    color-mix(in srgb, var(--tavern-c) 92%, black) 100%);
+            box-shadow:
+                inset 0 0.8rem 1.2rem rgba(255, 255, 255, 0.22),
+                inset 0 -1.1rem 1.8rem rgba(8, 17, 30, 0.22),
+                0 -0.8rem 2.2rem color-mix(in srgb, var(--tavern-a) 26%, transparent);
+            transform-origin: 50% 100%;
+            animation: liquidRock var(--tavern-wave) cubic-bezier(0.42, 0, 0.24, 1) infinite;
+            transition: height 1500ms ease, background 600ms ease, box-shadow 500ms ease;
+            z-index: 1;
+        }
+        .tavern-liquid::before,
+        .tavern-liquid::after {
+            content: '';
+            position: absolute;
+            left: -8%;
+            right: -8%;
+            pointer-events: none;
+        }
+        .tavern-liquid::before {
+            top: -1.8rem;
+            height: 3.2rem;
+            border-radius: 50%;
+            background:
+                radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.2) 44%, transparent 72%),
+                linear-gradient(180deg,
+                    color-mix(in srgb, var(--tavern-a) 78%, white) 0%,
+                    color-mix(in srgb, var(--tavern-b) 82%, white) 100%);
+            box-shadow:
+                inset 0 -0.7rem 1.2rem rgba(9, 19, 31, 0.12),
+                0 0 0 1px rgba(255, 255, 255, 0.12);
+            transform-origin: 50% 50%;
+            animation: liquidSurface var(--tavern-wave) cubic-bezier(0.42, 0, 0.24, 1) infinite;
+        }
+        .tavern-liquid::after {
+            top: 12%;
+            left: 12%;
+            right: 20%;
+            height: 38%;
+            border-radius: 9999px;
+            background: linear-gradient(110deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0));
+            opacity: calc(0.16 + var(--tavern-glow) * 0.34);
+            filter: blur(7px);
+            animation: liquidGlint calc(var(--tavern-wave) * 0.92) ease-in-out infinite;
+        }
+        .tavern-bubbles {
+            position: absolute;
+            inset: 0;
+            opacity: var(--tavern-bubble);
+            transition: opacity 500ms ease;
+            pointer-events: none;
+        }
+        .tavern-bubbles span {
+            position: absolute;
+            bottom: 0.75rem;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.6);
+            animation: bubbleRise 2.6s infinite ease-in;
+        }
+        .tavern-bubbles span:nth-child(1) {
+            left: 24%;
+            width: 0.45rem;
+            height: 0.45rem;
+        }
+        .tavern-bubbles span:nth-child(2) {
+            left: 46%;
+            width: 0.72rem;
+            height: 0.72rem;
+            animation-delay: 0.45s;
+            animation-duration: 3.1s;
+        }
+        .tavern-bubbles span:nth-child(3) {
+            right: 22%;
+            width: 0.36rem;
+            height: 0.36rem;
+            animation-delay: 0.9s;
+            animation-duration: 2.2s;
+        }
+        .tavern-bubbles span:nth-child(4) {
+            right: 36%;
+            width: 0.56rem;
+            height: 0.56rem;
+            animation-delay: 1.2s;
+            animation-duration: 2.8s;
+        }
+        .tavern-vessel-label {
+            position: absolute;
+            left: 50%;
+            top: 1.6rem;
+            transform: translateX(-50%);
+            z-index: 4;
+            padding: 0.5rem 0.85rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            background: rgba(255, 255, 255, 0.14);
+            color: rgba(255, 255, 255, 0.92);
+            font-size: 0.7rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            font-family: "IBM Plex Mono", monospace;
+        }
+        .tavern-stage-ring {
+            position: absolute;
+            inset: 50% auto auto 50%;
+            width: 19rem;
+            height: 19rem;
+            transform: translate(-50%, -50%);
+            border-radius: 9999px;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        .tavern-stage-ring::before,
+        .tavern-stage-ring::after {
+            content: '';
+            position: absolute;
+            inset: 1rem;
+            border-radius: 9999px;
+            border: 1px dashed rgba(148, 163, 184, 0.12);
+        }
+        .tavern-stage-ring::after {
+            inset: 2.2rem;
+        }
+        .tavern-spectrum {
+            width: min(21rem, 86vw);
+            margin-top: 1.75rem;
+        }
+        .tavern-spectrum-bar {
+            position: relative;
+            height: 0.3rem;
+            border-radius: 9999px;
+            background: linear-gradient(90deg, rgba(88, 28, 135, 0.22), rgba(148, 163, 184, 0.2), rgba(245, 158, 11, 0.28));
+            overflow: visible;
+        }
+        .tavern-spectrum-dot {
+            position: absolute;
+            top: 50%;
+            left: calc(var(--tavern-pos) * 1%);
+            width: 0.95rem;
+            height: 0.95rem;
+            border-radius: 9999px;
+            background: radial-gradient(circle at 30% 30%, white, var(--tavern-c));
+            box-shadow: 0 0 18px color-mix(in srgb, var(--tavern-c) 45%, transparent);
+            transform: translate(-50%, -50%);
+            transition: left 900ms ease, background 400ms ease;
+        }
+        .tavern-history-grid {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        }
+        #view-tavern-container > [id^="state-"] {
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            scrollbar-width: thin;
+            -webkit-overflow-scrolling: touch;
+        }
+        #view-tavern-container > [id^="state-"]::-webkit-scrollbar {
+            width: 8px;
+        }
+        #view-tavern-container > [id^="state-"]::-webkit-scrollbar-thumb {
+            border-radius: 9999px;
+            background: rgba(148, 163, 184, 0.32);
+        }
+        .dark #view-tavern-container > [id^="state-"]::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.22);
+        }
+        .tavern-history-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1.5rem;
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            background: rgba(255, 255, 255, 0.58);
+            padding: 1.2rem;
+            text-align: left;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 18px 36px rgba(15, 23, 42, 0.06);
+            transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+        }
+        .tavern-history-card::before {
+            content: '';
+            position: absolute;
+            inset: 0 auto auto 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--tavern-a), var(--tavern-b), var(--tavern-c));
+            opacity: 0.9;
+            pointer-events: none;
+        }
+        .tavern-history-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(77, 163, 255, 0.24);
+        }
+        .dark .tavern-history-card {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(148, 163, 184, 0.12);
+            box-shadow: 0 20px 42px rgba(2, 12, 27, 0.26);
+        }
+        .tavern-stat {
+            border-radius: 1.2rem;
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            background: rgba(255, 255, 255, 0.54);
+            padding: 1rem;
+        }
+        .dark .tavern-stat {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(148, 163, 184, 0.12);
+        }
+
+        .quick-capture-shell {
+            position: relative;
+            overflow: hidden;
+            border-radius: 2rem;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background:
+                radial-gradient(circle at top left, rgba(255, 255, 255, 0.72), transparent 28%),
+                linear-gradient(145deg, rgba(251, 248, 243, 0.98), rgba(237, 242, 247, 0.96));
+            box-shadow: 0 32px 100px rgba(15, 23, 42, 0.16);
+            isolation: isolate;
+        }
+        .dark .quick-capture-shell {
+            background:
+                radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 28%),
+                linear-gradient(145deg, rgba(7, 17, 28, 0.98), rgba(10, 25, 38, 0.96));
+            box-shadow: 0 36px 110px rgba(2, 12, 27, 0.5);
+        }
+        .quick-capture-shell::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+            background-size: 42px 42px;
+            mask-image: radial-gradient(circle at center, black 30%, transparent 90%);
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .quick-capture-glow {
+            position: absolute;
+            inset: -4rem auto auto -3rem;
+            width: 14rem;
+            height: 14rem;
+            border-radius: 9999px;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.18), transparent 72%);
+            filter: blur(18px);
+            pointer-events: none;
+        }
+        .quick-capture-grid {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            gap: 1.25rem;
+            grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.72fr);
+            padding: 1.25rem;
+        }
+        .quick-capture-main,
+        .quick-capture-side {
+            border-radius: 1.5rem;
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            background: rgba(255, 255, 255, 0.58);
+            backdrop-filter: blur(16px);
+        }
+        .dark .quick-capture-main,
+        .dark .quick-capture-side {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(148, 163, 184, 0.12);
+        }
+        .quick-capture-main {
+            padding: 1.5rem;
+        }
+        .quick-capture-side {
+            padding: 1.35rem;
+        }
+        .quick-capture-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.65rem;
+        }
+        .quick-capture-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: rgba(255, 255, 255, 0.68);
+            padding: 0.55rem 0.8rem;
+            color: #51657d;
+            font-size: 0.78rem;
+        }
+        .dark .quick-capture-chip {
+            background: rgba(255, 255, 255, 0.05);
+            color: #adc0d3;
+        }
+        .quick-capture-editor {
+            margin-top: 1rem;
+            border-radius: 1.5rem;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(248, 250, 252, 0.68));
+            overflow: hidden;
+        }
+        .dark .quick-capture-editor {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(2, 6, 23, 0.16));
+            border-color: rgba(148, 163, 184, 0.12);
+        }
+        .quick-capture-input {
+            width: 100%;
+            min-height: 18rem;
+            resize: vertical;
+            border: none;
+            background: transparent;
+            padding: 1.45rem 1.45rem 1rem;
+            color: #15293f;
+            font-size: 1rem;
+            line-height: 1.9;
+            outline: none;
+        }
+        .quick-capture-input::placeholder {
+            color: #8a9aac;
+        }
+        .dark .quick-capture-input {
+            color: #f3f8ff;
+        }
+        .quick-capture-footer {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            border-top: 1px solid rgba(148, 163, 184, 0.12);
+            padding: 0.95rem 1.2rem 1.1rem;
+            background: rgba(255, 255, 255, 0.64);
+        }
+        .dark .quick-capture-footer {
+            background: rgba(2, 6, 23, 0.16);
+            border-top-color: rgba(148, 163, 184, 0.1);
+        }
+        .quick-capture-ghost,
+        .quick-capture-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+            min-height: 2.95rem;
+            padding: 0.8rem 1rem;
+            border-radius: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease, background 220ms ease;
+        }
+        .quick-capture-ghost {
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: rgba(255, 255, 255, 0.74);
+            color: #21364d;
+        }
+        .quick-capture-primary {
+            border: 1px solid transparent;
+            background: linear-gradient(135deg, rgba(17, 57, 97, 0.98), rgba(56, 111, 166, 0.94));
+            color: white;
+            box-shadow: 0 16px 34px rgba(17, 57, 97, 0.22);
+        }
+        .quick-capture-ghost:hover,
+        .quick-capture-primary:hover {
+            transform: translateY(-1px);
+        }
+        .quick-capture-ghost:hover {
+            border-color: rgba(77, 163, 255, 0.22);
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+        }
+        .quick-capture-primary:hover {
+            box-shadow: 0 20px 38px rgba(17, 57, 97, 0.28);
+        }
+        .dark .quick-capture-ghost {
+            background: rgba(255, 255, 255, 0.04);
+            color: #edf8ff;
+            border-color: rgba(148, 163, 184, 0.12);
+        }
+        .quick-capture-side-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: #8092a6;
+        }
+        .quick-capture-select {
+            width: 100%;
+            margin-top: 0.8rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: rgba(255, 255, 255, 0.74);
+            padding: 0.9rem 1rem;
+            color: #1c3048;
+            outline: none;
+            cursor: pointer;
+        }
+        .dark .quick-capture-select {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(148, 163, 184, 0.12);
+            color: #eef8ff;
+        }
+        .quick-capture-note {
+            margin-top: 1rem;
+            border-radius: 1.15rem;
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            background: rgba(255, 255, 255, 0.54);
+            padding: 1rem;
+        }
+        .dark .quick-capture-note {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(148, 163, 184, 0.12);
+        }
+        .quick-capture-note ul {
+            margin-top: 0.7rem;
+            display: grid;
+            gap: 0.6rem;
+            color: #5e7187;
+            font-size: 0.88rem;
+            line-height: 1.75;
+        }
+        .dark .quick-capture-note ul,
+        .dark .quick-capture-note p {
+            color: #a6bacf;
+        }
+        .quick-capture-note p {
+            margin-top: 0.7rem;
+            color: #5e7187;
+            font-size: 0.88rem;
+            line-height: 1.75;
+        }
         
         .achievement-popup { animation: popup 0.5s ease-out, fadeOut 0.5s ease-in 3.5s forwards; }
         .modal-popup { animation: popup 0.5s ease-out forwards; }
@@ -87,10 +1238,31 @@
             0% { height: 10%; opacity: 0.5; filter: hue-rotate(0deg); }
             100% { height: 85%; opacity: 0.95; filter: hue-rotate(15deg); }
         }
-        /* 液体表面的涟漪波浪 (利用伪元素旋转) */
-        @keyframes waveSpin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes liquidRock {
+            0%, 100% {
+                transform: translate3d(calc(var(--tavern-slosh) * -0.24rem), 0, 0) rotate(calc(var(--tavern-tilt) * -0.8deg));
+            }
+            50% {
+                transform: translate3d(calc(var(--tavern-slosh) * 0.24rem), 0.3rem, 0) rotate(calc(var(--tavern-tilt) * 0.82deg));
+            }
+        }
+        @keyframes liquidSurface {
+            0%, 100% {
+                transform: translateX(calc(var(--tavern-slosh) * -0.45rem)) rotate(calc(var(--tavern-tilt) * 1.2deg)) scaleX(1.03);
+            }
+            50% {
+                transform: translateX(calc(var(--tavern-slosh) * 0.45rem)) rotate(calc(var(--tavern-tilt) * -1.28deg)) scaleX(0.98);
+            }
+        }
+        @keyframes liquidGlint {
+            0%, 100% {
+                transform: translateX(calc(var(--tavern-slosh) * -0.2rem)) rotate(-12deg);
+                opacity: calc(0.16 + var(--tavern-glow) * 0.34);
+            }
+            50% {
+                transform: translateX(calc(var(--tavern-slosh) * 0.26rem)) rotate(-6deg);
+                opacity: calc(0.1 + var(--tavern-glow) * 0.26);
+            }
         }
         /* 情绪气泡上升 */
         @keyframes bubbleRise {
@@ -114,142 +1286,384 @@
             background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 100%);
             box-shadow: inset 0 0 20px rgba(255,255,255,0.05), 0 8px 32px rgba(0,0,0,0.3);
         }
+
+        @media (max-width: 1024px) {
+            .quick-capture-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+            .tavern-liquid,
+            .tavern-liquid::before,
+            .tavern-liquid::after,
+            .tavern-bubbles span,
+            .tavern-action-primary,
+            .tavern-action-secondary,
+            .tavern-suggestion,
+            .quick-capture-ghost,
+            .quick-capture-primary {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
     </style>
 </head>
-<body class="bg-bgLight dark:bg-bgDark text-slate-800 dark:text-slate-200 font-sans h-screen overflow-hidden transition-colors duration-300">
-    
-    <div class="flex h-full w-full">
-        <aside class="w-72 bg-cardLight dark:bg-cardDark border-r border-slate-200 dark:border-slate-700 flex flex-col h-full transition-colors z-10 shrink-0">
-            <div class="p-6 pb-2">
-                <div class="flex items-center justify-between mb-2">
-                    <h1 class="text-xl font-bold text-primary flex items-center gap-2">
-                        <i data-lucide="rocket"></i> HM-CLSS
-                    </h1>
-                    <button id="theme-toggle" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 transition-colors">
+<body class="min-h-screen bg-bgLight dark:bg-bgDark text-slate-800 dark:text-slate-200 font-sans overflow-x-hidden transition-colors duration-300">
+    <div class="pointer-events-none fixed inset-0 overflow-hidden">
+        <div class="shell-aurora shell-aurora-a"></div>
+        <div class="shell-aurora shell-aurora-b"></div>
+        <div class="shell-grid-mask"></div>
+    </div>
+
+    <div class="relative z-10 flex min-h-screen w-full flex-col lg:flex-row">
+        <aside class="shell-panel w-full shrink-0 border-b border-slate-200/60 transition-colors lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[22rem] lg:max-h-screen lg:flex-col lg:overflow-y-auto lg:border-b-0 lg:border-r dark:border-slate-700/40">
+            <div class="p-5 pb-4 sm:p-6">
+                <div class="flex items-start justify-between gap-4">
+                    <div class="min-w-0">
+                        <div class="module-eyebrow mb-3">HAIL MARY / LIFE SUPPORT</div>
+                        <h1 class="flex items-center gap-3 text-2xl font-black tracking-tight text-slate-900 dark:text-slate-50">
+                            <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15 text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] dark:bg-primary/20">
+                                <i data-lucide="rocket" class="w-5 h-5"></i>
+                            </span>
+                            HM-CLSS
+                        </h1>
+                        <p class="mt-2 max-w-xs text-xs leading-5 text-slate-500 dark:text-slate-400">
+                            用一张舰桥工作台处理值班、专注、记录和同步。
+                        </p>
+                    </div>
+                    <button id="theme-toggle" class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200/70 bg-white/70 text-slate-500 shadow-sm hover:-translate-y-0.5 hover:border-primary/30 hover:text-primary dark:border-slate-700/70 dark:bg-slate-900/70 dark:text-slate-300 dark:hover:border-primary/30">
                         <i data-lucide="moon" id="theme-icon-dark" class="w-5 h-5 hidden"></i>
                         <i data-lucide="sun" id="theme-icon-light" class="w-5 h-5 hidden"></i>
                     </button>
                 </div>
-                <p class="text-xs text-slate-500 dark:text-slate-400" id="current-date-time">加载时间...</p>
+                <div class="mt-3 inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/70 px-4 py-2 text-[11px] font-medium text-slate-500 shadow-sm dark:border-slate-700/70 dark:bg-slate-900/70 dark:text-slate-400" id="current-date-time">
+                    加载时间...
+                </div>
             </div>
 
-            <nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-                <button id="nav-checkin" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all bg-primary/10 text-primary dark:bg-primary/20">
-                    <i data-lucide="radar" class="w-4 h-4"></i> 舰桥值班日志
-                </button>
-                <button id="nav-phone" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
-                    <i data-lucide="shield-check" class="w-4 h-4"></i> 认知干扰拦截
-                </button>
-                <button id="nav-tasks" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
-                    <i data-lucide="terminal" class="w-4 h-4"></i> 全舰任务管理
-                </button>
-                <button id="nav-archive" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
-                    <i data-lucide="book-open" class="w-4 h-4"></i> 全舰日志归档
-                </button>
-                <button id="nav-leave" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
-                    <i data-lucide="power-off" class="w-4 h-4"></i> 离舰活动审批
-                </button>
-                <button id="nav-tavern" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
-                    <i data-lucide="martini" class="w-4 h-4"></i> 深空特调吧台
-                </button>
-                <button id="nav-stats" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
-                    <i data-lucide="bar-chart-2" class="w-4 h-4"></i> 维生统计分析
-                </button>
-                <button id="nav-settings" class="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
-                    <i data-lucide="settings" class="w-4 h-4"></i> 深空通讯设置
-                </button>
-            </nav>
+            <div class="px-4 pb-4 lg:px-5">
+                <div class="module-eyebrow mb-3 px-1">主控台模块</div>
+                <nav class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-2">
+                    <button id="nav-checkin" class="nav-rail-button nav-rail-button-active">
+                        <span class="nav-rail-icon">
+                            <i data-lucide="radar" class="w-4 h-4"></i>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="nav-rail-label">舰桥值班日志</span>
+                            <span class="nav-rail-desc">今日状态、班次窗口与值班记录</span>
+                        </span>
+                    </button>
+                    <button id="nav-phone" class="nav-rail-button">
+                        <span class="nav-rail-icon">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="nav-rail-label">认知干扰拦截</span>
+                            <span class="nav-rail-desc">记录抗干扰次数并追踪成就</span>
+                        </span>
+                    </button>
+                    <button id="nav-tasks" class="nav-rail-button">
+                        <span class="nav-rail-icon">
+                            <i data-lucide="terminal" class="w-4 h-4"></i>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="nav-rail-label">全舰任务管理</span>
+                            <span class="nav-rail-desc">启动深度工作并回看今日沉淀</span>
+                        </span>
+                    </button>
+                    <button id="nav-archive" class="nav-rail-button">
+                        <span class="nav-rail-icon">
+                            <i data-lucide="book-open" class="w-4 h-4"></i>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="nav-rail-label">全舰日志归档</span>
+                            <span class="nav-rail-desc">搜索历史灵感、日志与异常条目</span>
+                        </span>
+                    </button>
+                    <button id="nav-leave" class="nav-rail-button">
+                        <span class="nav-rail-icon">
+                            <i data-lucide="power-off" class="w-4 h-4"></i>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="nav-rail-label">离舰活动审批</span>
+                            <span class="nav-rail-desc">登记全天或临时离舰并查看影响</span>
+                        </span>
+                    </button>
+                    <button id="nav-tavern" class="nav-rail-button">
+                        <span class="nav-rail-icon">
+                            <i data-lucide="martini" class="w-4 h-4"></i>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="nav-rail-label">深空特调吧台</span>
+                            <span class="nav-rail-desc">把情绪记录成更容易回看的配方</span>
+                        </span>
+                    </button>
+                    <button id="nav-stats" class="nav-rail-button">
+                        <span class="nav-rail-icon">
+                            <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="nav-rail-label">维生统计分析</span>
+                            <span class="nav-rail-desc">查看趋势、时段分布与长期沉淀</span>
+                        </span>
+                    </button>
+                    <button id="nav-settings" class="nav-rail-button">
+                        <span class="nav-rail-icon">
+                            <i data-lucide="settings" class="w-4 h-4"></i>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="nav-rail-label">深空通讯设置</span>
+                            <span class="nav-rail-desc">配置 Gist 同步并管理远端数据</span>
+                        </span>
+                    </button>
+                </nav>
+            </div>
 
-            <div class="p-4 m-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-700">
-                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">今日概况</h3>
-                <div class="space-y-2 text-sm">
-                    <div class="flex justify-between items-center">
-                        <span class="text-slate-500">Alpha 班次</span>
-                        <span id="today-morning-status" class="font-medium">-</span>
+            <div class="p-4 pt-0 sm:p-5 sm:pt-0">
+                <div class="mission-card p-4">
+                    <div class="module-eyebrow mb-3">侧边摘要</div>
+                    <div class="grid grid-cols-3 gap-2 text-center text-[11px]">
+                        <div class="rounded-2xl border border-slate-200/70 bg-white/60 px-2 py-3 dark:border-slate-700/60 dark:bg-white/[0.03]">
+                            <div class="text-slate-400">Alpha</div>
+                            <div id="today-morning-status" class="mt-1 font-semibold">-</div>
+                        </div>
+                        <div class="rounded-2xl border border-slate-200/70 bg-white/60 px-2 py-3 dark:border-slate-700/60 dark:bg-white/[0.03]">
+                            <div class="text-slate-400">Beta</div>
+                            <div id="today-afternoon-status" class="mt-1 font-semibold">-</div>
+                        </div>
+                        <div class="rounded-2xl border border-slate-200/70 bg-white/60 px-2 py-3 dark:border-slate-700/60 dark:bg-white/[0.03]">
+                            <div class="text-slate-400">Gamma</div>
+                            <div id="today-evening-status" class="mt-1 font-semibold">-</div>
+                        </div>
                     </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-slate-500">Beta 班次</span>
-                        <span id="today-afternoon-status" class="font-medium">-</span>
+                    <div class="mt-3 grid grid-cols-2 gap-2 text-[11px]">
+                        <div class="rounded-2xl border border-slate-200/70 bg-white/60 px-3 py-3 dark:border-slate-700/60 dark:bg-white/[0.03]">
+                            <div class="text-slate-400">干扰拦截</div>
+                            <div id="today-phone-count" class="mt-1 font-semibold text-warning">0 次</div>
+                        </div>
+                        <div class="rounded-2xl border border-slate-200/70 bg-white/60 px-3 py-3 dark:border-slate-700/60 dark:bg-white/[0.03]">
+                            <div class="text-slate-400">当前任务</div>
+                            <div id="today-active-task" class="mt-1 truncate font-semibold text-primary">-</div>
+                        </div>
                     </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-slate-500">Gamma 班次</span>
-                        <span id="today-evening-status" class="font-medium">-</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-slate-500">干扰拦截次数</span>
-                        <span id="today-phone-count" class="font-medium text-warning">0 次</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-slate-500">当前任务</span>
-                        <span id="today-active-task" class="font-medium text-primary truncate max-w-[100px]">-</span>
+                    <div class="mt-3 rounded-2xl border border-slate-200/70 bg-white/60 p-3 dark:border-slate-700/60 dark:bg-white/[0.03]">
+                        <div class="flex items-start gap-3">
+                            <span id="today-command-indicator" class="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-primary"></span>
+                            <div class="min-w-0">
+                                <div id="today-command-title" class="text-xs font-semibold text-slate-900 dark:text-slate-100">当前建议</div>
+                                <p id="today-command-message" class="mt-1 text-[11px] leading-5 text-slate-500 dark:text-slate-400">
+                                    先进入当前班次，完成今天最优先的值班动作。
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </aside>
 
-        <main class="flex-1 h-full overflow-y-auto p-6 lg:p-10 relative">
-            <div class="max-w-5xl mx-auto">
+        <main class="relative min-w-0 flex-1 p-4 sm:p-6 lg:p-10">
+            <div class="mx-auto max-w-6xl">
+                <header class="mb-8 grid gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.95fr)]">
+                    <div class="mission-card p-6 sm:p-7">
+                        <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                            <div class="max-w-2xl">
+                                <div id="panel-meta-badge" class="module-eyebrow mb-3">TODAY OPS</div>
+                                <h2 id="panel-meta-title" class="text-3xl font-black tracking-tight text-slate-950 dark:text-slate-50 sm:text-[2.15rem]">
+                                    舰桥值班与今日状态
+                                </h2>
+                                <p id="panel-meta-desc" class="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-400 sm:text-[0.95rem]">
+                                    先确认今天的值班态势，再完成当前班次的唤醒与休眠。你不需要在多个面板之间猜来猜去。
+                                </p>
+                            </div>
+                            <span id="hero-overall-pill" class="status-chip status-chip-info shrink-0">待命</span>
+                        </div>
+
+                        <div class="mt-6 flex flex-wrap gap-3">
+                            <a id="panel-primary-action" href="#shift-ops-grid" class="command-link command-link-primary">
+                                <i data-lucide="target" class="w-4 h-4"></i>
+                                进入班次控制
+                            </a>
+                            <a id="panel-secondary-action" href="#today-checkin-log" class="command-link command-link-secondary">
+                                <i data-lucide="list-checks" class="w-4 h-4"></i>
+                                查看今日记录
+                            </a>
+                        </div>
+
+                        <p id="panel-meta-tip" class="mt-5 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                            建议先完成当前班次，再回看记录表确认今天是否合规。
+                        </p>
+                    </div>
+
+                    <div class="mission-card p-6">
+                        <div class="module-eyebrow mb-4">实时摘要</div>
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                            <div class="metric-card">
+                                <span class="metric-label">值班总览</span>
+                                <span id="hero-overall-status" class="metric-value">待命</span>
+                                <p id="hero-overall-hint" class="metric-hint">先进入今天当前班次，再决定下一步动作。</p>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">当前任务</span>
+                                <span id="hero-active-task-display" class="metric-value">空闲</span>
+                                <p id="hero-active-task-hint" class="metric-hint">当前没有进行中的科研任务。</p>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">干扰拦截</span>
+                                <span id="hero-phone-count-display" class="metric-value">0 次</span>
+                                <p id="hero-phone-count-hint" class="metric-hint">今天尚未记录任何干扰拦截。</p>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">下一步</span>
+                                <span id="hero-next-action" class="metric-value">进入当前模块</span>
+                                <p id="hero-next-action-hint" class="metric-hint">优先处理今天最重要的那一步，而不是四处跳转。</p>
+                            </div>
+                        </div>
+                    </div>
+                </header>
                 
                 <section id="checkin-section" class="mb-8">
-                    <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-                        <i data-lucide="clock" class="text-primary"></i> 航行日志记录系统
-                    </h2>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-5 shadow-soft dark:shadow-soft-dark border border-slate-100 dark:border-slate-800">
-                            <h3 class="text-lg font-semibold text-primary mb-3">Alpha 班次</h3>
-                            <div class="text-xs text-slate-500 dark:text-slate-400 mb-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl space-y-1">
-                                <div>唤醒: 06:00 - 12:00</div>
-                                <div>休眠: 09:00 - 14:00</div>
-                                <div class="text-success font-medium">合格: 08:00开始, 12:00结束</div>
+                    <div class="mission-card mb-6 p-6 sm:p-7">
+                        <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                            <div class="max-w-2xl">
+                                <div class="module-eyebrow mb-3">TODAY WATCH</div>
+                                <h2 class="text-2xl font-black tracking-tight text-slate-950 dark:text-slate-50 sm:text-[2rem]">
+                                    今日舰桥值班
+                                </h2>
+                                <p class="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-400 sm:text-[0.95rem]">
+                                    这个面板先解决三件事：你现在是什么状态、今天最优先的是哪个班次、以及是否已经留下足够清晰的记录。
+                                </p>
                             </div>
-                            <div class="space-y-3">
-                                <button id="morning-checkin" class="w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200">早班连线</button>
-                                <button id="morning-checkout" class="w-full bg-slate-100 dark:bg-slate-900 text-slate-500 py-3 rounded-xl font-medium transition-all duration-200" disabled>早班登出</button>
-                            </div>
-                            <div class="mt-4 flex justify-between text-xs text-slate-400 font-mono">
-                                <span id="morning-checkin-time">解除休眠: -</span>
-                                <span id="morning-checkout-time">注入镇定剂: -</span>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-5 shadow-soft dark:shadow-soft-dark border border-slate-100 dark:border-slate-800">
-                            <h3 class="text-lg font-semibold text-primary mb-3">Beta 班次</h3>
-                            <div class="text-xs text-slate-500 dark:text-slate-400 mb-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl space-y-1">
-                                <div>唤醒: 12:00 - 17:00</div>
-                                <div>休眠: 14:00 - 20:00</div>
-                                <div class="text-success font-medium">合格: 14:00前开始, 18:00前结束</div>
-                            </div>
-                            <div class="space-y-3">
-                                <button id="afternoon-checkin" class="w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200">午班连线</button>
-                                <button id="afternoon-checkout" class="w-full bg-slate-100 dark:bg-slate-900 text-slate-500 py-3 rounded-xl font-medium transition-all duration-200" disabled>午班登出</button>
-                            </div>
-                            <div class="mt-4 flex justify-between text-xs text-slate-400 font-mono">
-                                <span id="afternoon-checkin-time">解除休眠: -</span>
-                                <span id="afternoon-checkout-time">注入镇定剂: -</span>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-5 shadow-soft dark:shadow-soft-dark border border-slate-100 dark:border-slate-800">
-                            <h3 class="text-lg font-semibold text-primary mb-3">Gamma 班次</h3>
-                            <div class="text-xs text-slate-500 dark:text-slate-400 mb-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl space-y-1">
-                                <div>唤醒: 17:00 - 22:00</div>
-                                <div>休眠: 20:00 - 24:00</div>
-                                <div class="text-success font-medium">合格: 19:00前开始, 21-22点结束</div>
-                            </div>
-                            <div class="space-y-3">
-                                <button id="evening-checkin" class="w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all duration-200">晚班连线</button>
-                                <button id="evening-checkout" class="w-full bg-slate-100 dark:bg-slate-900 text-slate-500 py-3 rounded-xl font-medium transition-all duration-200" disabled>晚班登出</button>
-                            </div>
-                            <div class="mt-4 flex justify-between text-xs text-slate-400 font-mono">
-                                <span id="evening-checkin-time">解除休眠: -</span>
-                                <span id="evening-checkout-time">注入镇定剂: -</span>
+
+                            <div class="grid gap-3 text-sm lg:max-w-sm lg:flex-1">
+                                <div class="metric-card">
+                                    <span class="metric-label">合格判断</span>
+                                    <p class="mt-3 leading-6 text-slate-600 dark:text-slate-400">
+                                        开始时间尽量落在建议窗口内，结束前回到这里完成休眠记录，避免只打半程卡。
+                                    </p>
+                                </div>
+                                <div class="metric-card">
+                                    <span class="metric-label">使用建议</span>
+                                    <p class="mt-3 leading-6 text-slate-600 dark:text-slate-400">
+                                        如果你今天已经离舰，先去审批模块登记；如果正在专注任务，也别忘了班次结束前回来收尾。
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="mt-8 bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft dark:shadow-soft-dark border border-slate-100 dark:border-slate-800 overflow-hidden">
-                        <h3 class="text-lg font-semibold mb-4">今日值班记录</h3>
+                    <div id="shift-ops-grid" class="grid grid-cols-1 gap-5 xl:grid-cols-3">
+                        <div class="shift-card">
+                            <div class="mb-4 flex items-start justify-between gap-4">
+                                <div>
+                                    <div class="module-eyebrow mb-2">ALPHA WATCH</div>
+                                    <h3 class="text-xl font-bold text-slate-950 dark:text-slate-50">Alpha 班次</h3>
+                                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">适合清晨启动，把今天的第一段状态稳定下来。</p>
+                                </div>
+                                <span class="shift-window">08:00 前启动</span>
+                            </div>
+
+                            <div class="mb-5 grid grid-cols-2 gap-3 text-sm">
+                                <div class="metric-card">
+                                    <span class="metric-label">唤醒窗口</span>
+                                    <span class="mt-2 block text-base font-extrabold text-slate-950 dark:text-slate-50">06:00 - 12:00</span>
+                                </div>
+                                <div class="metric-card">
+                                    <span class="metric-label">建议休眠</span>
+                                    <span class="mt-2 block text-base font-extrabold text-slate-950 dark:text-slate-50">12:00 前完成</span>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <button id="morning-checkin" class="action-btn action-btn-primary">早班连线</button>
+                                <button id="morning-checkout" class="action-btn action-btn-disabled" disabled>早班登出</button>
+                            </div>
+
+                            <div class="mt-4 flex justify-between gap-4 text-xs font-mono text-slate-400">
+                                <span id="morning-checkin-time">开始: -</span>
+                                <span id="morning-checkout-time">结束: -</span>
+                            </div>
+                        </div>
+                        
+                        <div class="shift-card">
+                            <div class="mb-4 flex items-start justify-between gap-4">
+                                <div>
+                                    <div class="module-eyebrow mb-2">BETA WATCH</div>
+                                    <h3 class="text-xl font-bold text-slate-950 dark:text-slate-50">Beta 班次</h3>
+                                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">中段班次更容易被打断，先确保开始时间被系统捕捉到。</p>
+                                </div>
+                                <span class="shift-window">14:00 前启动</span>
+                            </div>
+
+                            <div class="mb-5 grid grid-cols-2 gap-3 text-sm">
+                                <div class="metric-card">
+                                    <span class="metric-label">唤醒窗口</span>
+                                    <span class="mt-2 block text-base font-extrabold text-slate-950 dark:text-slate-50">12:00 - 17:00</span>
+                                </div>
+                                <div class="metric-card">
+                                    <span class="metric-label">建议休眠</span>
+                                    <span class="mt-2 block text-base font-extrabold text-slate-950 dark:text-slate-50">18:00 前完成</span>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <button id="afternoon-checkin" class="action-btn action-btn-primary">午班连线</button>
+                                <button id="afternoon-checkout" class="action-btn action-btn-disabled" disabled>午班登出</button>
+                            </div>
+
+                            <div class="mt-4 flex justify-between gap-4 text-xs font-mono text-slate-400">
+                                <span id="afternoon-checkin-time">开始: -</span>
+                                <span id="afternoon-checkout-time">结束: -</span>
+                            </div>
+                        </div>
+                        
+                        <div class="shift-card">
+                            <div class="mb-4 flex items-start justify-between gap-4">
+                                <div>
+                                    <div class="module-eyebrow mb-2">GAMMA WATCH</div>
+                                    <h3 class="text-xl font-bold text-slate-950 dark:text-slate-50">Gamma 班次</h3>
+                                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">晚班是今日闭环的关键，记得让最后一次记录完整落地。</p>
+                                </div>
+                                <span class="shift-window">19:00 前启动</span>
+                            </div>
+
+                            <div class="mb-5 grid grid-cols-2 gap-3 text-sm">
+                                <div class="metric-card">
+                                    <span class="metric-label">唤醒窗口</span>
+                                    <span class="mt-2 block text-base font-extrabold text-slate-950 dark:text-slate-50">17:00 - 22:00</span>
+                                </div>
+                                <div class="metric-card">
+                                    <span class="metric-label">建议休眠</span>
+                                    <span class="mt-2 block text-base font-extrabold text-slate-950 dark:text-slate-50">22:00 前完成</span>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <button id="evening-checkin" class="action-btn action-btn-primary">晚班连线</button>
+                                <button id="evening-checkout" class="action-btn action-btn-disabled" disabled>晚班登出</button>
+                            </div>
+
+                            <div class="mt-4 flex justify-between gap-4 text-xs font-mono text-slate-400">
+                                <span id="evening-checkin-time">开始: -</span>
+                                <span id="evening-checkout-time">结束: -</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="today-checkin-log" class="ops-table-shell mt-8 p-6">
+                        <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold text-slate-950 dark:text-slate-50">今日值班记录</h3>
+                                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">如果某个时段显示异常或超时，这里会比概览更具体。</p>
+                            </div>
+                            <span class="text-xs font-mono text-slate-400">开始 / 结束 / 判定 一屏对照</span>
+                        </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full text-sm">
                                 <thead>
@@ -387,7 +1801,12 @@
                     <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 mb-6">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-lg font-semibold flex items-center gap-2"><i data-lucide="lightbulb" class="w-5 h-5 text-warning"></i> 噬星体捕捉池</h3>
-                            <span class="text-xs text-slate-400 font-mono">全局快捷键: Ctrl + K</span>
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs text-slate-400 font-mono">全局快捷键: Ctrl + K</span>
+                                <button class="open-quick-capture-btn inline-flex items-center gap-2 rounded-xl border border-slate-200/70 bg-white/70 px-3 py-2 text-xs font-semibold text-slate-600 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:text-primary dark:border-slate-700/70 dark:bg-slate-900/70 dark:text-slate-300">
+                                    <i data-lucide="square-pen" class="w-4 h-4"></i> 打开捕捉台
+                                </button>
+                            </div>
                         </div>
                         <div id="quick-notes-container" class="space-y-3">
                             </div>
@@ -490,7 +1909,7 @@
                         <i data-lucide="bar-chart-2" class="text-primary"></i> 效能洞察
                     </h2>
                     
-                    <div class="flex gap-2 mb-6 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl w-fit">
+                    <div id="stats-period-controls" class="flex gap-2 mb-6 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl w-fit">
                         <button class="stats-period-btn bg-white dark:bg-slate-700 text-slate-900 dark:text-white py-1.5 px-5 rounded-lg font-medium shadow-sm text-sm transition-all" data-period="week">本周</button>
                         <button class="stats-period-btn text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 py-1.5 px-5 rounded-lg font-medium text-sm transition-all" data-period="month">本月</button>
                         <button class="stats-period-btn text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 py-1.5 px-5 rounded-lg font-medium text-sm transition-all" data-period="year">年度</button>
@@ -545,243 +1964,355 @@
                     </div>
                 </section>
 
-                <section id="tavern-section" class="mb-8 hidden h-full flex flex-col">
-                    <div class="flex items-center justify-between mb-4 shrink-0">
-                        <div class="text-[10px] tracking-widest text-slate-500 uppercase flex items-center gap-2">
-                            <div class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div> MOOD LAB
+                <section id="tavern-section" class="mb-8 hidden hidden-flex-col">
+                    <div class="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                        <div>
+                            <div class="module-eyebrow mb-3">MOOD MIXOLOGY</div>
+                            <h2 class="tavern-display text-3xl font-bold tracking-tight text-slate-950 dark:text-slate-50 sm:text-[2.2rem]">深空情绪吧台</h2>
+                            <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-400">
+                                这里不是简单的随机命名器。它会把你写下来的情绪样本调成一杯更像真实吧台配方的饮品，再留进酒单里慢慢回看。
+                            </p>
                         </div>
-                        <button id="btn-view-tavern-history" class="text-slate-400 hover:text-primary transition-colors">
-                            <i data-lucide="history" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-
-                    <div id="view-tavern-container" class="relative flex-1 min-h-[600px] w-full bg-[#fdfdfd] dark:bg-[#121215] rounded-3xl border border-slate-100 dark:border-white/5 overflow-hidden shadow-soft dark:shadow-2xl transition-all duration-500">
-    
-                        <div id="state-input" class="w-full h-full absolute inset-0 p-8 flex flex-col items-center justify-center z-10 opacity-100 transition-all duration-500">
-                            <div class="relative w-full h-64 flex flex-col items-center justify-center mb-10 transition-all duration-500">
-                                
-                                <div class="relative w-48 h-48 rounded-full border border-white/20 dark:border-white/10 glass-effect backdrop-blur-2xl flex items-end overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
-                                    
-                                    <div class="absolute inset-0 bg-gradient-to-tr from-white/5 via-white/10 to-transparent z-20 pointer-events-none rounded-full"></div>
-                                    <div class="absolute top-2 left-6 w-12 h-4 bg-white/20 rounded-full blur-[2px] transform -rotate-45 z-20 pointer-events-none opacity-40"></div>
-
-                                    <div class="absolute -bottom-10 left-1/2 -translate-x-1/2 w-32 h-32 bg-primary/10 rounded-full blur-3xl z-0 pointer-events-none"></div>
-
-                                    <div class="relative w-full h-[25%] bg-gradient-to-t from-slate-800/20 to-transparent z-10 flex items-end justify-center pb-2">
-                                        <div class="relative w-24 h-24 rounded-full bg-gradient-to-tr from-slate-600/10 to-transparent animate-[waveSpin_12s_linear_infinite] overflow-hidden mix-blend-overlay"></div>
-                                    </div>
-                                </div>
-
-                                <p class="absolute bottom-[-20px] text-[11px] font-medium text-slate-400 font-mono tracking-widest uppercase opacity-70">
-                                    Waiting for input...
-                                </p>
-                            </div>
-
-                            <div class="w-full max-w-sm relative mb-8 group">
-                                <textarea id="mood-text-input" rows="3" class="w-full bg-white/50 dark:bg-[#1a1c23]/50 border border-slate-200 dark:border-white/10 rounded-2xl p-5 text-sm md:text-base focus:ring-1 focus:ring-primary outline-none resize-none text-slate-700 dark:text-slate-200 backdrop-blur-md transition-all shadow-inner" placeholder="今天感觉有点累，想休息..."></textarea>
-                                <div class="absolute bottom-4 right-5 text-[10px] text-slate-400 font-mono"><span id="mood-char-count">0</span>/50</div>
-                            </div>
-
-                            <button id="btn-start-analyze" class="w-full max-w-sm bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 py-4 rounded-2xl font-bold shadow-[0_8px_20px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_20px_rgba(255,255,255,0.1)] hover:opacity-90 transition-all flex justify-center items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed" disabled>
-                                <i data-lucide="sparkles" class="w-4 h-4"></i> 开始调制 / Start Mixing
+                        <div class="flex flex-wrap gap-3">
+                            <span class="tavern-chip"><strong id="history-library-count">58</strong> 款酒库已上线</span>
+                            <button id="btn-view-tavern-history" class="tavern-action-secondary">
+                                <i data-lucide="book-open-text" class="w-4 h-4"></i> 打开酒单档案
                             </button>
                         </div>
+                    </div>
 
-                        <div id="state-analyzing" class="w-full h-full absolute inset-0 p-8 flex flex-col items-center justify-center z-0 opacity-0 transition-all duration-500">
-    
-                            <div class="relative w-48 h-48 rounded-full border border-white/20 dark:border-white/10 glass-effect backdrop-blur-2xl flex items-end overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] mb-8">
-                                
-                                <div class="absolute inset-0 bg-gradient-to-tr from-white/5 via-white/10 to-transparent z-20 pointer-events-none rounded-full"></div>
-                                <div class="absolute top-2 left-6 w-12 h-4 bg-white/20 rounded-full blur-[2px] transform -rotate-45 z-20 pointer-events-none opacity-40"></div>
+                    <div id="view-tavern-container" class="tavern-shell relative min-h-[820px] transition-all duration-500">
+                        <div id="state-input" class="absolute inset-0 z-10 opacity-100 transition-all duration-500">
+                            <div class="grid min-h-[820px] lg:grid-cols-[1.05fr_0.95fr]">
+                                <div class="flex flex-col justify-between p-6 sm:p-8 lg:p-10">
+                                    <div>
+                                        <div class="module-eyebrow mb-4">SIGNAL INPUT</div>
+                                        <h3 class="tavern-display max-w-2xl text-3xl font-semibold leading-tight text-slate-950 dark:text-slate-50 sm:text-[2.4rem]">
+                                            把一句情绪，调成一杯今晚才会出现的特调。
+                                        </h3>
+                                        <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-400">
+                                            你只需要说出此刻的体感、压力、空白、想逃或想继续推进的部分。系统会把它翻译成基酒、香调、浓度和一份可以保存的酒单记录。
+                                        </p>
+                                    </div>
 
-                                <div id="realtime-fluid" class="relative w-full h-[5%] bg-gradient-to-t from-transparent to-transparent transition-all duration-[2500ms] ease-in-out z-10 overflow-hidden">
-                                    
-                                    <div id="ripple-layer-1" class="absolute -top-12 -left-12 w-56 h-56 bg-white/20 rounded-[40%] animate-[waveSpin_6s_linear_infinite] mix-blend-overlay"></div>
-                                    <div id="ripple-layer-2" class="absolute -top-14 -left-8 w-56 h-56 bg-black/10 rounded-[45%] animate-[waveSpin_8s_linear_infinite_reverse] mix-blend-overlay"></div>
-                                    <div id="ripple-layer-3" class="absolute -top-8 -left-4 w-56 h-56 bg-white/30 rounded-[35%] animate-[waveSpin_3s_linear_infinite] mix-blend-overlay transition-opacity duration-500 opacity-0"></div>
+                                    <div class="mt-8 space-y-5">
+                                        <div class="tavern-panel p-5 sm:p-6">
+                                            <div class="flex items-center justify-between gap-4">
+                                                <label for="mood-text-input" class="text-sm font-semibold text-slate-900 dark:text-slate-100">情绪样本输入</label>
+                                                <div class="text-[11px] font-mono text-slate-400"><span id="mood-char-count">0</span>/50</div>
+                                            </div>
+                                            <textarea id="mood-text-input" rows="4" class="mt-4 w-full resize-none rounded-2xl border border-slate-200/70 bg-white/70 px-5 py-4 text-sm leading-7 text-slate-700 outline-none ring-0 placeholder:text-slate-400 dark:border-white/10 dark:bg-slate-950/20 dark:text-slate-100" placeholder="例如：今天写代码写得有点烦，但其实还是想把它做好，只是脑子已经有点发烫。"></textarea>
+                                            <div class="mt-3 flex flex-wrap gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+                                                <span class="tavern-chip">写感受、写疲惫、写兴奋、写你想逃开的东西都可以。</span>
+                                            </div>
+                                        </div>
 
-                                    <div id="realtime-bubbles" class="absolute inset-0 transition-opacity duration-1000 opacity-0">
-                                        <div class="absolute bottom-4 left-1/4 w-2 h-2 bg-white/60 rounded-full bubble-1"></div>
-                                        <div class="absolute bottom-8 left-1/2 w-3 h-3 bg-white/40 rounded-full bubble-2"></div>
-                                        <div class="absolute bottom-5 right-1/4 w-1.5 h-1.5 bg-white/70 rounded-full bubble-3"></div>
+                                        <div>
+                                            <div class="mb-3 text-xs font-semibold tracking-[0.18em] text-slate-400">快捷试饮</div>
+                                            <div class="flex flex-wrap gap-2">
+                                                <button class="tavern-suggestion" data-mood="今天有点累，但其实还想再推进一点。">微疲惫但还想继续</button>
+                                                <button class="tavern-suggestion" data-mood="刚做完一件难事，整个人像松了一口气。">松了一口气</button>
+                                                <button class="tavern-suggestion" data-mood="脑子很热，像有很多事同时撞过来。">压力堆叠中</button>
+                                                <button class="tavern-suggestion" data-mood="今晚很安静，我想慢一点，把心绪放平。">想慢下来</button>
+                                                <button class="tavern-suggestion" data-mood="代码和论文都卡住了，但我不想认输。">科研硬顶模式</button>
+                                            </div>
+                                        </div>
+
+                                        <div class="grid gap-3 sm:grid-cols-2">
+                                            <div class="tavern-stat">
+                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">How It Works</div>
+                                                <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">系统会根据文本的正负向、波动强度和关键词，决定基酒风格、香调组合与结果名称。</p>
+                                            </div>
+                                            <div class="tavern-stat">
+                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Bar Logic</div>
+                                                <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">当前酒库收录 50+ 款配方，包含高球、Fizz、Martini、Old Fashioned、彩蛋酒等真实吧台分支。</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+                                        <button id="btn-start-analyze" class="tavern-action-primary flex-1 disabled:cursor-not-allowed disabled:opacity-35" disabled>
+                                            <i data-lucide="sparkles" class="w-4 h-4"></i> 开始调制你的情绪饮品
+                                        </button>
+                                        <button id="btn-random-mood" class="tavern-action-secondary sm:w-auto">
+                                            <i data-lucide="shuffle" class="w-4 h-4"></i> 给我一句灵感
+                                        </button>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <p id="analyze-text" class="text-[11px] font-medium text-slate-400 dark:text-slate-500 animate-pulse tracking-widest font-mono uppercase mt-2">
-                                捕捉你的当下味道中...
-                            </p>
 
-                            <div class="w-full max-w-[200px] mt-8 opacity-0 transition-opacity duration-1000" id="emotion-bar-container">
-                                <div class="flex justify-between text-[9px] text-slate-400 dark:text-slate-500 font-mono mb-2 tracking-wider">
-                                    <span>Negative</span>
-                                    <span>0</span>
-                                    <span>Positive</span>
-                                </div>
-                                <div class="h-[2px] w-full bg-slate-200 dark:bg-slate-700/50 rounded-full relative">
-                                    <div id="emotion-indicator" class="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)] transition-all duration-[2000ms] ease-out" style="left: 50%;"></div>
+                                <div class="flex items-center justify-center p-6 sm:p-8 lg:p-10">
+                                    <div class="tavern-stage w-full">
+                                        <div class="tavern-stage-aura"></div>
+                                        <div class="tavern-stage-ring"></div>
+                                        <div class="tavern-vessel-wrap">
+                                            <div class="tavern-vessel">
+                                                <div class="tavern-vessel-label" id="tavern-stage-label">Idle Pour</div>
+                                                <div id="tavern-stage-liquid" class="tavern-liquid">
+                                                    <div id="tavern-stage-bubbles" class="tavern-bubbles">
+                                                        <span></span><span></span><span></span><span></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-6 text-center">
+                                            <div id="tavern-stage-status" class="text-sm font-semibold tracking-[0.2em] text-slate-500 dark:text-slate-400">WAITING FOR INPUT</div>
+                                            <p id="tavern-stage-caption" class="mt-3 max-w-md text-sm leading-7 text-slate-500 dark:text-slate-400">
+                                                写下一句此刻的感受，吧台会把它翻译成可见的颜色、液面和配方结构。
+                                            </p>
+                                        </div>
+                                        <div class="tavern-spectrum">
+                                            <div class="mb-2 flex justify-between text-[10px] font-mono uppercase tracking-[0.16em] text-slate-400">
+                                                <span>负向</span>
+                                                <span>中性</span>
+                                                <span>正向</span>
+                                            </div>
+                                            <div class="tavern-spectrum-bar">
+                                                <div id="emotion-indicator" class="tavern-spectrum-dot"></div>
+                                            </div>
+                                            <p id="emotion-scale-copy" class="mt-3 text-center text-xs leading-6 text-slate-500 dark:text-slate-400">
+                                                目前处于待命状态，尚未开始读取情绪样本。
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div id="state-result" class="w-full h-full absolute inset-0 flex flex-col items-center z-0 opacity-0 transition-all duration-500 overflow-hidden bg-gradient-to-b from-transparent to-slate-50 dark:to-[#0f1115]">
-                            
-                            <div class="w-full flex justify-between items-center px-8 pt-8 pb-4 shrink-0">
-                                <button id="btn-back-to-input" class="text-slate-400 hover:text-primary transition-colors">
-                                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                                </button>
-                                <span class="text-[10px] text-slate-400 tracking-[0.2em] uppercase font-medium">Mood Mixology</span>
-                                <button id="btn-save-drink" class="text-slate-400 hover:text-primary transition-colors" title="封存至酒柜">
-                                    <i data-lucide="download" class="w-5 h-5"></i>
-                                </button>
-                            </div>
+                        <div id="state-analyzing" class="absolute inset-0 z-0 opacity-0 transition-all duration-500">
+                            <div class="grid min-h-[820px] lg:grid-cols-[0.92fr_1.08fr]">
+                                <div class="flex flex-col justify-between p-6 sm:p-8 lg:p-10">
+                                    <div>
+                                        <div class="module-eyebrow mb-4">LIVE MIXING</div>
+                                        <h3 class="tavern-display text-3xl font-semibold leading-tight text-slate-950 dark:text-slate-50 sm:text-[2.3rem]">
+                                            正在把你的情绪调成一杯可以喝懂的东西。
+                                        </h3>
+                                        <p id="analyze-text" class="mt-4 text-sm leading-7 text-slate-600 dark:text-slate-400">
+                                            捕捉你的当下味道中...
+                                        </p>
+                                    </div>
 
-                            <div class="flex-1 w-full overflow-y-auto px-6 pb-6 flex flex-col items-center">
-                                
-                                <div class="w-full max-w-sm bg-white/40 dark:bg-white/[0.03] backdrop-blur-3xl rounded-[2rem] border border-white/60 dark:border-white/10 p-8 shadow-[0_30px_60px_rgba(0,0,0,0.05)] dark:shadow-[0_30px_60px_rgba(0,0,0,0.4)] flex flex-col items-center relative overflow-hidden">
-                                    
-                                    <div class="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
-
-                                    <div class="text-[9px] text-slate-400 dark:text-slate-500 tracking-[0.2em] uppercase mb-3">Your Exclusive Blend</div>
-                                    <h3 id="res-title" class="text-2xl font-serif font-bold text-center text-slate-800 dark:text-slate-100 mb-1 tracking-wide">青柠气泡的期待感</h3>
-                                    <p id="res-subtitle" class="text-[11px] text-slate-500 dark:text-slate-400 italic mb-10 font-serif opacity-80">Sunshine Sparkle Special</p>
-                                    
-                                    <div class="relative w-40 h-40 rounded-b-[60px] rounded-t-sm border border-white/60 dark:border-white/10 glass-effect backdrop-blur-xl flex items-end overflow-hidden shadow-inner mb-10 mx-auto">
-                                        <div id="res-glow" class="absolute -bottom-8 left-1/2 -translate-x-1/2 w-32 h-32 rounded-full blur-3xl z-0 opacity-50 pointer-events-none transition-all duration-1000"></div>
-
-                                        <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 z-10 pointer-events-none"></div>
-                                        <div class="absolute left-2 top-2 bottom-6 w-2 bg-gradient-to-b from-white/30 to-transparent rounded-full blur-[1px] z-10 pointer-events-none opacity-50"></div>
-
-                                        <div id="res-fluid" class="relative w-full h-[60%] bg-gradient-to-t transition-all duration-1000 ease-out z-10">
-                                            <div id="res-bubbles" class="absolute inset-0">
-                                                <div class="absolute bottom-2 left-6 w-1.5 h-1.5 bg-white/60 rounded-full bubble-1"></div>
-                                                <div class="absolute bottom-5 right-8 w-1 h-1 bg-white/40 rounded-full bubble-3"></div>
-                                                <div class="absolute bottom-8 left-1/2 w-2 h-2 bg-white/30 rounded-full bubble-2"></div>
-                                            </div>
+                                    <div class="mt-8 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                                        <div class="tavern-stat">
+                                            <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Primary Family</div>
+                                            <div id="analysis-reading-family" class="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">Calm / 待判定</div>
+                                        </div>
+                                        <div class="tavern-stat">
+                                            <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">EFI</div>
+                                            <div id="analysis-reading-efi" class="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">0.00</div>
+                                        </div>
+                                        <div class="tavern-stat">
+                                            <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">EII</div>
+                                            <div id="analysis-reading-eii" class="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">0.00</div>
                                         </div>
                                     </div>
 
-                                    <div class="w-full text-left">
-                                        <div class="flex justify-between items-end border-b border-slate-200/60 dark:border-slate-700/50 pb-3 mb-4">
-                                            <span class="text-[11px] text-slate-500 tracking-wider">基酒 Base</span>
-                                            <span id="res-base" class="text-sm font-bold text-slate-800 dark:text-slate-200">深色朗姆</span>
-                                        </div>
-                                        
-                                        <div class="grid grid-cols-3 gap-2 text-center mb-6">
-                                            <div>
-                                                <div class="text-[10px] text-slate-400 mb-1.5 font-mono">Top</div>
-                                                <div id="res-top" class="text-xs font-medium text-slate-700 dark:text-slate-300">薄荷叶</div>
-                                            </div>
-                                            <div class="border-l border-r border-slate-200/60 dark:border-slate-700/50">
-                                                <div class="text-[10px] text-slate-400 mb-1.5 font-mono">Mid</div>
-                                                <div id="res-mid" class="text-xs font-medium text-slate-700 dark:text-slate-300">可可</div>
-                                            </div>
-                                            <div>
-                                                <div class="text-[10px] text-slate-400 mb-1.5 font-mono">Base</div>
-                                                <div id="res-bot" class="text-xs font-medium text-slate-700 dark:text-slate-300">香草</div>
-                                            </div>
-                                        </div>
-
-                                        <div class="flex justify-between items-end border-t border-slate-200/60 dark:border-slate-700/50 pt-3 mb-4">
-                                            <span class="text-[11px] text-slate-500 tracking-wider">体感 Feel</span>
-                                            <span id="res-feel" class="text-xs font-medium text-slate-700 dark:text-slate-300 italic">Tight 紧绷</span>
-                                        </div>
-
-                                        <div class="flex items-center justify-between mb-5 mt-2">
-                                            <span class="text-[10px] text-slate-500 tracking-wider shrink-0">浓度</span>
-                                            <div class="flex-1 mx-4 h-[2px] bg-slate-200 dark:bg-slate-700/50 rounded-full relative overflow-visible">
-                                                <div id="res-bar" class="absolute left-0 top-1/2 -translate-y-1/2 h-1.5 bg-slate-400 dark:bg-slate-500 rounded-full transition-all duration-1000" style="width: 0%"></div>
-                                            </div>
-                                            <span id="res-params" class="text-[10px] font-mono text-slate-600 dark:text-slate-400 shrink-0">0.00%</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="text-center mt-2 border-t border-slate-200/60 dark:border-slate-700/50 pt-4 w-full">
-                                        <p id="res-quote" class="text-[10px] text-slate-500 italic opacity-80">"一杯简单的特调，回应你此刻的留白。"</p>
+                                    <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+                                        <button id="btn-stop-analyze" class="tavern-action-secondary flex-1">
+                                            <i data-lucide="x" class="w-4 h-4"></i> 停止调制
+                                        </button>
                                     </div>
                                 </div>
 
-                                <div class="flex gap-3 w-full max-w-sm mt-6">
-                                    <button id="btn-remix" class="flex-1 bg-white dark:bg-slate-100 text-slate-900 py-4 rounded-[1.25rem] font-bold shadow-[0_8px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_20px_rgba(255,255,255,0.1)] hover:opacity-90 transition-all flex justify-center items-center gap-2">
-                                        <i data-lucide="refresh-cw" class="w-4 h-4"></i> 再调一杯
+                                <div class="flex items-center justify-center p-6 sm:p-8 lg:p-10">
+                                    <div class="tavern-stage w-full">
+                                        <div class="tavern-stage-aura"></div>
+                                        <div class="tavern-stage-ring"></div>
+                                        <div class="tavern-vessel-wrap">
+                                            <div class="tavern-vessel">
+                                                <div class="tavern-vessel-label" id="analysis-status-primary">Mood Reading</div>
+                                                <div id="realtime-fluid" class="tavern-liquid">
+                                                    <div id="realtime-bubbles" class="tavern-bubbles">
+                                                        <span></span><span></span><span></span><span></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-6 text-center">
+                                            <div id="analysis-status-secondary" class="text-sm font-semibold tracking-[0.2em] text-slate-500 dark:text-slate-400">CALIBRATING</div>
+                                            <p class="mt-3 max-w-md text-sm leading-7 text-slate-500 dark:text-slate-400">
+                                                吧台会先判断你的情绪方向，再决定用明亮、安静、深色或风暴类基酒来承载它。
+                                            </p>
+                                        </div>
+                                        <div id="emotion-bar-container" class="tavern-spectrum opacity-0 transition-opacity duration-1000">
+                                            <div class="mb-2 flex justify-between text-[10px] font-mono uppercase tracking-[0.16em] text-slate-400">
+                                                <span>负向</span>
+                                                <span>中性</span>
+                                                <span>正向</span>
+                                            </div>
+                                            <div class="tavern-spectrum-bar">
+                                                <div class="tavern-spectrum-dot"></div>
+                                            </div>
+                                            <p class="mt-3 text-center text-xs leading-6 text-slate-500 dark:text-slate-400">
+                                                情绪位置正在移动，系统会在结果页把它换成更容易理解的配方语言。
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="state-result" class="absolute inset-0 z-0 opacity-0 transition-all duration-500">
+                            <div class="flex min-h-[820px] flex-col p-6 sm:p-8 lg:p-10">
+                                <div class="mb-6 flex items-center justify-between gap-4">
+                                    <button id="btn-back-to-input" class="tavern-action-secondary !min-h-[2.9rem] !px-4">
+                                        <i data-lucide="arrow-left" class="w-4 h-4"></i> 继续对话
                                     </button>
+                                    <div class="text-[11px] font-mono uppercase tracking-[0.18em] text-slate-400">EXCLUSIVE BLEND</div>
+                                    <div class="flex gap-3">
+                                        <button id="btn-share-drink" class="tavern-action-secondary !min-h-[2.9rem] !px-4">
+                                            <i data-lucide="share-2" class="w-4 h-4"></i> 分享卡片
+                                        </button>
+                                        <button id="btn-save-drink" class="tavern-action-primary !min-h-[2.9rem] !px-4">
+                                            <i data-lucide="archive" class="w-4 h-4"></i> 保存到酒单
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="grid flex-1 gap-6 xl:grid-cols-[0.86fr_1.14fr]">
+                                    <div class="tavern-panel flex flex-col items-center justify-center p-6 sm:p-8">
+                                        <div class="flex flex-wrap justify-center gap-2">
+                                            <span id="res-badge" class="tavern-chip">Calm Signature</span>
+                                            <span id="res-style" class="tavern-chip">Highball</span>
+                                        </div>
+                                        <div class="mt-6 tavern-stage w-full">
+                                            <div class="tavern-stage-aura"></div>
+                                            <div class="tavern-vessel-wrap !h-auto">
+                                                <div class="tavern-vessel !h-[21rem] !w-[15rem]">
+                                                    <div class="tavern-vessel-label" id="res-serial">Batch 0001</div>
+                                                    <div id="res-fluid" class="tavern-liquid !h-[54%]">
+                                                        <div id="res-bubbles" class="tavern-bubbles">
+                                                            <span></span><span></span><span></span><span></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-5 text-center">
+                                            <div id="res-intensity-label" class="text-sm font-semibold tracking-[0.18em] text-slate-500 dark:text-slate-400">MID-INTENSITY</div>
+                                            <p id="res-quote" class="mt-3 max-w-md text-sm leading-7 text-slate-500 dark:text-slate-400">
+                                                一杯简单的特调，回应你此刻的留白。
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="tavern-panel p-6 sm:p-8">
+                                        <div class="module-eyebrow mb-4">RESULT CARD</div>
+                                        <h3 id="res-title" class="tavern-display text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-50 sm:text-[2.5rem]">午夜可可·轻酿版</h3>
+                                        <p id="res-subtitle" class="mt-2 text-sm italic text-slate-500 dark:text-slate-400">Midnight Cacao Mild</p>
+                                        <p id="res-story" class="mt-5 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-400">
+                                            这杯酒会把你文字里的疲惫、想坚持、以及一点点想逃离的冲动调成更可被理解的层次。
+                                        </p>
+
+                                        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+                                            <div class="tavern-stat">
+                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">基酒 Base</div>
+                                                <div id="res-base" class="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">深色朗姆</div>
+                                            </div>
+                                            <div class="tavern-stat">
+                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">杯型 Glass</div>
+                                                <div id="res-glass" class="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">高球杯</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-6 grid gap-3 sm:grid-cols-3">
+                                            <div class="tavern-stat text-center">
+                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Top</div>
+                                                <div id="res-top" class="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">柠檬皮</div>
+                                            </div>
+                                            <div class="tavern-stat text-center">
+                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Mid</div>
+                                                <div id="res-mid" class="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">可可</div>
+                                            </div>
+                                            <div class="tavern-stat text-center">
+                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Base</div>
+                                                <div id="res-bot" class="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">香草</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+                                            <div class="tavern-stat">
+                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">体感 Feel</div>
+                                                <div id="res-feel" class="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">Tight / 紧绷</div>
+                                            </div>
+                                            <div class="tavern-stat">
+                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">装饰 Garnish</div>
+                                                <div id="res-garnish" class="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">橙皮与海盐雾</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-6 rounded-[1.4rem] border border-slate-200/70 bg-white/60 p-5 dark:border-slate-700/60 dark:bg-white/[0.03]">
+                                            <div class="flex items-center justify-between gap-4">
+                                                <span class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">浓度</span>
+                                                <span id="res-params" class="text-sm font-semibold text-slate-900 dark:text-slate-100">0.63 / 中度酿制</span>
+                                            </div>
+                                            <div class="mt-3 h-2 overflow-hidden rounded-full bg-slate-200/70 dark:bg-slate-800/70">
+                                                <div id="res-bar" class="h-full rounded-full bg-slate-500 transition-all duration-1000" style="width: 0%"></div>
+                                            </div>
+                                            <div class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                                                <div><span class="text-slate-400">情绪家族：</span><span id="res-family" class="font-medium text-slate-700 dark:text-slate-200">Calm</span></div>
+                                                <div><span class="text-slate-400">估算度数：</span><span id="res-abv" class="font-medium text-slate-700 dark:text-slate-200">15% ABV</span></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-6 rounded-[1.4rem] border border-slate-200/70 bg-white/60 p-5 dark:border-slate-700/60 dark:bg-white/[0.03]">
+                                            <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">调酒师注记</div>
+                                            <p id="res-reason" class="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-400">
+                                                这杯酒的前调来自你话里的紧绷，中调留给没有说完的压力，尾调放进你还想继续的那一点执念。
+                                            </p>
+                                        </div>
+
+                                        <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+                                            <button id="btn-remix" class="tavern-action-secondary flex-1">
+                                                <i data-lucide="refresh-cw" class="w-4 h-4"></i> 再调一杯
+                                            </button>
+                                            <button id="btn-result-history" class="tavern-action-secondary flex-1">
+                                                <i data-lucide="book-open-text" class="w-4 h-4"></i> 去看酒单
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- <div id="state-result" class="w-full h-full absolute inset-0 pt-10 pb-6 px-6 flex flex-col items-center z-0 opacity-0 transition-all duration-500 overflow-y-auto bg-gradient-to-b from-transparent to-slate-50 dark:to-[#0f1115]">
-                            <div class="text-[9px] text-slate-400 tracking-[0.2em] uppercase mb-3">Your Exclusive Blend</div>
-                            <h3 id="res-title" class="text-2xl md:text-3xl font-serif font-bold text-center text-slate-800 dark:text-slate-100 mb-1 tracking-wide">青柠气泡的期待感</h3>
-                            <p id="res-subtitle" class="text-[11px] text-slate-500 italic mb-10 font-serif opacity-80">Sunshine Sparkle Special</p>
-                            
-                            <div class="relative w-40 h-56 rounded-b-[80px] rounded-t-sm border-[0.5px] border-white/60 dark:border-white/10 glass-effect backdrop-blur-xl flex items-end overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] mb-10 mx-auto">
-                                <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 z-10 pointer-events-none"></div>
-                                <div class="absolute left-2 top-2 bottom-12 w-2 bg-gradient-to-b from-white/30 to-transparent rounded-full blur-[1px] z-10 pointer-events-none opacity-50"></div>
-
-                                <div id="res-fluid" class="relative w-full h-[60%] bg-gradient-to-t from-amber-400 to-orange-300 transition-all duration-1000 ease-out">
-                                    <div id="res-bubbles" class="absolute inset-0">
-                                        <div class="absolute bottom-2 left-6 w-1.5 h-1.5 bg-white/60 rounded-full bubble-1"></div>
-                                        <div class="absolute bottom-5 right-8 w-1 h-1 bg-white/40 rounded-full bubble-3"></div>
-                                        <div class="absolute bottom-8 left-1/2 w-2 h-2 bg-white/30 rounded-full bubble-2"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="w-full max-w-sm bg-white/60 dark:bg-[#1a1c23]/60 backdrop-blur-xl rounded-3xl border border-slate-100 dark:border-white/5 p-6 shadow-sm mb-8 text-left relative">
-                                <div class="flex justify-between items-end border-b border-slate-200/60 dark:border-slate-700/50 pb-3 mb-4">
-                                    <span class="text-[11px] text-slate-500 tracking-wider">基酒 Base</span>
-                                    <span id="res-base" class="text-sm font-bold text-slate-800 dark:text-slate-200">深色朗姆</span>
-                                </div>
-                                
-                                <div class="grid grid-cols-3 gap-2 text-center mb-6">
+                        <div id="state-history" class="absolute inset-0 z-0 opacity-0 transition-all duration-500">
+                            <div class="flex min-h-[820px] flex-col p-6 sm:p-8 lg:p-10">
+                                <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                                     <div>
-                                        <div class="text-[10px] text-slate-400 mb-1.5 font-mono">Top</div>
-                                        <div id="res-top" class="text-xs font-medium text-slate-700 dark:text-slate-300">薄荷叶</div>
+                                        <div class="module-eyebrow mb-3">ARCHIVE CELLAR</div>
+                                        <h3 class="tavern-display text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-50">历史酒单档案</h3>
+                                        <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-400">
+                                            每一杯都保留了当时的情绪向量、配方结构和一句调酒师注记。以后回看时，不只是“那天心情不好”这么粗糙。
+                                        </p>
                                     </div>
-                                    <div class="border-l border-r border-slate-200/60 dark:border-slate-700/50">
-                                        <div class="text-[10px] text-slate-400 mb-1.5 font-mono">Mid</div>
-                                        <div id="res-mid" class="text-xs font-medium text-slate-700 dark:text-slate-300">可可</div>
-                                    </div>
-                                    <div>
-                                        <div class="text-[10px] text-slate-400 mb-1.5 font-mono">Base</div>
-                                        <div id="res-bot" class="text-xs font-medium text-slate-700 dark:text-slate-300">香草</div>
+                                    <div class="flex gap-3">
+                                        <button id="btn-close-history" class="tavern-action-secondary !min-h-[2.9rem] !px-4">
+                                            <i data-lucide="arrow-left" class="w-4 h-4"></i> 返回吧台
+                                        </button>
+                                        <button id="btn-history-create" class="tavern-action-primary !min-h-[2.9rem] !px-4">
+                                            <i data-lucide="glass-water" class="w-4 h-4"></i> 新调一杯
+                                        </button>
                                     </div>
                                 </div>
 
-                                <div class="flex items-center justify-between mb-5">
-                                    <span class="text-[10px] text-slate-500 tracking-wider">浓度</span>
-                                    <div class="flex-1 mx-4 h-1 bg-slate-200 dark:bg-slate-800 rounded-full relative overflow-hidden">
-                                        <div id="res-bar" class="absolute left-0 top-0 bottom-0 bg-slate-400 dark:bg-slate-500 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                                <div class="mb-6 grid gap-3 sm:grid-cols-3">
+                                    <div class="tavern-stat">
+                                        <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">已封存</div>
+                                        <div id="history-count" class="mt-3 text-2xl font-bold text-slate-950 dark:text-slate-50">0</div>
                                     </div>
-                                    <span id="res-params" class="text-[10px] font-mono text-slate-600 dark:text-slate-400">0.00%</span>
+                                    <div class="tavern-stat">
+                                        <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">彩蛋酒款</div>
+                                        <div id="history-secret-count" class="mt-3 text-2xl font-bold text-slate-950 dark:text-slate-50">0</div>
+                                    </div>
+                                    <div class="tavern-stat">
+                                        <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">酒库总量</div>
+                                        <div class="mt-3 text-2xl font-bold text-slate-950 dark:text-slate-50">58</div>
+                                    </div>
                                 </div>
-                                
-                                <div class="text-center mt-4">
-                                    <p id="res-quote" class="text-[11px] text-slate-500 italic opacity-80">"一杯简单的特调，回应你此刻的留白。"</p>
+
+                                <div id="tavern-history-list" class="tavern-history-grid flex-1 content-start overflow-y-auto pr-1 pb-3">
                                 </div>
-                            </div>
-
-                            <div class="flex gap-3 w-full max-w-sm mt-auto">
-                                <button id="btn-remix" class="flex-1 bg-white dark:bg-white text-slate-900 py-4 rounded-2xl font-bold shadow-md hover:opacity-90 transition-all flex justify-center items-center gap-2">
-                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> 再调一杯
-                                </button>
-                                <button id="btn-save-drink" class="w-16 shrink-0 bg-slate-100 dark:bg-[#2a2d36] text-slate-700 dark:text-slate-300 py-4 rounded-2xl flex justify-center items-center transition-all hover:bg-slate-200 dark:hover:bg-[#363a45]">
-                                    <i data-lucide="download" class="w-5 h-5"></i>
-                                </button>
-                            </div>
-                        </div> -->
-
-                        <div id="state-history" class="w-full h-full absolute inset-0 p-6 flex flex-col z-0 opacity-0 bg-[#fdfdfd] dark:bg-[#121215] transition-all duration-500">
-                            <div class="flex items-center justify-between mb-6 shrink-0">
-                                <h3 class="text-lg font-serif font-bold text-slate-800 dark:text-slate-200">历史酒单 Archive</h3>
-                                <button id="btn-close-history" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2">
-                                    <i data-lucide="x" class="w-5 h-5"></i>
-                                </button>
-                            </div>
-                            <div id="tavern-history-list" class="flex-1 overflow-y-auto space-y-4 pr-2 pb-4 text-left">
                             </div>
                         </div>
-
                     </div>
                 </section>
 
@@ -819,7 +2350,7 @@
         </main>
     </div>
     
-    <div id="achievement-popup" class="fixed top-8 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl shadow-2xl p-4 w-80 hidden achievement-popup z-50 flex items-start gap-4 border border-slate-700 dark:border-slate-200">
+    <div id="achievement-popup" class="fixed top-8 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl shadow-2xl p-4 w-80 hidden hidden-flex achievement-popup z-50 items-start gap-4 border border-slate-700 dark:border-slate-200">
         <div class="p-2 bg-yellow-400/20 text-yellow-500 rounded-xl shrink-0">
             <i data-lucide="award" class="w-6 h-6"></i>
         </div>
@@ -829,35 +2360,74 @@
         </div>
     </div>
 
-    <div id="quick-capture-modal" class="fixed inset-0 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-start justify-center pt-[15vh] transition-opacity">
-        <div id="quick-capture-content" class="bg-cardLight dark:bg-cardDark w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform scale-95 transition-all duration-200 flex flex-col">
-            
-            <div class="p-6 flex items-start gap-4">
-                <i data-lucide="zap" class="text-warning w-6 h-6 mt-1 shrink-0"></i>
-                <textarea id="quick-capture-input" rows="5" placeholder="记录漫长航行中的微小异常或灵感...&#10;支持使用 Markdown 语法，例如 **加粗** 或 - 列表" class="flex-1 bg-transparent border-none focus:outline-none text-base md:text-lg text-slate-800 dark:text-white placeholder-slate-400 font-medium resize-none overflow-y-auto leading-relaxed"></textarea>
-            </div>
-            
-            <div class="bg-slate-50 dark:bg-slate-900/80 px-6 py-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                <div class="flex gap-4 items-center">
-                    <select id="quick-capture-tag" class="text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded px-2 py-1 outline-none cursor-pointer">
-                        <option value="idea">💡 灵感闪现</option>
-                        <option value="bug">🐛 异常报告</option>
-                        <option value="todo">✅ 待办备忘</option>
-                        <option value="log">📖 航行日志</option>
-                    </select>
-                    <span class="flex items-center gap-1.5"><i data-lucide="file-code" class="w-4 h-4"></i> 支持 Markdown</span>
-                    <span class="flex items-center gap-1.5"><i data-lucide="x" class="w-4 h-4"></i> Esc 取消</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span>保存并归档</span>
-                    <div class="flex items-center gap-1">
-                        <kbd class="font-mono bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 px-2 py-1 rounded shadow-sm text-slate-600 dark:text-slate-300">Ctrl</kbd>
-                        <span>+</span>
-                        <kbd class="font-mono bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 px-2 py-1 rounded shadow-sm text-slate-600 dark:text-slate-300">Enter</kbd>
+    <div id="quick-capture-modal" class="fixed inset-0 bg-slate-900/46 dark:bg-slate-900/70 backdrop-blur-md z-50 hidden hidden-flex items-center justify-center px-4 py-6 transition-opacity">
+        <div id="quick-capture-content" class="quick-capture-shell w-full max-w-5xl transform scale-95 transition-all duration-200">
+            <div class="quick-capture-glow"></div>
+            <div class="quick-capture-grid">
+                <section class="quick-capture-main">
+                    <div class="module-eyebrow mb-3">CAPTURE CONSOLE</div>
+                    <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                        <div class="max-w-2xl">
+                            <h3 class="tavern-display text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-50">把一闪而过的想法，先安全地收进缓存。</h3>
+                            <p class="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-400">
+                                先别要求它完整。你只要把灵感、异常、待办或航行日志先扔进来，系统会替你保留住这一下。
+                            </p>
+                        </div>
+                        <button id="quick-capture-close" class="quick-capture-ghost shrink-0">
+                            <i data-lucide="x" class="w-4 h-4"></i> 关闭
+                        </button>
                     </div>
-                </div>
-            </div>
 
+                    <div class="quick-capture-editor">
+                        <div class="quick-capture-toolbar border-b border-slate-200/70 px-5 py-4 dark:border-slate-700/60">
+                            <div class="flex flex-wrap gap-2">
+                                <span class="quick-capture-chip"><i data-lucide="sparkles" class="w-4 h-4 text-warning"></i> 实时捕获</span>
+                                <span class="quick-capture-chip"><i data-lucide="file-code" class="w-4 h-4 text-primary"></i> Markdown 可用</span>
+                            </div>
+                            <span class="quick-capture-chip"><i data-lucide="align-left" class="w-4 h-4"></i> <strong id="quick-capture-count">0</strong> 字</span>
+                        </div>
+                        <textarea id="quick-capture-input" rows="8" placeholder="例如：&#10;- 晚上 9:40 脑子突然通了，任务拆分方式要改&#10;- 某个统计面板的层级还是太吵&#10;- 明天第一件事先补实验记录，再看代码" class="quick-capture-input"></textarea>
+                        <div class="quick-capture-footer">
+                            <div class="flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
+                                <span class="quick-capture-chip"><i data-lucide="corner-down-left" class="w-4 h-4"></i> Ctrl + Enter 保存</span>
+                                <span class="quick-capture-chip"><i data-lucide="keyboard" class="w-4 h-4"></i> Esc 关闭</span>
+                            </div>
+                            <div class="flex flex-wrap gap-3">
+                                <button id="quick-capture-cancel" class="quick-capture-ghost">
+                                    <i data-lucide="arrow-left" class="w-4 h-4"></i> 稍后再记
+                                </button>
+                                <button id="quick-capture-save" class="quick-capture-primary">
+                                    <i data-lucide="archive" class="w-4 h-4"></i> 保存到捕捉池
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <aside class="quick-capture-side">
+                    <div class="quick-capture-side-title">Record Type</div>
+                    <select id="quick-capture-tag" class="quick-capture-select">
+                        <option value="idea">灵感闪现</option>
+                        <option value="bug">异常报告</option>
+                        <option value="todo">待办备忘</option>
+                        <option value="log">航行日志</option>
+                    </select>
+
+                    <div class="quick-capture-note">
+                        <div class="quick-capture-side-title">记录建议</div>
+                        <ul>
+                            <li>写一句现状就够了，不必先整理成文章。</li>
+                            <li>如果是异常，写“现象 + 猜测原因 + 下一步”。</li>
+                            <li>如果是待办，尽量写成可直接执行的动作。</li>
+                        </ul>
+                    </div>
+
+                    <div class="quick-capture-note">
+                        <div class="quick-capture-side-title">快捷格式</div>
+                        <p>支持 `**重点**`、`- 列表`、`# 标题`。写得越粗糙越没关系，重点是先留下来。</p>
+                    </div>
+                </aside>
+            </div>
         </div>
     </div>
 
@@ -873,7 +2443,7 @@
     <script src="assets/js/stats.js"></script>
     <script src="assets/js/status-ui.js"></script>
     <script src="assets/js/sync.js"></script>
-    <div id="daily-summary-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-md z-[70] hidden flex flex-col items-center justify-center transition-opacity">
+    <div id="daily-summary-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-md z-[70] hidden hidden-flex-col items-center justify-center transition-opacity">
         <div class="bg-cardLight dark:bg-cardDark w-full max-w-md rounded-2xl shadow-2xl border border-primary/30 p-8 transform transition-all text-center modal-popup">
             <div class="text-6xl mb-4 animate-bounce">🌌</div>
             <h2 class="text-2xl font-bold text-primary mb-2">一个地球日结束</h2>
@@ -892,7 +2462,7 @@
         </div>
     </div>
 
-    <div id="weekly-summary-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-md z-[70] hidden flex flex-col items-center justify-center transition-opacity">
+    <div id="weekly-summary-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-md z-[70] hidden hidden-flex-col items-center justify-center transition-opacity">
         <div class="bg-cardLight dark:bg-cardDark w-full max-w-md rounded-2xl shadow-2xl border border-warning/50 p-8 transform transition-all text-center modal-popup">
             <div class="text-6xl mb-4 animate-pulse">🚀</div>
             <h2 class="text-2xl font-bold text-warning mb-2">鲸鱼座τ星航线·全周度达成！</h2>
