@@ -918,11 +918,12 @@
         let leaveData = []; 
         let achievements = []; 
         let currentTask = null; 
-        let taskTimer = null; 
-        let taskStartTime = null; 
+        let taskTimer = null;
+        let taskStartTime = null;
         let quickNotesData = {}; // 结构: { 'YYYY-MM-DD': [{ time: '10:00', text: 'idea' }] }
         let tavernData = []; // 存储结构: [{ id, date, time, name, base, top, middle, bottom, params }]
         let currentDrinkInfo = null; // 用于临时存放正在调制的这杯酒
+        const CURRENT_TASK_STORAGE_KEY = 'currentTask';
         const tagMap = { 'paper': '文献阅读', 'code': '代码构建', 'experiment': '实验跑数', 'write': '文档撰写', 'other': '杂项事务' };
 
         const CONFIG = {
@@ -1010,6 +1011,7 @@
             const savedAchievements = localStorage.getItem('achievements');
             const savedNotes = localStorage.getItem('quickNotesData');
             const savedTavernData = localStorage.getItem('tavernData');
+            const savedCurrentTask = localStorage.getItem(CURRENT_TASK_STORAGE_KEY);
 
             try {
                 quickNotesData = savedNotes ? JSON.parse(savedNotes) : {};
@@ -1028,7 +1030,22 @@
                 achievements = [];
                 tavernData = [];
             }
-            
+
+            try {
+                currentTask = savedCurrentTask ? JSON.parse(savedCurrentTask) : null;
+            } catch (e) {
+                currentTask = null;
+            }
+
+            if (!currentTask ||
+                typeof currentTask !== 'object' ||
+                typeof currentTask.name !== 'string' ||
+                typeof currentTask.startTimestamp !== 'number' ||
+                typeof currentTask.startTime !== 'string') {
+                currentTask = null;
+                localStorage.removeItem(CURRENT_TASK_STORAGE_KEY);
+            }
+
             if (!phoneResistData.records) phoneResistData.records = {};
 
             const today = getTodayString();
@@ -1063,6 +1080,39 @@
             if (!preventAutoSync && typeof triggerAutoSync === 'function') {
                 triggerAutoSync();
             }
+        }
+
+        function persistCurrentTask() {
+            if (currentTask) {
+                localStorage.setItem(CURRENT_TASK_STORAGE_KEY, JSON.stringify(currentTask));
+            } else {
+                localStorage.removeItem(CURRENT_TASK_STORAGE_KEY);
+            }
+        }
+
+        function renderCurrentTaskState() {
+            const container = document.getElementById('current-task-container');
+            const nameEl = document.getElementById('current-task-name');
+            const timeEl = document.getElementById('current-task-time');
+            const progressBar = document.getElementById('task-progress-bar');
+
+            if (!currentTask) {
+                container.classList.add('hidden');
+                nameEl.textContent = '-';
+                timeEl.textContent = '已进行: 00:00:00';
+                progressBar.style.width = '0%';
+                return;
+            }
+
+            const elapsed = Math.max(0, Date.now() - currentTask.startTimestamp);
+            const h = Math.floor(elapsed / 3600000);
+            const m = Math.floor((elapsed % 3600000) / 60000);
+            const s = Math.floor((elapsed % 60000) / 1000);
+
+            nameEl.innerHTML = `<span class="text-xs bg-primary/20 text-primary px-2 py-1 rounded-md mr-2">${escapeHtml(tagMap[currentTask.tag] || tagMap.other)}</span>${escapeHtml(currentTask.name)}`;
+            timeEl.textContent = `已进行: ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            progressBar.style.width = `${Math.min((elapsed / 36000000) * 100, 100)}%`;
+            container.classList.remove('hidden');
         }
         
         function updateDateTime() {
@@ -1890,7 +1940,10 @@
         function initTaskManagement() {
             document.getElementById('start-task').addEventListener('click', startTask);
             document.getElementById('end-task').addEventListener('click', endTask);
-            updateTodayTasksList(); updateSchedule();
+            updateTodayTasksList();
+            updateSchedule();
+            renderCurrentTaskState();
+            if (currentTask) startTaskTimer();
         }
 
         const quickModal = document.getElementById('quick-capture-modal');
@@ -2071,43 +2124,45 @@
             if (!name) return showToast('请输入任务名称', 'warning');
             if (currentTask) endTask();
             
-            currentTask = { 
-                id: 'task_' + Date.now(), 
-                name: name, 
-                tag: tagValue, 
-                startTime: getCurrentTimeString(), 
-                startTimestamp: Date.now() 
+            currentTask = {
+                id: 'task_' + Date.now(),
+                name: name,
+                tag: tagValue,
+                startTime: getCurrentTimeString(),
+                startTimestamp: Date.now()
             };
-            
-            document.getElementById('current-task-name').innerHTML = `<span class="text-xs bg-primary/20 text-primary px-2 py-1 rounded-md mr-2">${escapeHtml(tagMap[tagValue] || tagMap.other)}</span>${escapeHtml(name)}`;
-            document.getElementById('current-task-time').textContent = '已进行: 00:00:00';
-            document.getElementById('current-task-container').classList.remove('hidden');
+
+            persistCurrentTask();
+            renderCurrentTaskState();
             document.getElementById('task-name').value = '';
-            
-            startTaskTimer(); updateTodayStatus();
+
+            startTaskTimer();
+            updateTodayStatus();
         }
-        
+
         function startTaskTimer() {
             if (taskTimer) clearInterval(taskTimer);
+            renderCurrentTaskState();
             taskTimer = setInterval(() => {
                 if (!currentTask) return;
-                const elapsed = Date.now() - currentTask.startTimestamp;
-                const h = Math.floor(elapsed / 3600000), m = Math.floor((elapsed % 3600000) / 60000), s = Math.floor((elapsed % 60000) / 1000);
-                document.getElementById('current-task-time').textContent = `已进行: ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-                document.getElementById('task-progress-bar').style.width = `${Math.min((elapsed / 36000000) * 100, 100)}%`;
+                renderCurrentTaskState();
             }, 1000);
         }
-        
+
         function endTask() {
             if (!currentTask) return;
             clearInterval(taskTimer); taskTimer = null;
             const duration = Math.floor((Date.now() - currentTask.startTimestamp) / 60000);
             if (!taskData[getTodayString()]) taskData[getTodayString()] = [];
             taskData[getTodayString()].push({ ...currentTask, endTime: getCurrentTimeString(), duration: duration, completed: true });
-            saveData();
             currentTask = null;
-            document.getElementById('current-task-container').classList.add('hidden');
-            updateTodayTasksList(); updateSchedule(); updateTodayStatus(); checkAchievements();
+            persistCurrentTask();
+            saveData(true);
+            renderCurrentTaskState();
+            updateTodayTasksList();
+            updateSchedule();
+            updateTodayStatus();
+            checkAchievements();
         }
         
         function updateTodayTasksList() {
@@ -2116,9 +2171,12 @@
             tbody.innerHTML = '';
             
             tasks.forEach(t => {
-                const h = Math.floor(t.duration / 60), m = t.duration % 60;
-                const tagName = tagMap[t.tag || 'other']; 
-                
+                const durationMins = Number.isFinite(t.duration) ? t.duration : 0;
+                const h = Math.floor(durationMins / 60), m = durationMins % 60;
+                const tagName = tagMap[t.tag || 'other'];
+                const startTime = typeof t.startTime === 'string' ? t.startTime : '-';
+                const endTime = typeof t.endTime === 'string' ? t.endTime : '-';
+
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
                         <td class="py-3 px-4 font-medium flex items-center">
@@ -2127,8 +2185,8 @@
                             </span>
                             <span class="truncate max-w-[200px]">${escapeHtml(t.name)}</span>
                         </td>
-                        <td class="py-3 px-4 text-slate-500 font-mono">${t.startTime}</td>
-                        <td class="py-3 px-4 text-slate-500 font-mono">${t.endTime}</td>
+                        <td class="py-3 px-4 text-slate-500 font-mono">${escapeHtml(startTime)}</td>
+                        <td class="py-3 px-4 text-slate-500 font-mono">${escapeHtml(endTime)}</td>
                         <td class="py-3 px-4 text-slate-500">${h > 0 ? `${h}h ${m}m` : `${m}m`}</td>
                         <td class="py-3 px-4"><span class="px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-md text-xs font-bold">已完成</span></td>
                     </tr>
@@ -2145,9 +2203,11 @@
             }
             
             container.innerHTML = '';
-            const hourHeight = 384 / 18; 
-            
+            const hourHeight = 384 / 18;
+
             tasks.forEach(t => {
+                if (typeof t.startTime !== 'string' || typeof t.endTime !== 'string') return;
+
                 const [sh, sm] = t.startTime.split(':').map(Number);
                 const [eh, em] = t.endTime.split(':').map(Number);
                 
@@ -2692,6 +2752,79 @@
             localStorage.setItem('localLastSyncTime', timeStr);
         }
 
+        function hasMeaningfulLocalData() {
+            if (currentTask) return true;
+
+            if (phoneResistData.totalCount > 0 || leaveData.length > 0 || achievements.length > 0 || tavernData.length > 0) {
+                return true;
+            }
+
+            if (Object.values(taskData).some(day => Array.isArray(day) && day.length > 0)) {
+                return true;
+            }
+
+            if (Object.values(quickNotesData).some(notes => Array.isArray(notes) && notes.length > 0)) {
+                return true;
+            }
+
+            return Object.values(checkinData).some(day => {
+                if (!day || typeof day !== 'object') return false;
+                if (day.leave) return true;
+                if (Array.isArray(day.partialLeaves) && day.partialLeaves.length > 0) return true;
+                return ['morning', 'afternoon', 'evening'].some(period => {
+                    const periodData = day[period];
+                    return periodData && (periodData.checkIn || periodData.checkOut);
+                });
+            });
+        }
+
+        function applyImportedData(cloudData) {
+            checkinData = cloudData.checkinData || {};
+            phoneResistData = cloudData.phoneResistData || { totalCount: 0, records: {} };
+            taskData = cloudData.taskData || {};
+            leaveData = cloudData.leaveData || [];
+            achievements = cloudData.achievements || [];
+            tavernData = cloudData.tavernData || [];
+            if (cloudData.quickNotesData) quickNotesData = cloudData.quickNotesData;
+
+            const today = getTodayString();
+            if (!checkinData[today]) {
+                checkinData[today] = {
+                    morning: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+                    afternoon: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+                    evening: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+                    leave: false,
+                    leaveReason: ''
+                };
+            }
+            if (!phoneResistData.records[today]) phoneResistData.records[today] = { count: 0, times: [] };
+            if (!taskData[today]) taskData[today] = [];
+            if (typeof quickNotesData !== 'undefined' && !quickNotesData[today]) quickNotesData[today] = [];
+
+            saveData(true);
+            updateLocalSyncTime(cloudData.lastSyncTime || new Date().toISOString());
+
+            updateCheckinButtons();
+            updateTodayCheckinTable();
+            document.getElementById('phone-resist-count').textContent = phoneResistData.totalCount;
+            document.getElementById('today-phone-resist-count').textContent = phoneResistData.records[today].count;
+            updateTodayPhoneResistTimes();
+            updateAchievementsList();
+            updateTodayTasksList();
+            updateSchedule();
+            updateLeaveRecordsList();
+            updateSummaryStatistics();
+            renderCurrentTaskState();
+            updateTodayStatus();
+            if (typeof updateQuickNotesList === 'function') updateQuickNotesList();
+        }
+
+        function shouldAutoApplyCloudData(cloudData) {
+            if (!cloudData.lastSyncTime) return false;
+            if (!localLastSyncTime) return !hasMeaningfulLocalData();
+            return new Date(cloudData.lastSyncTime) > new Date(localLastSyncTime);
+        }
+
         document.getElementById('github-token-input').value = githubToken;
         document.getElementById('gist-id-input').value = gistId;
 
@@ -2807,49 +2940,8 @@
                     const file = data.files['workspace_data.json'];
                     if (file && file.content) {
                         const cloudData = JSON.parse(file.content);
-                        
-                        checkinData = cloudData.checkinData || {};
-                        phoneResistData = cloudData.phoneResistData || { totalCount: 0, records: {} };
-                        taskData = cloudData.taskData || {};
-                        leaveData = cloudData.leaveData || [];
-                        achievements = cloudData.achievements || [];
-                        tavernData = cloudData.tavernData || [];
-                        if (cloudData.quickNotesData) quickNotesData = cloudData.quickNotesData;
-                        
-                        const today = getTodayString();
-                        if (!checkinData[today]) {
-                            checkinData[today] = {
-                                morning: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
-                                afternoon: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
-                                evening: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
-                                leave: false, leaveReason: ''
-                            };
-                        }
-                        if (!phoneResistData.records[today]) phoneResistData.records[today] = { count: 0, times: [] };
-                        if (!taskData[today]) taskData[today] = [];
-                        if (typeof quickNotesData !== 'undefined' && !quickNotesData[today]) quickNotesData[today] = [];
-                        
-                        
-                        saveData(true);
-                        updateLocalSyncTime(cloudData.lastSyncTime || new Date().toISOString());
 
-                        updateCheckinButtons();
-                        updateTodayCheckinTable();
-
-                        document.getElementById('phone-resist-count').textContent = phoneResistData.totalCount;
-                        if (phoneResistData.records[today]) {
-                            document.getElementById('today-phone-resist-count').textContent = phoneResistData.records[today].count;
-                            updateTodayPhoneResistTimes();
-                        }
-                        updateAchievementsList();
-                        
-                        updateTodayTasksList(); 
-                        updateSchedule();
-                        updateLeaveRecordsList();
-                        updateSummaryStatistics();
-                        updateTodayStatus();
-                        if(typeof updateQuickNotesList === 'function') updateQuickNotesList();
-                        
+                        applyImportedData(cloudData);
                         showToast('✅ 成功从云端拉取并应用数据！', 'success');
                     } else {
                         showToast('❌ 未找到云端数据文件。', 'error');
@@ -2911,37 +3003,10 @@
                     const file = data.files['workspace_data.json'];
                     if (file && file.content) {
                         const cloudData = JSON.parse(file.content);
-                        
-                        if (cloudData.lastSyncTime && localLastSyncTime) {
-                            if (new Date(cloudData.lastSyncTime) > new Date(localLastSyncTime)) {
-                                
-                                checkinData = cloudData.checkinData || {};
-                                phoneResistData = cloudData.phoneResistData || { totalCount: 0, records: {} };
-                                taskData = cloudData.taskData || {};
-                                leaveData = cloudData.leaveData || [];
-                                achievements = cloudData.achievements || [];
-                                tavernData = cloudData.tavernData || [];
-                                if (cloudData.quickNotesData) quickNotesData = cloudData.quickNotesData;
-                                
-                                const today = getTodayString();
-                                if (!checkinData[today]) checkinData[today] = { morning: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } }, afternoon: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } }, evening: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } }, leave: false, leaveReason: '' };
-                                if (!phoneResistData.records[today]) phoneResistData.records[today] = { count: 0, times: [] };
-                                if (!taskData[today]) taskData[today] = [];
-                                if (typeof quickNotesData !== 'undefined' && !quickNotesData[today]) quickNotesData[today] = [];
-                                
-                                saveData(true);
-                                updateLocalSyncTime(cloudData.lastSyncTime);
 
-                                updateCheckinButtons(); updateTodayCheckinTable();
-                                document.getElementById('phone-resist-count').textContent = phoneResistData.totalCount;
-                                if (phoneResistData.records[today]) document.getElementById('today-phone-resist-count').textContent = phoneResistData.records[today].count;
-                                updateTodayPhoneResistTimes();
-                                updateAchievementsList(); updateTodayTasksList(); updateSchedule();
-                                updateLeaveRecordsList(); updateSummaryStatistics(); updateTodayStatus();
-                                if(typeof updateQuickNotesList === 'function') updateQuickNotesList();
-                                
-                                showToast('已自动为您同步云端最新数据 ☁️', 'success');
-                            }
+                        if (shouldAutoApplyCloudData(cloudData)) {
+                            applyImportedData(cloudData);
+                            showToast('已自动为您同步云端最新数据 ☁️', 'success');
                         }
                     }
                 }
