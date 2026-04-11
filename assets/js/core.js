@@ -183,12 +183,18 @@ function persistCurrentTask() {
 
 function renderCurrentTaskState() {
     const container = document.getElementById('current-task-container');
+    const readyPanel = document.getElementById('task-ready-panel');
+    const readyStatusEl = document.getElementById('task-ready-status');
+    const readyHintEl = document.getElementById('task-ready-hint');
     const nameEl = document.getElementById('current-task-name');
     const timeEl = document.getElementById('current-task-time');
     const progressBar = document.getElementById('task-progress-bar');
 
     if (!currentTask) {
         container.classList.add('hidden');
+        readyPanel?.classList.remove('hidden');
+        if (readyStatusEl) readyStatusEl.textContent = '待命';
+        if (readyHintEl) readyHintEl.textContent = '先定义任务，再开始计时，让今天的主线先稳定下来。';
         nameEl.textContent = '-';
         timeEl.textContent = '已进行: 00:00:00';
         progressBar.style.width = '0%';
@@ -203,6 +209,9 @@ function renderCurrentTaskState() {
     nameEl.innerHTML = `<span class="text-xs bg-primary/20 text-primary px-2 py-1 rounded-md mr-2">${escapeHtml(tagMap[currentTask.tag] || tagMap.other)}</span>${escapeHtml(currentTask.name)}`;
     timeEl.textContent = `已进行: ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     progressBar.style.width = `${Math.min((elapsed / 36000000) * 100, 100)}%`;
+    readyPanel?.classList.add('hidden');
+    if (readyStatusEl) readyStatusEl.textContent = '进行中';
+    if (readyHintEl) readyHintEl.textContent = '当前主任务已经启动，新的想法请直接丢进右侧捕捉池。';
     container.classList.remove('hidden');
 }
 

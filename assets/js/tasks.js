@@ -59,6 +59,12 @@ function endTask() {
 function updateTodayTasksList() {
     const tasks = taskData[getTodayString()] || [];
     const tbody = document.getElementById('today-tasks-table');
+    const taskReadyCountEl = document.getElementById('task-ready-count');
+
+    if (taskReadyCountEl) {
+        taskReadyCountEl.textContent = `${tasks.length} 项`;
+    }
+
     if (!tasks.length) {
         tbody.innerHTML = '<tr><td colspan="5" class="py-4 px-4 text-center text-slate-400">暂无任务记录</td></tr>';
         return;

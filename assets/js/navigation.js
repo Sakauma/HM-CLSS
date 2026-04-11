@@ -1,12 +1,13 @@
 function initNavigation() {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const navigationItems = [
         {
             btnId: 'nav-checkin',
             sectionId: 'checkin-section',
             badge: 'TODAY OPS',
             title: '舰桥值班与今日状态',
-            desc: '先看今天是否合规，再执行当前班次的唤醒与休眠。',
-            tip: '建议先完成当前班次，再回看记录表确认今天是否合规。',
+            desc: '先判断当前属于哪个班次，再直接完成连线或登出，记录表留给核对时再看。',
+            tip: '主按钮已经前置到首屏，先处理当前班次，再回看下方表格确认异常。',
             primaryAction: { href: '#shift-ops-grid', icon: 'target', label: '进入班次控制' },
             secondaryAction: { href: '#today-checkin-log', icon: 'list-checks', label: '查看今日记录' }
         },
@@ -15,20 +16,20 @@ function initNavigation() {
             sectionId: 'phone-section',
             badge: 'FOCUS SHIELD',
             title: '认知干扰拦截',
-            desc: '记录今天成功挡下了多少次碎片化诱惑，并追踪长期成就。',
-            tip: '高频操作只有一个：每次成功克制后立刻记一笔，别等到回忆时补录。',
+            desc: '累计数字和主按钮都在首屏，每次成功挡下干扰后就立即记一笔。',
+            tip: '先记录拦截，再去看今日时间戳和成就进度，不要把主动作埋到下面。',
             primaryAction: { href: '#add-phone-resist', icon: 'shield-check', label: '记录一次拦截' },
-            secondaryAction: { href: '#achievements-list', icon: 'award', label: '查看成就进度' }
+            secondaryAction: { href: '#today-phone-resist-times', icon: 'clock-3', label: '查看今日时间戳' }
         },
         {
             btnId: 'nav-tasks',
             sectionId: 'tasks-section',
             badge: 'DEEP WORK',
             title: '全舰任务管理',
-            desc: '把当前任务、今日任务沉淀和速记入口放到同一条专注链路里。',
-            tip: '先填任务并开始计时，过程中有新念头时直接用 Ctrl+K 扔进捕捉池。',
-            primaryAction: { href: '#task-name', icon: 'play', label: '开始一个任务' },
-            secondaryAction: { href: '#current-task-container', icon: 'timer', label: '查看进行中任务' }
+            desc: '开始任务、进行中状态和速记入口都放到首屏，日志与时间映射退到下层复盘。',
+            tip: '先启动任务计时，有新念头再丢进捕捉池；历史日志不用抢占第一眼视野。',
+            primaryAction: { href: '#start-task', icon: 'play', label: '开始一个任务' },
+            secondaryAction: { href: '#quick-notes-container', icon: 'lightbulb', label: '打开捕捉池' }
         },
         {
             btnId: 'nav-archive',
@@ -45,8 +46,8 @@ function initNavigation() {
             sectionId: 'leave-section',
             badge: 'LEAVE CONTROL',
             title: '离舰活动审批',
-            desc: '登记全天或临时离舰，明确哪些班次因此被豁免。',
-            tip: '如果今天不在岗，先登记离舰，再返回值班日志查看系统如何判定。',
+            desc: '登记表单与最近记录并排展开，首屏先完成离舰登记，再决定要不要回看历史。',
+            tip: '提交按钮固定在表单区，长历史列表改为局部滚动，不需要整页往下翻。',
             primaryAction: { href: '#leave-date', icon: 'calendar-off', label: '登记离舰' },
             secondaryAction: { href: '#leave-records-table', icon: 'list', label: '查看历史记录' }
         },
@@ -55,8 +56,8 @@ function initNavigation() {
             sectionId: 'tavern-section',
             badge: 'MOOD LAB',
             title: '深空特调吧台',
-            desc: '把情绪和体感整理成更容易回看的配方，保留世界观但不牺牲理解。',
-            tip: '当你不知道自己为什么累的时候，这里比一句“有点烦”更有信息量。',
+            desc: '先写一句当前状态，再决定是否开始调制和保存酒单，输入区保持首屏可用。',
+            tip: '当你说不清自己为什么累时，先写样本，再让结果卡替你做更具体的翻译。',
             primaryAction: { href: '#mood-text-input', icon: 'sparkles', label: '写下当前状态' },
             secondaryAction: { href: '#view-tavern-container', icon: 'martini', label: '查看调制面板' }
         },
@@ -65,8 +66,8 @@ function initNavigation() {
             sectionId: 'stats-section',
             badge: 'SYSTEM INTEL',
             title: '维生统计分析',
-            desc: '把出勤、专注和干扰拦截串成趋势，而不是只看单天波动。',
-            tip: '如果你想做复盘而不是记流水账，这里才是答案真正聚合的地方。',
+            desc: '先切换统计周期，再看趋势图和总览指标，复盘信息不再和高频操作抢首屏。',
+            tip: '这里适合做阶段复盘，不适合做即时操作，所以先看周期和趋势再决定要不要深挖。',
             primaryAction: { href: '#stats-period-controls', icon: 'bar-chart-2', label: '切换统计周期' },
             secondaryAction: { href: '#checkin-rate-chart', icon: 'chart-line', label: '查看趋势图' }
         },
@@ -75,12 +76,24 @@ function initNavigation() {
             sectionId: 'settings-section',
             badge: 'SYNC LINK',
             title: '深空通讯设置',
-            desc: '配置 Gist 令牌与同步入口，让本地与云端之间的状态足够透明。',
-            tip: '危险操作是上传覆盖，所以在推云前先确认本地数据就是你要保留的版本。',
+            desc: '同步凭据、拉取和推送操作都放在同一区域里，先确认风险再执行上传覆盖。',
+            tip: '最危险的是上传覆盖，先确认本地版本正确，再把它推到云端。',
             primaryAction: { href: '#github-token-input', icon: 'key', label: '配置同步凭据' },
             secondaryAction: { href: '#pull-cloud-btn', icon: 'cloud-download', label: '拉取云端数据' }
         }
     ];
+
+    const scrollCurrentPanelIntoView = () => {
+        const scrollingEl = document.scrollingElement || document.documentElement;
+        const behavior = prefersReducedMotion.matches ? 'auto' : 'smooth';
+
+        if (scrollingEl && typeof scrollingEl.scrollTo === 'function') {
+            scrollingEl.scrollTo({ top: 0, behavior });
+            return;
+        }
+
+        window.scrollTo(0, 0);
+    };
 
     const setNavButtonState = (button, isActive) => {
         if (!button) return;
@@ -131,6 +144,7 @@ function initNavigation() {
             section.classList.remove('hidden');
             setNavButtonState(button, true);
             updatePanelMeta(item);
+            requestAnimationFrame(scrollCurrentPanelIntoView);
 
             if (item.sectionId === 'stats-section') {
                 const activePeriodBtn = document.querySelector('.stats-period-btn.bg-white, .stats-period-btn.bg-slate-700');
