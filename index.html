@@ -8,7 +8,6 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     
     <script>
@@ -1084,13 +1083,22 @@
         function getCurrentTime() { const now = new Date(); return { hour: now.getHours(), minute: now.getMinutes() }; }
 
         function escapeHtml(value) {
-            return String(value).replace(/[&<>"']/g, (char) => ({
+            const normalized = value == null ? '' : String(value);
+            return normalized.replace(/[&<>"']/g, (char) => ({
                 '&': '&amp;',
                 '<': '&lt;',
                 '>': '&gt;',
                 '"': '&quot;',
                 "'": '&#39;'
             }[char]));
+        }
+
+        function getNoteText(note) {
+            return note && typeof note.text === 'string' ? note.text : '';
+        }
+
+        function getNoteTime(note) {
+            return note && typeof note.time === 'string' ? note.time : '--:--';
         }
 
         // function initNavigation() {
@@ -1543,17 +1551,17 @@
                     <div class="bg-white/50 dark:bg-[#1a1c23]/50 rounded-2xl p-5 border border-slate-100 dark:border-white/5 relative group transition-all hover:border-primary/30 backdrop-blur-md">
                         <div class="flex justify-between items-start mb-3">
                             <div>
-                                <h4 class="font-serif font-bold text-slate-800 dark:text-slate-100 text-base mb-1 tracking-wide">${drink.name}</h4>
-                                <div class="text-[10px] text-slate-400 font-mono">${drink.date} ${drink.time}</div>
+                                <h4 class="font-serif font-bold text-slate-800 dark:text-slate-100 text-base mb-1 tracking-wide">${escapeHtml(drink.name)}</h4>
+                                <div class="text-[10px] text-slate-400 font-mono">${escapeHtml(drink.date)} ${escapeHtml(drink.time)}</div>
                             </div>
-                            <button class="delete-drink-btn text-slate-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity p-1" data-id="${drink.id}">
+                            <button class="delete-drink-btn text-slate-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity p-1" data-id="${escapeHtml(drink.id)}">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>
                         <div class="text-xs text-slate-500 dark:text-slate-400 space-y-1.5 font-mono">
-                            <div><span class="opacity-70 mr-2">Base</span>${drink.base}</div>
-                            <div><span class="opacity-70 mr-2">Note</span>${drink.top} / ${drink.middle} / ${drink.bottom}</div>
-                            <div class="mt-2 inline-block bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-[10px] border border-slate-200 dark:border-slate-700">${drink.params}</div>
+                            <div><span class="opacity-70 mr-2">Base</span>${escapeHtml(drink.base)}</div>
+                            <div><span class="opacity-70 mr-2">Note</span>${escapeHtml(drink.top)} / ${escapeHtml(drink.middle)} / ${escapeHtml(drink.bottom)}</div>
+                            <div class="mt-2 inline-block bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-[10px] border border-slate-200 dark:border-slate-700">${escapeHtml(drink.params)}</div>
                         </div>
                     </div>
                 `).join('');
@@ -1939,10 +1947,12 @@
             dates.forEach(date => {
                 const notes = quickNotesData[date];
                 if (!notes || !notes.length) return;
+                const safeDate = escapeHtml(date);
 
                 let sectionHtml = '';
                 notes.forEach((n, originalIndex) => {
-                    if (!n.text.toLowerCase().includes(searchText)) return;
+                    const noteText = getNoteText(n);
+                    if (!noteText.toLowerCase().includes(searchText)) return;
 
                     hasResults = true;
                     const tagKey = n.tag || 'idea';
@@ -1950,15 +1960,15 @@
                     sectionHtml += `
                         <div class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 hover:border-primary/30 transition-colors relative group">
                             <div class="flex flex-col gap-2 mt-1 shrink-0 w-16 items-center">
-                                <span class="text-sm font-mono text-slate-400 bg-slate-200/50 dark:bg-slate-800/50 px-2 py-0.5 rounded w-full text-center">${n.time}</span>
+                                <span class="text-sm font-mono text-slate-400 bg-slate-200/50 dark:bg-slate-800/50 px-2 py-0.5 rounded w-full text-center">${escapeHtml(getNoteTime(n))}</span>
                                 <span class="text-[10px] flex items-center justify-center gap-1 border px-1.5 py-0.5 rounded w-full ${tagCfg.color}">
                                     <i data-lucide="${tagCfg.icon}" class="w-3 h-3"></i> ${tagCfg.label}
                                 </span>
                             </div>
                             <div class="text-sm text-slate-700 dark:text-slate-300 md-content w-full overflow-hidden break-words pr-8">
-                                ${DOMPurify.sanitize(marked.parse(n.text))}
+                                ${DOMPurify.sanitize(marked.parse(noteText))}
                             </div>
-                            <button class="delete-note-btn absolute top-4 right-4 text-slate-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity" data-date="${date}" data-index="${originalIndex}" title="删除记录">
+                            <button class="delete-note-btn absolute top-4 right-4 text-slate-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity" data-date="${safeDate}" data-index="${originalIndex}" title="删除记录">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>
@@ -1970,7 +1980,7 @@
                 html += `
                     <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
                         <h3 class="text-lg font-bold mb-4 text-primary flex items-center gap-2">
-                            <i data-lucide="calendar" class="w-5 h-5"></i> ${date}
+                            <i data-lucide="calendar" class="w-5 h-5"></i> ${safeDate}
                         </h3>
                         <div class="space-y-4">
                             ${sectionHtml}
@@ -2005,16 +2015,17 @@
                 return;
             }
             container.innerHTML = notes.map((n, index) => {
+                const noteText = getNoteText(n);
                 const tagKey = n.tag || 'idea';
                 const tagCfg = noteTagConfig[tagKey] || noteTagConfig['idea'];
                 return `
                     <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 group hover:border-primary/30 transition-colors relative">
                         <div class="flex flex-col gap-1.5 mt-1 shrink-0 w-12 items-center">
-                            <span class="text-xs font-mono text-slate-400">${n.time}</span>
+                            <span class="text-xs font-mono text-slate-400">${escapeHtml(getNoteTime(n))}</span>
                             <span class="text-[9px] border px-1 rounded w-full text-center ${tagCfg.color}">${tagCfg.label}</span>
                         </div>
                         <div class="text-sm text-slate-700 dark:text-slate-300 md-content w-full overflow-hidden break-words pr-6">
-                            ${DOMPurify.sanitize(marked.parse(n.text))}
+                            ${DOMPurify.sanitize(marked.parse(noteText))}
                         </div>
                         <button class="delete-note-btn absolute top-3 right-3 text-slate-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity p-1" data-date="${getTodayString()}" data-index="${index}">
                             <i data-lucide="trash-2" class="w-3 h-3"></i>
