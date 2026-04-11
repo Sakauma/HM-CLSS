@@ -3,139 +3,289 @@
 
 > “你现在的首要任务，就是活下去，然后拯救地球。”
 
-**HM-CLSS (Hail Mary Crew Life Support System)** 是一款风格化的自我管理与打卡系统。灵感来自于《挽救计划》。
+**HM-CLSS (Hail Mary Crew Life Support System)** 是一套以《挽救计划》为灵感的前端维生系统。它负责记录你的唤醒状态、科研供能、干扰阻断、离舰报备，以及跨设备的数据漂流。
 
-本系统采用纯前端架构（HTML + Tailwind CSS + Vanilla JS），无需额外部署后端，开箱即用。
+本项目当前采用 **纯前端、零构建** 架构：
 
+- 页面外壳：`index.html`
+- 样式渲染：Tailwind CDN + 自定义 CSS
+- 行为逻辑：Vanilla JavaScript
+- 数据存储：浏览器 `localStorage`
+- 云端同步：GitHub Gist API
+
+系统已经完成第一阶段脚本拆分，不再是早期那种把全部逻辑塞进单个内联脚本的形态。现在的目标是：**保留开箱即用的简单部署方式，同时让代码结构足够清晰，便于长期维护。**
 
 
 ## 🚀 核心维生模块
 
-* **航星维生日志 (考勤系统)**：划分为三个象限（早、中、晚），严格记录唤醒与休眠状态，智能判定工作合规性。
-* **多巴胺戒断阻断 (专注力记录)**：记录并追踪对抗碎片化信息（手机）干扰的次数，内置科幻风格的“成就图鉴”。
-* **核心科研阵列 (任务管理)**：记录深度工作任务，包含实时计时器与18小时制的“事件视界”时间轴映射。内置 **噬星体捕捉池** (全局快捷键 `Ctrl+K`)，随时速记灵感。
-* **休眠与离舰报备 (请假系统)**：规范化记录离线与身体不适状态。
-* **全舰效能雷达 (数据分析)**：多维度图表展示考勤合规率、科研供能分布及干扰拦截指数，自动换算“维生能源(Sols)”。
-* **深空通讯链路 (云端同步)**：基于 GitHub Gist API 的跨设备数据漫游，支持自动备份。
+- **航星维生日志（考勤系统）**：划分为早、中、晚三个象限，记录连线与登出状态，并判定是否合规。
+- **多巴胺戒断阻断（专注力记录）**：记录对抗碎片化信息干扰的次数，并联动成就图鉴。
+- **核心科研阵列（任务管理）**：提供任务计时、任务归档与 18 小时制“事件视界”时间轴映射。
+- **噬星体捕捉池（速记系统）**：通过全局快捷键 `Ctrl+K` 快速记录灵感、日志、异常与待办。
+- **休眠与离舰报备（请假系统）**：支持全天离舰与分时段离舰。
+- **深空酒馆（情绪特调）**：根据输入文本生成情绪配方，并保存到酒柜历史。
+- **全舰效能雷达（数据分析）**：多维图表展示考勤、任务与干扰拦截数据。
+- **深空通讯链路（云端同步）**：通过 GitHub Gist 在不同设备间同步本地数据。
 
 
+## 🧭 启动方式
 
-## 📡 深空通讯链路 (云端同步) 配置指南
+本系统没有构建步骤，也不依赖后端服务。你可以直接用以下方式启动：
 
-为了防止本地数据在“星际辐射”中丢失，并实现多台设备的无缝切换，请按照以下步骤配置你的私有云端同步：
+### 本地静态服务
+
+```bash
+python3 -m http.server 8000
+```
+
+然后访问：
+
+```text
+http://localhost:8000
+```
+
+### 快速预览
+
+直接在浏览器中打开 `index.html` 即可进行简单冒烟测试。
+
+### 脚本语法巡检
+
+```bash
+node --check assets/js/theme.js
+node --check assets/js/core.js
+node --check assets/js/navigation.js
+node --check assets/js/tavern.js
+node --check assets/js/checkin.js
+node --check assets/js/phone-achievements.js
+node --check assets/js/tasks.js
+node --check assets/js/notes.js
+node --check assets/js/leave.js
+node --check assets/js/stats.js
+node --check assets/js/status-ui.js
+node --check assets/js/sync.js
+```
+
+
+## 🗂️ 舰体结构
+
+当前仓库的主结构如下：
+
+- `index.html`
+  飞船主舱。负责页面骨架、Tailwind 配置、自定义样式，以及脚本加载顺序。
+- `assets/js/theme.js`
+  主题切换与深浅色图标同步。
+- `assets/js/core.js`
+  全局状态、基础配置、存储初始化、通用工具函数、启动引导。
+- `assets/js/navigation.js`
+  左侧导航与舱段切换。
+- `assets/js/tavern.js`
+  深空酒馆的情绪分析、配方生成与历史酒单。
+- `assets/js/checkin.js`
+  考勤打卡、时段判定、今日打卡状态表。
+- `assets/js/phone-achievements.js`
+  戒断次数记录、成就判定与成就弹窗。
+- `assets/js/tasks.js`
+  任务开始/结束、计时器、任务表格与时间轴。
+- `assets/js/notes.js`
+  `Ctrl+K` 快速记录、归档面板、笔记检索与删除。
+- `assets/js/leave.js`
+  全天/分时段离舰报备与撤销逻辑。
+- `assets/js/stats.js`
+  统计区间、图表数据准备、图表渲染、汇总统计。
+- `assets/js/status-ui.js`
+  今日状态面板与通用 Toast 提示。
+- `assets/js/sync.js`
+  GitHub Gist 配置、手动推送/拉取、自动同步与云端数据合并。
+
+如果后续继续扩展功能，建议遵守一个原则：
+
+**新增逻辑优先放入现有职责最接近的脚本；只有在职责明显独立时，再开辟新的脚本文件。**
+
+
+## 📡 深空通讯链路（云端同步）配置指南
+
+为了防止本地数据在“星际辐射”中丢失，并实现多台设备的无缝切换，请按以下步骤配置你的私有云端同步。
 
 ### 第一步：获取 GitHub Token
-1. 登录你的 GitHub 账号，访问 [Developer Settings -> Personal Access Tokens (Tokens (classic))](https://github.com/settings/tokens)。
+
+1. 登录 GitHub，访问 [Developer Settings -> Personal Access Tokens (Tokens classic)](https://github.com/settings/tokens)。
 2. 点击 **Generate new token (classic)**。
-3. 随便填写一个 Note（例如 `HM-CLSS-Sync`），Expiration 建议设置为 `No expiration`（永不过期）。
-4. **【关键】** 在 Select scopes 列表中，**只勾选 `gist`** 这一项（Create and update gists）。
-5. 点击 Generate，**复制并保存好这串以 `ghp_` 开头的密钥**（离开页面后将无法再次查看）。
+3. `Note` 可填写 `HM-CLSS-Sync`。
+4. `Expiration` 可按你的安全习惯设置；若是私人长期使用，可考虑更长时限。
+5. **只勾选 `gist` 权限**。
+6. 点击生成，并保存这串 Token。离开页面后将无法再次查看。
 
 ### 第二步：创建 Gist 容器
-1. 访问 [GitHub Gist](https://gist.github.com/)。
-2. 在 `Filename` 中填写 `workspace_data.json`。
-3. 在正文框中随便输入一对大括号 `{}`。
-4. 点击右下角的 **Create secret gist**（创建私有 Gist，保护隐私）。
-5. 创建成功后，观察浏览器地址栏的 URL，例如：`https://gist.github.com/yourname/8a7b6c5d4e3f2g1h`。
-6. **复制 URL 最后的这串长字符**（如 `8a7b6c5d4e3f2g1h`），这就是你的 **Gist ID**。
+
+1. 打开 [GitHub Gist](https://gist.github.com/)。
+2. `Filename` 填写：`workspace_data.json`
+3. 内容输入：`{}`
+4. 点击 **Create secret gist**
+5. 创建成功后，复制 URL 最后一段长字符串，即你的 **Gist ID**
 
 ### 第三步：在系统中激活
-1. 打开 HM-CLSS 系统，进入左侧导航栏的 **深空通讯设置**。
-2. 将刚才获取的 **GitHub Token** 和 **Gist ID** 分别填入对应输入框。
-3. 点击 **保存配置**。随后点击 **上传覆盖云端**，初始化你的云端数据库！
-*(之后系统会在你操作后自动进行静默云备份)*
+
+1. 打开 HM-CLSS，进入 **深空通讯设置**
+2. 填入 **GitHub Token** 与 **Gist ID**
+3. 点击 **保存配置**
+4. 首次使用时，点击 **上传覆盖云端** 初始化你的远端数据舱
+
+之后系统会在数据变化后进行节流式自动同步。
 
 
-## 🛠️ 自定义修改教程
+## 🛠️ 自定义改装指南
 
-如果你想根据自己的作息或工作性质修改系统，可以使用任意代码编辑器打开 `index.html`：
+如果你想根据自己的作息、科研习惯或个人审美进行改造，请优先修改以下位置。
 
 ### 1. 自定义“成就图鉴”
-在代码中找到 `const achievementList = [...]` 数组。你可以照猫画虎地添加或修改成就：
-```javascript
-{ 
-    id: 'my_custom_id',          // 唯一的英文ID 
-    name: '你的成就名',           // 界面显示的标题
-    description: '你的成就描述',  // 界面显示的简介
-    requirement: 50,             // 达标需要的数量
-    type: 'task'                 // 统计类型（留空=戒手机次数, checkin=出勤天数, streak=连击天数, task=任务数, task_hour=任务总时长, notes=灵感记录数）
-}
-````
 
-### 2. 自定义“科研任务分类”
+在 `assets/js/core.js` 中找到 `const achievementList = [...]`。
 
-在代码中找到 `const tagMap`：
+示例：
 
 ```javascript
-const tagMap = { 
-    'paper': '文献阅读', 
-    'code': '代码构建', 
-    'experiment': '实验跑数', 
-    'write': '文档撰写', 
-    'other': '杂项事务' 
-};
-````
-
-修改右侧的中文字符串，即可更改全系统中的任务标签名称。*(注意：也要同步修改 HTML 搜索区段 `<select id="task-tag">` 里面的文案)*。
-
-### 3. 自定义“系统主题色”
-本系统使用 Tailwind CSS 进行样式渲染。在代码顶部的 `<script>` 标签内，找到 `tailwind.config` 设置：
-```javascript
-colors: {
-    primary: '#6366f1',       // 全局主色调 (默认科幻蓝，可改为你喜欢的 HEX 色值)
-    primaryHover: '#4f46e5',  // 按钮悬浮时的加深色
-    success: '#10b981',       // 合规/成功的颜色 (默认翠绿)
-    warning: '#f59e0b',       // 警告/超时的颜色 (默认橙黄)
-    danger: '#ef4444',        // 异常/失败的颜色 (默认赤红)
-    // ...
+{
+    id: 'my_custom_id',
+    name: '你的成就名',
+    description: '你的成就描述',
+    requirement: 50,
+    type: 'task'
 }
 ```
 
-### 4. 自定义“维生巡检时间窗口”
-如果你要修改时间段，需要修改早中晚的打卡判定时间，你需要同时修改两处：
-1. **界面显示**：在 HTML 代码中搜索 `06:00 - 12:00` 等文本，修改为你想要的提示文案。
-2. **底层判定逻辑**：
-   用编辑器打开 `index.html`，在 `<script>` 标签的最开头找到 `const CONFIG = {...}` 配置项。你可以直接修改里面的数字（采用 24 小时制）来适配你的生物钟：
+`type` 可选说明：
 
-    ```javascript
-    const CONFIG = {
-        schedule: {
-            // startHour: 该班次可以开始打卡的最早时间
-            // endHour: 该班次可以打卡的最后期限
-            // okCheckInBefore: 在此时间前“上班连线”被视为【合格】
-            // okCheckOutBefore: “下班登出”的最晚/标准时间
-            morning:   { startHour: 6,  endHour: 12, okCheckInBefore: 8,  okCheckOutBefore: 12 },
-            afternoon: { startHour: 12, endHour: 17, okCheckInBefore: 14, okCheckOutBefore: 18 },
-            evening:   { startHour: 17, endHour: 22, okCheckInBefore: 19, okCheckOutBefore: 22 }
-        },
-        task: {
-            minDurationMins: 30 // 打卡最短有效专注时间（分钟）
-        }
-    };
+- 留空或 `phone`：戒断次数
+- `checkin`：出勤天数
+- `streak`：连续出勤天数
+- `task`：任务数量
+- `task_hour`：任务总时长
+- `notes`：速记条数
+
+### 2. 自定义“科研任务分类”
+
+在 `assets/js/core.js` 中找到：
+
+```javascript
+const tagMap = {
+    paper: '文献阅读',
+    code: '代码构建',
+    experiment: '实验跑数',
+    write: '文档撰写',
+    other: '杂项事务'
+};
+```
+
+修改右侧中文文案即可变更系统中的任务标签显示。
+
+注意：如果你改了分类语义，也要同步修改 `index.html` 中任务输入区域 `<select id="task-tag">` 的选项文案。
+
+### 3. 自定义“维生巡检时间窗口”
+
+在 `assets/js/core.js` 中找到 `const CONFIG = {...}`。
+
+```javascript
+const CONFIG = {
+    schedule: {
+        morning:   { startHour: 6,  endHour: 12, okCheckInBefore: 8,  okCheckOutBefore: 12 },
+        afternoon: { startHour: 12, endHour: 17, okCheckInBefore: 14, okCheckOutBefore: 18 },
+        evening:   { startHour: 17, endHour: 22, okCheckInBefore: 19, okCheckOutBefore: 22 }
+    },
+    task: {
+        minDurationMins: 30
+    }
+};
+```
+
+含义如下：
+
+- `startHour`：该班次允许开始打卡的时间
+- `endHour`：该班次允许打卡的截止时间
+- `okCheckInBefore`：在此时间前连线视为合格
+- `okCheckOutBefore`：登出的标准时间
+- `minDurationMins`：任务被视为有效的最短持续时长
+
+如果你修改了时间逻辑，也记得同步调整 `index.html` 中展示给用户的时段提示文案。
+
+### 4. 自定义“系统主题色”
+
+在 `index.html` 顶部的 `tailwind.config` 中找到 `colors`：
+
+```javascript
+colors: {
+    primary: '#6366f1',
+    primaryHover: '#4f46e5',
+    success: '#10b981',
+    warning: '#f59e0b',
+    danger: '#ef4444'
+}
+```
+
+直接替换为你想要的 HEX 色值即可。
+
+### 5. 自定义“脚本加载顺序”
+
+如果你未来继续拆分脚本，不要随意打乱 `index.html` 中的 `<script src="assets/js/...">` 顺序。
+
+当前顺序遵循依赖关系：
+
+1. `theme.js`
+2. `core.js`
+3. `navigation.js`
+4. `tavern.js`
+5. `checkin.js`
+6. `phone-achievements.js`
+7. `tasks.js`
+8. `notes.js`
+9. `leave.js`
+10. `stats.js`
+11. `status-ui.js`
+12. `sync.js`
+
+前面的文件负责提供状态与函数，后面的文件负责调用它们。顺序错乱会导致飞船在启动时失压。
 
 
-## 🗺️ 航星路线图 (Todo List)
+## 🧪 手动巡检建议
 
-当前系统仍在持续迭代中，以下是未来的开发计划：
+当前仓库没有正式的自动化测试套件，因此每次改动后建议至少人工巡检以下舱段：
 
-### ⚙️ 代码重构与优化
+- 左侧导航切换是否正常
+- 早/中/晚打卡与今日状态是否同步刷新
+- 手机干扰记录与成就是否正常累加
+- 任务开始、结束、恢复、时间轴显示是否正常
+- `Ctrl+K` 速记、归档搜索、删除是否正常
+- 离舰报备与撤销是否影响今日状态
+- 统计图表在不同周期下是否正常刷新
+- GitHub Gist 推送/拉取是否符合预期
+- 深色模式切换后图表与图标是否同步更新
 
-- [ ] **模块化拆分**：将目前庞大的单文件 `index.html` 拆分为独立的 HTML、CSS 和 JS 模块，便于长期维护。
-- [ ] **引入构建工具**：考虑迁移至 Vite 环境，或使用轻量级前端框架（如 Vue 3 / React）重构底层状态管理。
-- [ ] **CSS 变量化**：将 Tailwind 中硬编码的主题色抽离为 CSS 变量，支持未来动态切换主题。
 
-### ✨ 新功能特性
+## 🗺️ 航星路线图
 
-- [ ] **番茄钟 (Pomodoro) 融合**：在“核心科研阵列”中加入 25/5 分钟的倒计时强制锁定模式。
-- [ ] **数据全量导出**：支持将本地数据一键导出为 Excel (.xlsx) 或更美观的 PDF 月度维生报告。
-- [ ] **快捷键强化**：除了现有的 `Ctrl+K`，增加更多键盘操作（如快捷打卡、快捷切换面板）。
+当前系统已经完成第一轮结构重整，但航线还没有结束。
+
+### 已完成
+
+- [x] 将庞大的内联逻辑拆分为多个原生 JS 文件
+- [x] 按职责划分任务、速记、统计、同步、状态 UI 等模块
+- [x] 保持零构建、零后端的部署方式不变
+
+### 下一阶段
+
+- [ ] 继续抽离 `core.js` 中的共享状态、存储与启动流程
+- [ ] 将主题色进一步变量化，降低样式硬编码密度
+- [ ] 为常见回归场景补充更稳定的自动化测试脚本
+- [ ] 增强键盘操作流，例如快捷切换舱段与快捷打卡
+- [ ] 加入更完整的数据导出能力，例如月度报告或结构化导出
 
 
 ## 📄 开源协议
 
 本项目采用 [MIT License](./LICENSE) 授权。
 
-**🎉 特别鸣谢**
-本项目是在 小红书用户 **@yuyu** 的原创设计基础上衍生开发而来，已获得原作者的修改与开源授权。感谢 **@yuyu** 提供的优秀开源！
 
-欢迎任何形式的 Fork 与改造，愿你在星辰大海中保持专注，早日拯救地球。
+## 🎉 特别鸣谢
+
+本项目在小红书用户 **@yuyu** 的原创设计基础上衍生开发，并已获得原作者的修改与开源授权。感谢 **@yuyu** 提供的优秀开源。
+
+欢迎任何形式的 Fork 与改造。愿你的维生系统稳定运转，愿你的注意力不再被噪声击穿，愿你最终完成那场必须完成的拯救计划。
