@@ -1010,6 +1010,7 @@
             const savedLeaveData = localStorage.getItem('leaveData');
             const savedAchievements = localStorage.getItem('achievements');
             const savedNotes = localStorage.getItem('quickNotesData');
+            const savedTavernData = localStorage.getItem('tavernData');
 
             try {
                 quickNotesData = savedNotes ? JSON.parse(savedNotes) : {};
@@ -1056,6 +1057,10 @@
             localStorage.setItem('quickNotesData', JSON.stringify(quickNotesData));
             localStorage.setItem('tavernData', JSON.stringify(tavernData));
 
+            if (typeof updateSummaryStatistics === 'function') {
+                updateSummaryStatistics();
+            }
+
             if (!preventAutoSync && typeof triggerAutoSync === 'function') {
                 triggerAutoSync();
             }
@@ -1069,14 +1074,24 @@
         }
         
         function formatLocalDate(date) {
-            return date.getFullYear() + '-' + 
-                   String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+            return date.getFullYear() + '-' +
+                   String(date.getMonth() + 1).padStart(2, '0') + '-' +
                    String(date.getDate()).padStart(2, '0');
         }
-        
+
         function getTodayString() { return formatLocalDate(new Date()); }
         function getCurrentTimeString() { return new Date().toTimeString().slice(0, 5); }
         function getCurrentTime() { const now = new Date(); return { hour: now.getHours(), minute: now.getMinutes() }; }
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, (char) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[char]));
+        }
 
         // function initNavigation() {
         //     const sections = ['checkin-section', 'phone-section', 'tasks-section', 'archive-section', 'leave-section', 'stats-section', 'settings-section'];
@@ -1472,7 +1487,7 @@
                     // 重置分析层动画
                     setTimeout(() => {
                         fluid.style.height = '5%';
-                        dot.style.left = '50%';
+                        emoIndicator.style.left = '50%';
                         mixText.textContent = "萃取情绪粒子中...";
                     }, 1000);
                     
@@ -1635,7 +1650,7 @@
                 }
             }
             
-            checkinData[today][period].status.checkIn = status;
+            checkinData[today][period].status.checkIn = inStatus;
             saveData(); 
             updateCheckinButtons(); 
             updateTodayCheckinTable(); 
@@ -1916,7 +1931,7 @@
         function renderArchive(filterText = '') {
             const container = document.getElementById('archive-list-container');
             const dates = Object.keys(quickNotesData).sort((a, b) => new Date(b) - new Date(a));
-            
+
             let html = '';
             let hasResults = false;
             const searchText = filterText.toLowerCase();
@@ -1925,41 +1940,43 @@
                 const notes = quickNotesData[date];
                 if (!notes || !notes.length) return;
 
-                const filteredNotes = notes.filter(n => n.text.toLowerCase().includes(searchText));
-                
-                if (filteredNotes.length > 0) {
-                    hasResults = true;
-                    html += `
-                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
-                            <h3 class="text-lg font-bold mb-4 text-primary flex items-center gap-2">
-                                <i data-lucide="calendar" class="w-5 h-5"></i> ${date}
-                            </h3>
-                            <div class="space-y-4">
-                    `;
-                    
-                    filteredNotes.forEach((n, index) => {
-                        const tagKey = n.tag || 'idea';
-                        const tagCfg = noteTagConfig[tagKey] || noteTagConfig['idea'];
-                        html += `
-                            <div class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 hover:border-primary/30 transition-colors relative group">
-                                <div class="flex flex-col gap-2 mt-1 shrink-0 w-16 items-center">
-                                    <span class="text-sm font-mono text-slate-400 bg-slate-200/50 dark:bg-slate-800/50 px-2 py-0.5 rounded w-full text-center">${n.time}</span>
-                                    <span class="text-[10px] flex items-center justify-center gap-1 border px-1.5 py-0.5 rounded w-full ${tagCfg.color}">
-                                        <i data-lucide="${tagCfg.icon}" class="w-3 h-3"></i> ${tagCfg.label}
-                                    </span>
-                                </div>
-                                <div class="text-sm text-slate-700 dark:text-slate-300 md-content w-full overflow-hidden break-words pr-8">
-                                    ${DOMPurify.sanitize(marked.parse(n.text))}
-                                </div>
-                                <button class="delete-note-btn absolute top-4 right-4 text-slate-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity" data-date="${date}" data-index="${index}" title="删除记录">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                            </div>
-                        `;
-                    });
+                let sectionHtml = '';
+                notes.forEach((n, originalIndex) => {
+                    if (!n.text.toLowerCase().includes(searchText)) return;
 
-                    html += `</div></div>`;
-                }
+                    hasResults = true;
+                    const tagKey = n.tag || 'idea';
+                    const tagCfg = noteTagConfig[tagKey] || noteTagConfig['idea'];
+                    sectionHtml += `
+                        <div class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 hover:border-primary/30 transition-colors relative group">
+                            <div class="flex flex-col gap-2 mt-1 shrink-0 w-16 items-center">
+                                <span class="text-sm font-mono text-slate-400 bg-slate-200/50 dark:bg-slate-800/50 px-2 py-0.5 rounded w-full text-center">${n.time}</span>
+                                <span class="text-[10px] flex items-center justify-center gap-1 border px-1.5 py-0.5 rounded w-full ${tagCfg.color}">
+                                    <i data-lucide="${tagCfg.icon}" class="w-3 h-3"></i> ${tagCfg.label}
+                                </span>
+                            </div>
+                            <div class="text-sm text-slate-700 dark:text-slate-300 md-content w-full overflow-hidden break-words pr-8">
+                                ${DOMPurify.sanitize(marked.parse(n.text))}
+                            </div>
+                            <button class="delete-note-btn absolute top-4 right-4 text-slate-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity" data-date="${date}" data-index="${originalIndex}" title="删除记录">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+
+                if (!sectionHtml) return;
+
+                html += `
+                    <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
+                        <h3 class="text-lg font-bold mb-4 text-primary flex items-center gap-2">
+                            <i data-lucide="calendar" class="w-5 h-5"></i> ${date}
+                        </h3>
+                        <div class="space-y-4">
+                            ${sectionHtml}
+                        </div>
+                    </div>
+                `;
             });
 
             if (!hasResults) {
@@ -2051,7 +2068,7 @@
                 startTimestamp: Date.now() 
             };
             
-            document.getElementById('current-task-name').innerHTML = `<span class="text-xs bg-primary/20 text-primary px-2 py-1 rounded-md mr-2">${tagMap[tagValue]}</span>${name}`;
+            document.getElementById('current-task-name').innerHTML = `<span class="text-xs bg-primary/20 text-primary px-2 py-1 rounded-md mr-2">${escapeHtml(tagMap[tagValue] || tagMap.other)}</span>${escapeHtml(name)}`;
             document.getElementById('current-task-time').textContent = '已进行: 00:00:00';
             document.getElementById('current-task-container').classList.remove('hidden');
             document.getElementById('task-name').value = '';
@@ -2095,9 +2112,9 @@
                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
                         <td class="py-3 px-4 font-medium flex items-center">
                             <span class="text-[11px] bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 px-2 py-0.5 rounded mr-2 border border-slate-200 dark:border-slate-600 whitespace-nowrap">
-                                ${tagName}
+                                ${escapeHtml(tagName)}
                             </span>
-                            <span class="truncate max-w-[200px]">${t.name}</span>
+                            <span class="truncate max-w-[200px]">${escapeHtml(t.name)}</span>
                         </td>
                         <td class="py-3 px-4 text-slate-500 font-mono">${t.startTime}</td>
                         <td class="py-3 px-4 text-slate-500 font-mono">${t.endTime}</td>
@@ -2133,9 +2150,9 @@
                 const height = (endHour - startHour) * hourHeight;
                 
                 container.innerHTML += `
-                    <div class="absolute left-4 right-4 bg-primary/90 text-white p-2 rounded-xl shadow-sm hover:bg-primary transition-all overflow-hidden border border-white/20" 
+                    <div class="absolute left-4 right-4 bg-primary/90 text-white p-2 rounded-xl shadow-sm hover:bg-primary transition-all overflow-hidden border border-white/20"
                         style="top: ${top}px; height: ${Math.max(height, 30)}px;">
-                        <div class="font-bold text-xs truncate">${t.name}</div>
+                        <div class="font-bold text-xs truncate">${escapeHtml(t.name)}</div>
                         <div class="text-[10px] opacity-90 font-mono mt-0.5">${t.startTime} - ${t.endTime}</div>
                     </div>
                 `;
@@ -2284,23 +2301,24 @@
             [...leaveData].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(l => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors";
-                
+                const safeDate = escapeHtml(l.date);
+
                 // 动态渲染：兼容旧数据与新版的分时段标签
                 let timeDisplay = '';
                 if (!l.type || l.type === 'full') {
                     timeDisplay = '<span class="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded ml-2 border border-primary/20">全天</span>';
                 } else {
-                    timeDisplay = `<span class="text-[10px] bg-warning/10 text-warning px-2 py-0.5 rounded ml-2 border border-warning/20">${l.startTime} - ${l.endTime}</span>`;
+                    timeDisplay = `<span class="text-[10px] bg-warning/10 text-warning px-2 py-0.5 rounded ml-2 border border-warning/20">${escapeHtml(l.startTime)} - ${escapeHtml(l.endTime)}</span>`;
                 }
 
                 // 优先使用唯一ID进行删除追踪
-                const idAttr = l.id ? `data-id="${l.id}"` : `data-date="${l.date}"`;
+                const idAttr = l.id ? `data-id="${escapeHtml(l.id)}"` : `data-date="${safeDate}"`;
 
                 tr.innerHTML = `
                     <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-400">
-                        ${l.date} ${timeDisplay}
+                        ${safeDate} ${timeDisplay}
                     </td>
-                    <td class="py-3 px-4 font-medium">${l.reason}</td>
+                    <td class="py-3 px-4 font-medium">${escapeHtml(l.reason)}</td>
                     <td class="py-3 px-4"><button class="delete-leave px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-lg text-xs font-bold transition-all" ${idAttr}>撤销</button></td>
                 `;
                 tbody.appendChild(tr);
@@ -2338,18 +2356,84 @@
             const end = new Date(), start = new Date(); let labels = [];
             if (period === 'week') { start.setDate(end.getDate() - 6); for(let i=0;i<7;i++){ const d=new Date(start); d.setDate(start.getDate()+i); labels.push(d.toLocaleDateString('zh-CN',{month:'short',day:'numeric'})); } }
             else if (period === 'month') { start.setDate(end.getDate() - 29); for(let i=0;i<30;i+=3){ const d=new Date(start); d.setDate(start.getDate()+i); labels.push(d.toLocaleDateString('zh-CN',{month:'short',day:'numeric'})); } }
-            else if (period === 'year') { start.setMonth(end.getMonth() - 11); for(let i=0;i<12;i++){ const d=new Date(start); d.setMonth(start.getMonth()+i); labels.push(d.toLocaleDateString('zh-CN',{month:'short'})); } }
+            else if (period === 'year') { start.setDate(1); start.setMonth(end.getMonth() - 11); for(let i=0;i<12;i++){ const d=new Date(start); d.setMonth(start.getMonth()+i); labels.push(d.toLocaleDateString('zh-CN',{month:'short'})); } }
             return { startDate: start, endDate: end, labels };
+        }
+
+        function getMonthRange(baseDate, offset = 0) {
+            const start = new Date(baseDate.getFullYear(), baseDate.getMonth() + offset, 1);
+            const end = new Date(baseDate.getFullYear(), baseDate.getMonth() + offset + 1, 0);
+            return { start, end };
+        }
+
+        function calculateCheckinRateForRange(start, end) {
+            let total = 0;
+            let qualified = 0;
+            const current = new Date(start);
+
+            while (current <= end) {
+                const day = checkinData[formatLocalDate(current)];
+                if (day && !day.leave) {
+                    ['morning', 'afternoon', 'evening'].forEach(p => {
+                        if (day[p].checkIn !== null) {
+                            total++;
+                            if (day[p].status.checkIn === true || day[p].status.checkIn === 'success') qualified++;
+                        }
+                        if (day[p].checkOut !== null) {
+                            total++;
+                            if (day[p].status.checkOut === true ||
+                                day[p].status.checkOut === 'success' ||
+                                day[p].status.checkOut === 'warning') {
+                                qualified++;
+                            }
+                        }
+                    });
+                }
+                current.setDate(current.getDate() + 1);
+            }
+
+            return total > 0 ? (qualified / total) * 100 : 0;
+        }
+
+        function calculateTaskHoursForRange(start, end) {
+            const current = new Date(start);
+            let totalMinutes = 0;
+
+            while (current <= end) {
+                const dayTasks = taskData[formatLocalDate(current)] || [];
+                totalMinutes += dayTasks.reduce((sum, task) => sum + (task.duration || 0), 0);
+                current.setDate(current.getDate() + 1);
+            }
+
+            return totalMinutes / 60;
+        }
+
+        function calculatePhoneResistForRange(start, end) {
+            const current = new Date(start);
+            let totalCount = 0;
+
+            while (current <= end) {
+                const dayRecord = phoneResistData.records[formatLocalDate(current)];
+                totalCount += dayRecord ? dayRecord.count : 0;
+                current.setDate(current.getDate() + 1);
+            }
+
+            return totalCount;
         }
 
         function prepareCheckinRateData(start, end, labels) {
             const data = [];
             for (let i = 0; i < labels.length; i++) {
+                if (labels.length === 12) {
+                    const { start: monthStart, end: monthEnd } = getMonthRange(start, i);
+                    data.push(calculateCheckinRateForRange(monthStart, monthEnd));
+                    continue;
+                }
+
                 const date = new Date(start);
                 if (labels.length === 7) date.setDate(start.getDate() + i);
                 else if (labels.length === 10) date.setDate(start.getDate() + i * 3);
-                else if (labels.length === 12) date.setMonth(start.getMonth() + i);
-                
+
                 const ds = formatLocalDate(date);
                 const day = checkinData[ds];
                 if (!day || day.leave) data.push(null);
@@ -2391,9 +2475,13 @@
         function prepareTaskDurationData(start, end, labels) {
             const data = [];
             for(let i=0;i<labels.length;i++){
+                if(labels.length===12){
+                    const { start: monthStart, end: monthEnd } = getMonthRange(start, i);
+                    data.push(Number(calculateTaskHoursForRange(monthStart, monthEnd).toFixed(2)));
+                    continue;
+                }
                 const date=new Date(start);
                 if(labels.length===7) date.setDate(start.getDate()+i); else if(labels.length===10) date.setDate(start.getDate()+i*3);
-                else if(labels.length===12){ data.push(0); continue; }
                 const ds = formatLocalDate(date);
                 data.push((taskData[ds]||[]).reduce((sum, t)=>sum+t.duration, 0)/60);
             } return data;
@@ -2402,9 +2490,13 @@
         function preparePhoneResistData(start, end, labels) {
             const data = [];
             for(let i=0;i<labels.length;i++){
+                if(labels.length===12){
+                    const { start: monthStart, end: monthEnd } = getMonthRange(start, i);
+                    data.push(calculatePhoneResistForRange(monthStart, monthEnd));
+                    continue;
+                }
                 const date=new Date(start);
                 if(labels.length===7) date.setDate(start.getDate()+i); else if(labels.length===10) date.setDate(start.getDate()+i*3);
-                else if(labels.length===12){ data.push(0); continue; }
                 const ds = formatLocalDate(date);
                 data.push(phoneResistData.records[ds]?phoneResistData.records[ds].count:0);
             } return data;
@@ -2567,7 +2659,7 @@
             toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 pointer-events-auto animate-toast-in ${colors[type]}`;
             toast.innerHTML = `
                 ${icons[type]}
-                <span class="text-sm font-medium">${message}</span>
+                <span class="text-sm font-medium">${escapeHtml(message)}</span>
             `;
             
             container.appendChild(toast);
@@ -2817,6 +2909,7 @@
                                 taskData = cloudData.taskData || {};
                                 leaveData = cloudData.leaveData || [];
                                 achievements = cloudData.achievements || [];
+                                tavernData = cloudData.tavernData || [];
                                 if (cloudData.quickNotesData) quickNotesData = cloudData.quickNotesData;
                                 
                                 const today = getTodayString();
@@ -2825,12 +2918,13 @@
                                 if (!taskData[today]) taskData[today] = [];
                                 if (typeof quickNotesData !== 'undefined' && !quickNotesData[today]) quickNotesData[today] = [];
                                 
-                                saveData(true); 
+                                saveData(true);
                                 updateLocalSyncTime(cloudData.lastSyncTime);
-                                
+
                                 updateCheckinButtons(); updateTodayCheckinTable();
                                 document.getElementById('phone-resist-count').textContent = phoneResistData.totalCount;
                                 if (phoneResistData.records[today]) document.getElementById('today-phone-resist-count').textContent = phoneResistData.records[today].count;
+                                updateTodayPhoneResistTimes();
                                 updateAchievementsList(); updateTodayTasksList(); updateSchedule();
                                 updateLeaveRecordsList(); updateSummaryStatistics(); updateTodayStatus();
                                 if(typeof updateQuickNotesList === 'function') updateQuickNotesList();
