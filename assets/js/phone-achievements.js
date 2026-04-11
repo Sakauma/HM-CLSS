@@ -1,0 +1,151 @@
+function initPhoneResist() {
+    document.getElementById('phone-resist-count').textContent = phoneResistData.totalCount;
+    document.getElementById('today-phone-resist-count').textContent = phoneResistData.records[getTodayString()].count;
+    updateTodayPhoneResistTimes();
+    updateAchievementsList();
+    document.getElementById('add-phone-resist').addEventListener('click', addPhoneResist);
+}
+
+function addPhoneResist() {
+    const today = getTodayString();
+    phoneResistData.totalCount++;
+    if (!phoneResistData.records[today]) phoneResistData.records[today] = { count: 0, times: [] };
+    phoneResistData.records[today].count++;
+    phoneResistData.records[today].times.push(getCurrentTimeString());
+    saveData();
+
+    document.getElementById('phone-resist-count').textContent = phoneResistData.totalCount;
+    document.getElementById('today-phone-resist-count').textContent = phoneResistData.records[today].count;
+    updateTodayPhoneResistTimes();
+    updateAchievementsList();
+    checkAchievements();
+    updateTodayStatus();
+}
+
+function updateTodayPhoneResistTimes() {
+    const times = phoneResistData.records[getTodayString()].times;
+    document.getElementById('today-phone-resist-times').textContent = times.length === 0 ? '暂无记录' : '记录时间: ' + times.join(', ');
+}
+
+function updateAchievementsList() {
+    const list = document.getElementById('achievements-list');
+    list.innerHTML = '';
+
+    achievementList.forEach((achievement) => {
+        if (achievement.type && achievement.type !== 'phone') return;
+
+        const isAchieved = achievements.includes(achievement.id);
+        const bgClass = isAchieved
+            ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
+            : 'bg-slate-100 text-slate-400 dark:bg-slate-900 dark:text-slate-500';
+        const icon = isAchieved ? 'check' : 'lock';
+        const textClass = isAchieved ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500';
+
+        list.innerHTML += `
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl ${bgClass} flex items-center justify-center shrink-0">
+                    <i data-lucide="${icon}" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <div class="font-bold text-sm ${textClass}">${achievement.name}</div>
+                    <div class="text-xs text-slate-500">${achievement.description}</div>
+                </div>
+            </div>
+        `;
+    });
+
+    lucide.createIcons();
+}
+
+function showAchievementPopup(achievement) {
+    const popup = document.getElementById('achievement-popup');
+    document.getElementById('popup-achievement-title').textContent = achievement.name;
+    document.getElementById('popup-achievement-desc').textContent = achievement.description;
+    popup.classList.remove('hidden');
+    setTimeout(() => popup.classList.add('hidden'), 5000);
+}
+
+function checkAchievements() {
+    let hasNew = false;
+
+    achievementList.forEach((achievement) => {
+        if (achievements.includes(achievement.id)) return;
+
+        let achieved = false;
+        if (achievement.type === 'phone' || !achievement.type) {
+            achieved = phoneResistData.totalCount >= achievement.requirement;
+        } else if (achievement.type === 'checkin') {
+            achieved = Object.values(checkinData).filter((day) => day.morning.checkIn || day.afternoon.checkIn || day.evening.checkIn).length >= achievement.requirement;
+        } else if (achievement.type === 'streak') {
+            achieved = calculateCheckinStreak() >= achievement.requirement;
+        } else if (achievement.type === 'task') {
+            achieved = Object.values(taskData).reduce((total, day) => total + day.length, 0) >= achievement.requirement;
+        } else if (achievement.type === 'task_hour') {
+            achieved = calculateTotalTaskHours() >= achievement.requirement;
+        } else if (achievement.type === 'notes') {
+            achieved = Object.values(quickNotesData).reduce((sum, notes) => sum + notes.length, 0) >= achievement.requirement;
+        }
+
+        if (achieved) {
+            achievements.push(achievement.id);
+            showAchievementPopup(achievement);
+            hasNew = true;
+        }
+    });
+
+    if (hasNew) {
+        saveData();
+        updateAchievementsList();
+        updateTodayStatus();
+    }
+}
+
+function calculateCheckinStreak() {
+    const todayStr = getTodayString();
+    const dates = Object.keys(checkinData)
+        .filter((date) => date <= todayStr)
+        .sort()
+        .reverse();
+
+    if (!dates.length) return 0;
+
+    let streak = 0;
+    const expectedDate = new Date();
+    const todayData = checkinData[todayStr];
+    const checkedInToday = todayData && (todayData.morning.checkIn || todayData.afternoon.checkIn || todayData.evening.checkIn);
+
+    if (checkedInToday) {
+        streak = 1;
+        expectedDate.setDate(expectedDate.getDate() - 1);
+    } else {
+        expectedDate.setDate(expectedDate.getDate() - 1);
+    }
+
+    for (let i = 0; i < dates.length; i++) {
+        const dateStr = dates[i];
+        if (dateStr >= todayStr) continue;
+
+        const expectedStr = formatLocalDate(expectedDate);
+        if (dateStr === expectedStr) {
+            const day = checkinData[dateStr];
+            if (day.morning.checkIn || day.afternoon.checkIn || day.evening.checkIn) {
+                streak++;
+                expectedDate.setDate(expectedDate.getDate() - 1);
+            } else {
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+
+    return streak;
+}
+
+function calculateTotalTaskHours() {
+    let mins = 0;
+    Object.values(taskData).forEach((day) => day.forEach((task) => {
+        if (task.duration) mins += task.duration;
+    }));
+    return Math.floor(mins / 60);
+}
