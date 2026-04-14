@@ -437,15 +437,42 @@ function applyTavernMotion(container, { valence = 0, intensity = 0.3, phase = 0 
     if (!container) return;
 
     const safeIntensity = clamp(intensity, 0.05, 1);
+    const lean = clamp(Math.abs(valence), 0, 1);
     const tilt = clamp((valence * 3.2) + phase, -4.8, 4.8);
     const slosh = clamp(0.48 + safeIntensity * 0.9 + Math.abs(phase) * 0.06, 0.45, 1.55);
     const glow = clamp(0.18 + safeIntensity * 0.56, 0.18, 0.82);
     const foam = clamp(0.16 + safeIntensity * 0.38, 0.16, 0.72);
+    const waveShift = 0.18 + lean * 0.38 + safeIntensity * 0.06;
+    const waveLift = 0.05 + lean * 0.13 + safeIntensity * 0.03;
+    const waveBias = clamp(valence * 0.08, -0.12, 0.12);
+    const frontTilt = 1.85 + lean * 2.8 + safeIntensity * 0.35;
+    const backTilt = 1.05 + lean * 1.95 + safeIntensity * 0.22;
+    const frontLeft = -waveShift + waveBias;
+    const frontRight = waveShift + waveBias;
+    const backLeft = (-waveShift * 0.72) - waveBias;
+    const backRight = (waveShift * 0.82) - waveBias;
+    const frontDown = waveLift;
+    const frontUp = -waveLift;
+    const backDown = waveLift * 1.45;
+    const backUp = waveLift * -0.6;
 
     container.style.setProperty('--tavern-tilt', tilt.toFixed(2));
     container.style.setProperty('--tavern-slosh', slosh.toFixed(2));
     container.style.setProperty('--tavern-glow', glow.toFixed(2));
     container.style.setProperty('--tavern-foam', foam.toFixed(2));
+    container.style.setProperty('--tavern-wave-shift', `${waveShift.toFixed(2)}rem`);
+    container.style.setProperty('--tavern-wave-lift', `${waveLift.toFixed(2)}rem`);
+    container.style.setProperty('--tavern-wave-bias', `${waveBias.toFixed(2)}rem`);
+    container.style.setProperty('--tavern-wave-front-tilt', `${frontTilt.toFixed(2)}deg`);
+    container.style.setProperty('--tavern-wave-back-tilt', `${backTilt.toFixed(2)}deg`);
+    container.style.setProperty('--tavern-wave-front-left', `${frontLeft.toFixed(2)}rem`);
+    container.style.setProperty('--tavern-wave-front-right', `${frontRight.toFixed(2)}rem`);
+    container.style.setProperty('--tavern-wave-front-down', `${frontDown.toFixed(2)}rem`);
+    container.style.setProperty('--tavern-wave-front-up', `${frontUp.toFixed(2)}rem`);
+    container.style.setProperty('--tavern-wave-back-left', `${backLeft.toFixed(2)}rem`);
+    container.style.setProperty('--tavern-wave-back-right', `${backRight.toFixed(2)}rem`);
+    container.style.setProperty('--tavern-wave-back-down', `${backDown.toFixed(2)}rem`);
+    container.style.setProperty('--tavern-wave-back-up', `${backUp.toFixed(2)}rem`);
 }
 
 function applyPaletteToTavern(record) {
@@ -507,6 +534,19 @@ function updateInputPreview(text) {
     scaleCopyEl.textContent = `情绪指针已经开始移动，说明这段输入不是空白，它已经带有明确方向。`;
 }
 
+function syncTavernContainerHeight(targetId) {
+    const container = document.getElementById('view-tavern-container');
+    const activeState = document.getElementById(targetId);
+    const activeFrame = activeState?.firstElementChild;
+
+    if (!container || !activeState || !activeFrame) return;
+
+    requestAnimationFrame(() => {
+        const nextHeight = Math.max(activeFrame.scrollHeight, 640);
+        container.style.height = `${nextHeight}px`;
+    });
+}
+
 function switchTavernState(targetId) {
     ['state-input', 'state-analyzing', 'state-result', 'state-history'].forEach((id) => {
         const el = document.getElementById(id);
@@ -526,6 +566,8 @@ function switchTavernState(targetId) {
             el.classList.add('opacity-0');
         }
     });
+
+    syncTavernContainerHeight(targetId);
 }
 
 function renderResult(record, fromHistory = false) {
@@ -546,11 +588,18 @@ function renderResult(record, fromHistory = false) {
     document.getElementById('res-params').textContent = currentDrinkInfo.params;
     document.getElementById('res-family').textContent = currentDrinkInfo.family;
     document.getElementById('res-abv').textContent = currentDrinkInfo.abv;
+    document.getElementById('res-left-family').textContent = currentDrinkInfo.family;
+    document.getElementById('res-left-base').textContent = currentDrinkInfo.base;
+    document.getElementById('res-left-abv').textContent = currentDrinkInfo.abv;
+    document.getElementById('res-left-glass').textContent = currentDrinkInfo.glass;
+    document.getElementById('res-left-feel').textContent = currentDrinkInfo.feel;
+    document.getElementById('res-left-garnish').textContent = currentDrinkInfo.garnish;
     document.getElementById('res-serial').textContent = currentDrinkInfo.serial;
     document.getElementById('res-story').textContent = currentDrinkInfo.story;
     document.getElementById('res-reason').textContent = currentDrinkInfo.reason;
     document.getElementById('res-quote').textContent = currentDrinkInfo.quote;
     document.getElementById('res-intensity-label').textContent = currentDrinkInfo.intensityLabel;
+    document.getElementById('res-left-service').textContent = `以${currentDrinkInfo.glass}承接 ${currentDrinkInfo.base}，入口先给出 ${currentDrinkInfo.top}，尾段让 ${currentDrinkInfo.garnish} 把整杯酒慢慢收住。`;
 
     const saveBtn = document.getElementById('btn-save-drink');
     if (saveBtn) {
@@ -658,6 +707,9 @@ function renderTavernHistory() {
         `;
         document.getElementById('btn-empty-start')?.addEventListener('click', () => switchTavernState('state-input'));
         lucide.createIcons();
+        if (document.getElementById('state-history')?.classList.contains('opacity-100')) {
+            syncTavernContainerHeight('state-history');
+        }
         return;
     }
 
@@ -715,6 +767,9 @@ function renderTavernHistory() {
     });
 
     lucide.createIcons();
+    if (document.getElementById('state-history')?.classList.contains('opacity-100')) {
+        syncTavernContainerHeight('state-history');
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -876,4 +931,10 @@ document.addEventListener('DOMContentLoaded', () => {
     switchTavernState('state-input');
     renderTavernHistory();
     updateInputPreview('');
+    window.addEventListener('resize', () => {
+        const activeState = document.querySelector('#view-tavern-container > [id^="state-"].opacity-100');
+        if (activeState?.id) {
+            syncTavernContainerHeight(activeState.id);
+        }
+    });
 });

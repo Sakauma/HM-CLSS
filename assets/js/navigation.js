@@ -162,21 +162,9 @@ function initNavigation() {
                 const countEl = document.getElementById('mood-char-count');
                 const analyzeBtn = document.getElementById('btn-start-analyze');
 
-                ['state-input', 'state-analyzing', 'state-result', 'state-history'].forEach((id) => {
-                    const el = document.getElementById(id);
-                    if (!el) return;
-                    if (id === 'state-input') {
-                        el.style.zIndex = '10';
-                        el.style.pointerEvents = 'auto';
-                        el.classList.remove('opacity-0');
-                        el.classList.add('opacity-100');
-                    } else {
-                        el.style.zIndex = '0';
-                        el.style.pointerEvents = 'none';
-                        el.classList.remove('opacity-100');
-                        el.classList.add('opacity-0');
-                    }
-                });
+                if (typeof switchTavernState === 'function') {
+                    switchTavernState('state-input');
+                }
 
                 if (countEl && inputEl) countEl.textContent = String(inputEl.value.length);
                 if (analyzeBtn && inputEl) analyzeBtn.disabled = inputEl.value.trim().length === 0;

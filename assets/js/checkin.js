@@ -2,6 +2,12 @@ const CHECKIN_ACTIVE_BUTTON_CLASS = 'action-btn action-btn-primary';
 const CHECKOUT_ACTIVE_BUTTON_CLASS = 'action-btn action-btn-secondary';
 const CHECKIN_DISABLED_BUTTON_CLASS = 'action-btn action-btn-disabled';
 
+function getNormalizedCheckInStatus(status) {
+    if (status === true) return 'success';
+    if (status === false) return 'warning';
+    return status;
+}
+
 function initCheckin() {
     ['morning', 'afternoon', 'evening'].forEach((period) => {
         document.getElementById(`${period}-checkin`).addEventListener('click', () => checkIn(period));
@@ -159,9 +165,9 @@ function checkIn(period) {
 
     const cfg = CONFIG.schedule[period];
     const thresholdMins = cfg.okCheckInBefore * 60;
-    let inStatus = currentMins <= thresholdMins;
+    let inStatus = currentMins <= thresholdMins ? 'success' : 'warning';
 
-    if (!inStatus && checkinData[today].partialLeaves) {
+    if (inStatus === 'warning' && checkinData[today].partialLeaves) {
         for (const leave of checkinData[today].partialLeaves) {
             const leaveStartMins = timeStrToMins(leave.startTime);
             const leaveEndMins = timeStrToMins(leave.endTime);
@@ -246,16 +252,22 @@ function updateTodayCheckinTable() {
         document.getElementById(`table-${period}-checkout`).textContent = checkinData[today][period].checkOut || '-';
 
         const cInStatus = document.getElementById(`table-${period}-checkin-status`);
-        const inVal = checkinData[today][period].status.checkIn;
+        const inVal = getNormalizedCheckInStatus(checkinData[today][period].status.checkIn);
         if (checkinData[today][period].checkIn === null) {
             cInStatus.textContent = '-';
             cInStatus.className = 'py-3 px-4';
         } else if (inVal === 'excused') {
             cInStatus.textContent = '离舰豁免';
             cInStatus.className = 'py-3 px-4 font-bold text-blue-500 dark:text-blue-400';
+        } else if (inVal === 'warning') {
+            cInStatus.textContent = '警告';
+            cInStatus.className = 'py-3 px-4 font-medium text-warning';
+        } else if (inVal === 'danger') {
+            cInStatus.textContent = '异常';
+            cInStatus.className = 'py-3 px-4 font-medium text-danger';
         } else {
-            cInStatus.textContent = (inVal === true || inVal === 'success') ? '合格' : '不合格';
-            cInStatus.className = `py-3 px-4 font-medium ${(inVal === true || inVal === 'success') ? 'text-success' : 'text-danger'}`;
+            cInStatus.textContent = '合格';
+            cInStatus.className = 'py-3 px-4 font-medium text-success';
         }
 
         const cOutStatus = document.getElementById(`table-${period}-checkout-status`);

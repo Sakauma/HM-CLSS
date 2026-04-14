@@ -74,7 +74,8 @@ function calculateCheckinRateForRange(start, end) {
             ['morning', 'afternoon', 'evening'].forEach((period) => {
                 if (day[period].checkIn !== null) {
                     total++;
-                    if (day[period].status.checkIn === true || day[period].status.checkIn === 'success') qualified++;
+                    const inStatus = getNormalizedCheckInStatus(day[period].status.checkIn);
+                    if (inStatus === 'success' || inStatus === 'warning' || inStatus === 'excused') qualified++;
                 }
                 if (day[period].checkOut !== null) {
                     total++;
@@ -146,7 +147,8 @@ function prepareCheckinRateData(start, end, labels) {
             ['morning', 'afternoon', 'evening'].forEach((period) => {
                 if (day[period].checkIn !== null) {
                     total++;
-                    if (day[period].status.checkIn === true || day[period].status.checkIn === 'success') qualified++;
+                    const inStatus = getNormalizedCheckInStatus(day[period].status.checkIn);
+                    if (inStatus === 'success' || inStatus === 'warning' || inStatus === 'excused') qualified++;
                 }
                 if (day[period].checkOut !== null) {
                     total++;

@@ -608,6 +608,19 @@
             --tavern-slosh: 0.8;
             --tavern-glow: 0.3;
             --tavern-foam: 0.24;
+            --tavern-wave-shift: 0.24rem;
+            --tavern-wave-lift: 0.08rem;
+            --tavern-wave-bias: 0rem;
+            --tavern-wave-front-tilt: 2.2deg;
+            --tavern-wave-back-tilt: 1.4deg;
+            --tavern-wave-front-left: -0.24rem;
+            --tavern-wave-front-right: 0.24rem;
+            --tavern-wave-front-down: 0.08rem;
+            --tavern-wave-front-up: -0.08rem;
+            --tavern-wave-back-left: -0.16rem;
+            --tavern-wave-back-right: 0.18rem;
+            --tavern-wave-back-down: 0.12rem;
+            --tavern-wave-back-up: -0.05rem;
             position: relative;
             overflow: hidden;
             border-radius: 2rem;
@@ -775,18 +788,18 @@
         }
         .tavern-stage-aura {
             position: absolute;
-            width: 22rem;
-            height: 22rem;
+            width: 18rem;
+            height: 18rem;
             border-radius: 9999px;
             background: radial-gradient(circle, color-mix(in srgb, var(--tavern-c) 18%, transparent), transparent 70%);
-            filter: blur(36px);
+            filter: blur(30px);
             opacity: 0.88;
             pointer-events: none;
         }
         .tavern-vessel-wrap {
             position: relative;
-            width: min(22rem, 72vw);
-            height: min(27rem, 78vw);
+            width: min(18.5rem, 68vw);
+            height: min(22rem, 74vw);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -795,9 +808,9 @@
         }
         .tavern-vessel {
             position: relative;
-            width: min(14rem, 48vw);
-            height: min(20rem, 66vw);
-            border-radius: 2.8rem 2.8rem 3.8rem 3.8rem;
+            width: min(12.25rem, 44vw);
+            height: min(17rem, 58vw);
+            border-radius: 2.4rem 2.4rem 3.3rem 3.3rem;
             border: 1px solid rgba(255, 255, 255, 0.34);
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.06));
             backdrop-filter: blur(18px);
@@ -854,43 +867,70 @@
                 inset 0 -1.1rem 1.8rem rgba(8, 17, 30, 0.22),
                 0 -0.8rem 2.2rem color-mix(in srgb, var(--tavern-a) 26%, transparent);
             transform-origin: 50% 100%;
-            animation: liquidRock var(--tavern-wave) cubic-bezier(0.42, 0, 0.24, 1) infinite;
+            animation: liquidRock var(--tavern-wave) ease-in-out infinite;
             transition: height 1500ms ease, background 600ms ease, box-shadow 500ms ease;
             z-index: 1;
         }
         .tavern-liquid::before,
         .tavern-liquid::after {
-            content: '';
+            content: none;
+        }
+        .tavern-wave-stack {
             position: absolute;
-            left: -8%;
-            right: -8%;
+            inset: -1.42rem -16% auto -16%;
+            height: 3rem;
             pointer-events: none;
+            z-index: 2;
         }
-        .tavern-liquid::before {
-            top: -1.8rem;
-            height: 3.2rem;
-            border-radius: 50%;
-            background:
-                radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.2) 44%, transparent 72%),
-                linear-gradient(180deg,
-                    color-mix(in srgb, var(--tavern-a) 78%, white) 0%,
-                    color-mix(in srgb, var(--tavern-b) 82%, white) 100%);
-            box-shadow:
-                inset 0 -0.7rem 1.2rem rgba(9, 19, 31, 0.12),
-                0 0 0 1px rgba(255, 255, 255, 0.12);
-            transform-origin: 50% 50%;
-            animation: liquidSurface var(--tavern-wave) cubic-bezier(0.42, 0, 0.24, 1) infinite;
+        .tavern-wave {
+            position: absolute;
+            top: 0;
+            left: -24%;
+            width: 148%;
+            height: 100%;
+            transform-origin: 50% 72%;
+            overflow: visible;
         }
-        .tavern-liquid::after {
-            top: 12%;
-            left: 12%;
-            right: 20%;
-            height: 38%;
-            border-radius: 9999px;
-            background: linear-gradient(110deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0));
-            opacity: calc(0.16 + var(--tavern-glow) * 0.34);
-            filter: blur(7px);
-            animation: liquidGlint calc(var(--tavern-wave) * 0.92) ease-in-out infinite;
+        .tavern-wave-fill {
+            fill: color-mix(in srgb, var(--tavern-a) 90%, white);
+        }
+        .tavern-wave-fill-layer {
+            z-index: 1;
+        }
+        .tavern-wave-line-layer {
+            z-index: 3;
+        }
+        .tavern-wave-back .tavern-wave-fill {
+            fill: color-mix(in srgb, var(--tavern-a) 94%, white);
+            opacity: 1;
+        }
+        .tavern-wave-front .tavern-wave-fill {
+            fill: color-mix(in srgb, var(--tavern-a) 94%, white);
+            opacity: 1;
+        }
+        .tavern-wave-line {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.42);
+            stroke-width: 2.4;
+            stroke-linecap: round;
+            opacity: 0.7;
+        }
+        .dark .tavern-wave-line {
+            stroke: rgba(255, 255, 255, 0.24);
+        }
+        .tavern-wave-line-soft {
+            stroke: color-mix(in srgb, var(--tavern-b) 32%, white);
+            opacity: 0.5;
+        }
+        .dark .tavern-wave-line-soft {
+            stroke: rgba(255, 244, 214, 0.22);
+        }
+        .tavern-wave-back {
+            filter: blur(0.4px);
+            animation: tavernSurfaceBack calc(var(--tavern-wave) * 0.94) ease-in-out infinite;
+        }
+        .tavern-wave-front {
+            animation: tavernSurfaceFront calc(var(--tavern-wave) * 0.74) ease-in-out infinite;
         }
         .tavern-bubbles {
             position: absolute;
@@ -948,6 +988,16 @@
             text-transform: uppercase;
             font-family: "IBM Plex Mono", monospace;
         }
+        .tavern-result-vessel .tavern-vessel-label {
+            top: 1.1rem;
+            max-width: calc(100% - 1.8rem);
+            padding: 0.42rem 0.72rem;
+            font-size: 0.62rem;
+            letter-spacing: 0.14em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
         .tavern-stage-ring {
             position: absolute;
             inset: 50% auto auto 50%;
@@ -998,21 +1048,21 @@
             gap: 1rem;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
         }
+        .tavern-result-summary {
+            width: 100%;
+            border-radius: 1.35rem;
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.46));
+            padding: 1rem 1.05rem;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
+        }
+        .dark .tavern-result-summary {
+            border-color: rgba(148, 163, 184, 0.12);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
         #view-tavern-container > [id^="state-"] {
-            overflow-y: auto;
-            overscroll-behavior: contain;
-            scrollbar-width: thin;
-            -webkit-overflow-scrolling: touch;
-        }
-        #view-tavern-container > [id^="state-"]::-webkit-scrollbar {
-            width: 8px;
-        }
-        #view-tavern-container > [id^="state-"]::-webkit-scrollbar-thumb {
-            border-radius: 9999px;
-            background: rgba(148, 163, 184, 0.32);
-        }
-        .dark #view-tavern-container > [id^="state-"]::-webkit-scrollbar-thumb {
-            background: rgba(148, 163, 184, 0.22);
+            overflow: visible;
         }
         .tavern-history-card {
             position: relative;
@@ -1312,28 +1362,32 @@
         }
         @keyframes liquidRock {
             0%, 100% {
-                transform: translate3d(calc(var(--tavern-slosh) * -0.24rem), 0, 0) rotate(calc(var(--tavern-tilt) * -0.8deg));
+                transform: translate3d(-0.08rem, 0.05rem, 0);
             }
             50% {
-                transform: translate3d(calc(var(--tavern-slosh) * 0.24rem), 0.3rem, 0) rotate(calc(var(--tavern-tilt) * 0.82deg));
+                transform: translate3d(0.08rem, 0.16rem, 0);
             }
         }
-        @keyframes liquidSurface {
-            0%, 100% {
-                transform: translateX(calc(var(--tavern-slosh) * -0.45rem)) rotate(calc(var(--tavern-tilt) * 1.2deg)) scaleX(1.03);
+        @keyframes tavernSurfaceFront {
+            0% {
+                transform: translate3d(var(--tavern-wave-front-left), var(--tavern-wave-front-down), 0) rotate(calc(-1 * var(--tavern-wave-front-tilt)));
             }
             50% {
-                transform: translateX(calc(var(--tavern-slosh) * 0.45rem)) rotate(calc(var(--tavern-tilt) * -1.28deg)) scaleX(0.98);
+                transform: translate3d(var(--tavern-wave-front-right), var(--tavern-wave-front-up), 0) rotate(var(--tavern-wave-front-tilt));
+            }
+            100% {
+                transform: translate3d(var(--tavern-wave-front-left), var(--tavern-wave-front-down), 0) rotate(calc(-1 * var(--tavern-wave-front-tilt)));
             }
         }
-        @keyframes liquidGlint {
-            0%, 100% {
-                transform: translateX(calc(var(--tavern-slosh) * -0.2rem)) rotate(-12deg);
-                opacity: calc(0.16 + var(--tavern-glow) * 0.34);
+        @keyframes tavernSurfaceBack {
+            0% {
+                transform: translate3d(var(--tavern-wave-back-left), var(--tavern-wave-back-down), 0) rotate(calc(-1 * var(--tavern-wave-back-tilt))) scaleX(1.012);
             }
             50% {
-                transform: translateX(calc(var(--tavern-slosh) * 0.26rem)) rotate(-6deg);
-                opacity: calc(0.1 + var(--tavern-glow) * 0.26);
+                transform: translate3d(var(--tavern-wave-back-right), var(--tavern-wave-back-up), 0) rotate(var(--tavern-wave-back-tilt)) scaleX(0.988);
+            }
+            100% {
+                transform: translate3d(var(--tavern-wave-back-left), var(--tavern-wave-back-down), 0) rotate(calc(-1 * var(--tavern-wave-back-tilt))) scaleX(1.012);
             }
         }
         /* 情绪气泡上升 */
@@ -1341,6 +1395,15 @@
             0% { transform: translateY(20px) scale(0.5); opacity: 0; }
             50% { opacity: 0.8; }
             100% { transform: translateY(-80px) scale(1.2); opacity: 0; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .tavern-liquid,
+            .tavern-wave,
+            .tavern-bubbles span {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
 
         .animate-liquid { animation: liquidFill 3.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
@@ -2125,34 +2188,34 @@
                         </div>
                     </div>
 
-                    <div id="view-tavern-container" class="tavern-shell relative min-h-[820px] transition-all duration-500">
+                    <div id="view-tavern-container" class="tavern-shell relative min-h-[640px] transition-[height,box-shadow,transform] duration-500">
                         <div id="state-input" class="absolute inset-0 z-10 opacity-100 transition-all duration-500">
-                            <div class="grid min-h-[820px] lg:grid-cols-[1.05fr_0.95fr]">
-                                <div class="flex flex-col justify-between p-6 sm:p-8 lg:p-10">
+                            <div class="grid min-h-[640px] lg:grid-cols-[1.12fr_0.88fr]">
+                                <div class="flex flex-col justify-between p-5 sm:p-6 lg:p-7">
                                     <div>
-                                        <div class="module-eyebrow mb-4">SIGNAL INPUT</div>
-                                        <h3 class="tavern-display max-w-2xl text-3xl font-semibold leading-tight text-slate-950 dark:text-slate-50 sm:text-[2.4rem]">
+                                        <div class="module-eyebrow mb-3">SIGNAL INPUT</div>
+                                        <h3 class="tavern-display max-w-2xl text-[2rem] font-semibold leading-tight text-slate-950 dark:text-slate-50 sm:text-[2.2rem]">
                                             把一句情绪，调成一杯今晚才会出现的特调。
                                         </h3>
-                                        <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-400">
-                                            你只需要说出此刻的体感、压力、空白、想逃或想继续推进的部分。系统会把它翻译成基酒、香调、浓度和一份可以保存的酒单记录。
+                                        <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-400">
+                                            说出体感、压力、空白或还想继续推进的部分，吧台会把它翻译成基酒、香调、浓度和可保存的酒单记录。
                                         </p>
                                     </div>
 
-                                    <div class="mt-8 space-y-5">
-                                        <div class="tavern-panel p-5 sm:p-6">
+                                    <div class="mt-6 space-y-4">
+                                        <div class="tavern-panel p-4 sm:p-5">
                                             <div class="flex items-center justify-between gap-4">
                                                 <label for="mood-text-input" class="text-sm font-semibold text-slate-900 dark:text-slate-100">情绪样本输入</label>
                                                 <div class="text-[11px] font-mono text-slate-400"><span id="mood-char-count">0</span>/50</div>
                                             </div>
-                                            <textarea id="mood-text-input" rows="4" class="mt-4 w-full resize-none rounded-2xl border border-slate-200/70 bg-white/70 px-5 py-4 text-sm leading-7 text-slate-700 outline-none ring-0 placeholder:text-slate-400 dark:border-white/10 dark:bg-slate-950/20 dark:text-slate-100" placeholder="例如：今天写代码写得有点烦，但其实还是想把它做好，只是脑子已经有点发烫。"></textarea>
+                                            <textarea id="mood-text-input" rows="3" class="mt-3 w-full resize-none rounded-2xl border border-slate-200/70 bg-white/70 px-4 py-3 text-sm leading-6 text-slate-700 outline-none ring-0 placeholder:text-slate-400 dark:border-white/10 dark:bg-slate-950/20 dark:text-slate-100" placeholder="例如：今天写代码写得有点烦，但其实还是想把它做好，只是脑子已经有点发烫。"></textarea>
                                             <div class="mt-3 flex flex-wrap gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-                                                <span class="tavern-chip">写感受、写疲惫、写兴奋、写你想逃开的东西都可以。</span>
+                                                <span class="tavern-chip">一句话就够，吧台会先替你理解，再替你命名。</span>
                                             </div>
                                         </div>
 
                                         <div>
-                                            <div class="mb-3 text-xs font-semibold tracking-[0.18em] text-slate-400">快捷试饮</div>
+                                            <div class="mb-2 text-xs font-semibold tracking-[0.18em] text-slate-400">快捷试饮</div>
                                             <div class="flex flex-wrap gap-2">
                                                 <button class="tavern-suggestion" data-mood="今天有点累，但其实还想再推进一点。">微疲惫但还想继续</button>
                                                 <button class="tavern-suggestion" data-mood="刚做完一件难事，整个人像松了一口气。">松了一口气</button>
@@ -2162,19 +2225,20 @@
                                             </div>
                                         </div>
 
-                                        <div class="grid gap-3 sm:grid-cols-2">
-                                            <div class="tavern-stat">
-                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">How It Works</div>
-                                                <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">系统会根据文本的正负向、波动强度和关键词，决定基酒风格、香调组合与结果名称。</p>
-                                            </div>
-                                            <div class="tavern-stat">
+                                        <div class="tavern-panel grid gap-3 p-4 sm:grid-cols-[1.1fr_0.9fr] sm:p-5">
+                                            <div>
                                                 <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Bar Logic</div>
-                                                <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">当前酒库收录 50+ 款配方，包含高球、Fizz、Martini、Old Fashioned、彩蛋酒等真实吧台分支。</p>
+                                                <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">文本会被拆成情绪方向、波动强度和关键词，再映射到 50+ 款真实风格与彩蛋酒单。</p>
+                                            </div>
+                                            <div class="flex flex-wrap items-center gap-2 sm:justify-end">
+                                                <span class="tavern-chip"><strong>50+</strong> 酒谱</span>
+                                                <span class="tavern-chip"><strong>4</strong> 情绪家族</span>
+                                                <span class="tavern-chip"><strong>隐藏</strong> 彩蛋</span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+                                    <div class="mt-6 flex flex-col gap-3 sm:flex-row">
                                         <button id="btn-start-analyze" class="tavern-action-primary flex-1 disabled:cursor-not-allowed disabled:opacity-35" disabled>
                                             <i data-lucide="sparkles" class="w-4 h-4"></i> 开始调制你的情绪饮品
                                         </button>
@@ -2184,7 +2248,7 @@
                                     </div>
                                 </div>
 
-                                <div class="flex items-center justify-center p-6 sm:p-8 lg:p-10">
+                                <div class="flex items-center justify-center p-5 sm:p-6 lg:p-7">
                                     <div class="tavern-stage w-full">
                                         <div class="tavern-stage-aura"></div>
                                         <div class="tavern-stage-ring"></div>
@@ -2192,19 +2256,33 @@
                                             <div class="tavern-vessel">
                                                 <div class="tavern-vessel-label" id="tavern-stage-label">Idle Pour</div>
                                                 <div id="tavern-stage-liquid" class="tavern-liquid">
+                                                    <div class="tavern-wave-stack" aria-hidden="true">
+                                                        <svg class="tavern-wave tavern-wave-back tavern-wave-fill-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
+                                                            <path class="tavern-wave-fill" d="M0 25 C 34 12 78 10 118 16 C 164 23 204 31 240 24 L240 44 L0 44 Z"></path>
+                                                        </svg>
+                                                        <svg class="tavern-wave tavern-wave-front tavern-wave-fill-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
+                                                            <path class="tavern-wave-fill" d="M0 20 C 44 7 96 10 138 19 C 178 27 212 24 240 18 L240 48 L0 48 Z"></path>
+                                                        </svg>
+                                                        <svg class="tavern-wave tavern-wave-back tavern-wave-line-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
+                                                            <path class="tavern-wave-line tavern-wave-line-soft" d="M0 25 C 34 12 78 10 118 16 C 164 23 204 31 240 24"></path>
+                                                        </svg>
+                                                        <svg class="tavern-wave tavern-wave-front tavern-wave-line-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
+                                                            <path class="tavern-wave-line" d="M0 20 C 44 7 96 10 138 19 C 178 27 212 24 240 18"></path>
+                                                        </svg>
+                                                    </div>
                                                     <div id="tavern-stage-bubbles" class="tavern-bubbles">
                                                         <span></span><span></span><span></span><span></span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="mt-6 text-center">
+                                        <div class="mt-4 text-center">
                                             <div id="tavern-stage-status" class="text-sm font-semibold tracking-[0.2em] text-slate-500 dark:text-slate-400">WAITING FOR INPUT</div>
-                                            <p id="tavern-stage-caption" class="mt-3 max-w-md text-sm leading-7 text-slate-500 dark:text-slate-400">
-                                                写下一句此刻的感受，吧台会把它翻译成可见的颜色、液面和配方结构。
+                                            <p id="tavern-stage-caption" class="mt-2 max-w-sm text-sm leading-6 text-slate-500 dark:text-slate-400">
+                                                写下一句此刻的感受，吧台会把它翻译成颜色、液面和配方结构。
                                             </p>
                                         </div>
-                                        <div class="tavern-spectrum">
+                                        <div class="mt-4 tavern-spectrum">
                                             <div class="mb-2 flex justify-between text-[10px] font-mono uppercase tracking-[0.16em] text-slate-400">
                                                 <span>负向</span>
                                                 <span>中性</span>
@@ -2223,19 +2301,19 @@
                         </div>
 
                         <div id="state-analyzing" class="absolute inset-0 z-0 opacity-0 transition-all duration-500">
-                            <div class="grid min-h-[820px] lg:grid-cols-[0.92fr_1.08fr]">
-                                <div class="flex flex-col justify-between p-6 sm:p-8 lg:p-10">
+                            <div class="grid min-h-[640px] lg:grid-cols-[0.92fr_1.08fr]">
+                                <div class="flex flex-col justify-between p-5 sm:p-6 lg:p-7">
                                     <div>
-                                        <div class="module-eyebrow mb-4">LIVE MIXING</div>
-                                        <h3 class="tavern-display text-3xl font-semibold leading-tight text-slate-950 dark:text-slate-50 sm:text-[2.3rem]">
+                                        <div class="module-eyebrow mb-3">LIVE MIXING</div>
+                                        <h3 class="tavern-display text-[1.95rem] font-semibold leading-tight text-slate-950 dark:text-slate-50 sm:text-[2.15rem]">
                                             正在把你的情绪调成一杯可以喝懂的东西。
                                         </h3>
-                                        <p id="analyze-text" class="mt-4 text-sm leading-7 text-slate-600 dark:text-slate-400">
+                                        <p id="analyze-text" class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">
                                             捕捉你的当下味道中...
                                         </p>
                                     </div>
 
-                                    <div class="mt-8 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                                    <div class="mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
                                         <div class="tavern-stat">
                                             <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Primary Family</div>
                                             <div id="analysis-reading-family" class="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">Calm / 待判定</div>
@@ -2250,14 +2328,14 @@
                                         </div>
                                     </div>
 
-                                    <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+                                    <div class="mt-6 flex flex-col gap-3 sm:flex-row">
                                         <button id="btn-stop-analyze" class="tavern-action-secondary flex-1">
                                             <i data-lucide="x" class="w-4 h-4"></i> 停止调制
                                         </button>
                                     </div>
                                 </div>
 
-                                <div class="flex items-center justify-center p-6 sm:p-8 lg:p-10">
+                                <div class="flex items-center justify-center p-5 sm:p-6 lg:p-7">
                                     <div class="tavern-stage w-full">
                                         <div class="tavern-stage-aura"></div>
                                         <div class="tavern-stage-ring"></div>
@@ -2265,19 +2343,33 @@
                                             <div class="tavern-vessel">
                                                 <div class="tavern-vessel-label" id="analysis-status-primary">Mood Reading</div>
                                                 <div id="realtime-fluid" class="tavern-liquid">
+                                                    <div class="tavern-wave-stack" aria-hidden="true">
+                                                        <svg class="tavern-wave tavern-wave-back tavern-wave-fill-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
+                                                            <path class="tavern-wave-fill" d="M0 25 C 34 12 78 10 118 16 C 164 23 204 31 240 24 L240 44 L0 44 Z"></path>
+                                                        </svg>
+                                                        <svg class="tavern-wave tavern-wave-front tavern-wave-fill-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
+                                                            <path class="tavern-wave-fill" d="M0 20 C 44 7 96 10 138 19 C 178 27 212 24 240 18 L240 48 L0 48 Z"></path>
+                                                        </svg>
+                                                        <svg class="tavern-wave tavern-wave-back tavern-wave-line-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
+                                                            <path class="tavern-wave-line tavern-wave-line-soft" d="M0 25 C 34 12 78 10 118 16 C 164 23 204 31 240 24"></path>
+                                                        </svg>
+                                                        <svg class="tavern-wave tavern-wave-front tavern-wave-line-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
+                                                            <path class="tavern-wave-line" d="M0 20 C 44 7 96 10 138 19 C 178 27 212 24 240 18"></path>
+                                                        </svg>
+                                                    </div>
                                                     <div id="realtime-bubbles" class="tavern-bubbles">
                                                         <span></span><span></span><span></span><span></span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="mt-6 text-center">
+                                        <div class="mt-4 text-center">
                                             <div id="analysis-status-secondary" class="text-sm font-semibold tracking-[0.2em] text-slate-500 dark:text-slate-400">CALIBRATING</div>
-                                            <p class="mt-3 max-w-md text-sm leading-7 text-slate-500 dark:text-slate-400">
+                                            <p class="mt-2 max-w-sm text-sm leading-6 text-slate-500 dark:text-slate-400">
                                                 吧台会先判断你的情绪方向，再决定用明亮、安静、深色或风暴类基酒来承载它。
                                             </p>
                                         </div>
-                                        <div id="emotion-bar-container" class="tavern-spectrum opacity-0 transition-opacity duration-1000">
+                                        <div id="emotion-bar-container" class="mt-4 tavern-spectrum opacity-0 transition-opacity duration-1000">
                                             <div class="mb-2 flex justify-between text-[10px] font-mono uppercase tracking-[0.16em] text-slate-400">
                                                 <span>负向</span>
                                                 <span>中性</span>
@@ -2296,13 +2388,13 @@
                         </div>
 
                         <div id="state-result" class="absolute inset-0 z-0 opacity-0 transition-all duration-500">
-                            <div class="flex min-h-[820px] flex-col p-6 sm:p-8 lg:p-10">
-                                <div class="mb-6 flex items-center justify-between gap-4">
+                            <div class="flex min-h-[640px] flex-col p-5 sm:p-6 lg:p-7">
+                                <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
                                     <button id="btn-back-to-input" class="tavern-action-secondary !min-h-[2.9rem] !px-4">
                                         <i data-lucide="arrow-left" class="w-4 h-4"></i> 继续对话
                                     </button>
                                     <div class="text-[11px] font-mono uppercase tracking-[0.18em] text-slate-400">EXCLUSIVE BLEND</div>
-                                    <div class="flex gap-3">
+                                    <div class="flex flex-wrap gap-3">
                                         <button id="btn-share-drink" class="tavern-action-secondary !min-h-[2.9rem] !px-4">
                                             <i data-lucide="share-2" class="w-4 h-4"></i> 分享卡片
                                         </button>
@@ -2312,18 +2404,33 @@
                                     </div>
                                 </div>
 
-                                <div class="grid flex-1 gap-6 xl:grid-cols-[0.86fr_1.14fr]">
-                                    <div class="tavern-panel flex flex-col items-center justify-center p-6 sm:p-8">
-                                        <div class="flex flex-wrap justify-center gap-2">
+                                <div class="grid flex-1 gap-5 xl:grid-cols-[0.82fr_1.18fr]">
+                                    <div class="tavern-panel flex flex-col p-5 sm:p-6">
+                                        <div class="flex flex-wrap items-center justify-center gap-2">
                                             <span id="res-badge" class="tavern-chip">Calm Signature</span>
                                             <span id="res-style" class="tavern-chip">Highball</span>
+                                            <span id="res-serial" class="tavern-chip">Batch 0001</span>
                                         </div>
-                                        <div class="mt-6 tavern-stage w-full">
+                                        <div class="mt-4 tavern-stage flex-1 w-full">
                                             <div class="tavern-stage-aura"></div>
                                             <div class="tavern-vessel-wrap !h-auto">
-                                                <div class="tavern-vessel !h-[21rem] !w-[15rem]">
-                                                    <div class="tavern-vessel-label" id="res-serial">Batch 0001</div>
+                                                <div class="tavern-vessel tavern-result-vessel !h-[17rem] !w-[12.4rem]">
+                                                    <div class="tavern-vessel-label">Blend</div>
                                                     <div id="res-fluid" class="tavern-liquid !h-[54%]">
+                                                        <div class="tavern-wave-stack" aria-hidden="true">
+                                                            <svg class="tavern-wave tavern-wave-back tavern-wave-fill-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
+                                                                <path class="tavern-wave-fill" d="M0 25 C 34 12 78 10 118 16 C 164 23 204 31 240 24 L240 44 L0 44 Z"></path>
+                                                            </svg>
+                                                            <svg class="tavern-wave tavern-wave-front tavern-wave-fill-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
+                                                                <path class="tavern-wave-fill" d="M0 20 C 44 7 96 10 138 19 C 178 27 212 24 240 18 L240 48 L0 48 Z"></path>
+                                                            </svg>
+                                                            <svg class="tavern-wave tavern-wave-back tavern-wave-line-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
+                                                                <path class="tavern-wave-line tavern-wave-line-soft" d="M0 25 C 34 12 78 10 118 16 C 164 23 204 31 240 24"></path>
+                                                            </svg>
+                                                            <svg class="tavern-wave tavern-wave-front tavern-wave-line-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
+                                                                <path class="tavern-wave-line" d="M0 20 C 44 7 96 10 138 19 C 178 27 212 24 240 18"></path>
+                                                            </svg>
+                                                        </div>
                                                         <div id="res-bubbles" class="tavern-bubbles">
                                                             <span></span><span></span><span></span><span></span>
                                                         </div>
@@ -2331,23 +2438,51 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="mt-5 text-center">
+                                        <div class="mt-4 text-center">
                                             <div id="res-intensity-label" class="text-sm font-semibold tracking-[0.18em] text-slate-500 dark:text-slate-400">MID-INTENSITY</div>
-                                            <p id="res-quote" class="mt-3 max-w-md text-sm leading-7 text-slate-500 dark:text-slate-400">
+                                            <p id="res-quote" class="mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-slate-400">
                                                 一杯简单的特调，回应你此刻的留白。
                                             </p>
                                         </div>
+                                        <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                                            <div class="tavern-stat text-center">
+                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Family</div>
+                                                <div id="res-left-family" class="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">Calm</div>
+                                            </div>
+                                            <div class="tavern-stat text-center">
+                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Base Spirit</div>
+                                                <div id="res-left-base" class="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">Dark Rum</div>
+                                            </div>
+                                            <div class="tavern-stat text-center">
+                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">ABV</div>
+                                                <div id="res-left-abv" class="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">15% ABV</div>
+                                            </div>
+                                            <div class="tavern-stat text-center">
+                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Glass</div>
+                                                <div id="res-left-glass" class="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">Highball</div>
+                                            </div>
+                                        </div>
+                                        <div class="tavern-result-summary mt-3">
+                                            <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Bar Note</div>
+                                            <p id="res-left-service" class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">
+                                                以高球杯承接，基酒缓慢铺底，最后用一笔装饰把今晚收住。
+                                            </p>
+                                            <div class="mt-3 flex flex-wrap gap-2">
+                                                <span class="tavern-chip"><strong id="res-left-feel">Tight / 紧绷</strong></span>
+                                                <span class="tavern-chip"><strong id="res-left-garnish">橙皮与海盐雾</strong></span>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <div class="tavern-panel p-6 sm:p-8">
-                                        <div class="module-eyebrow mb-4">RESULT CARD</div>
-                                        <h3 id="res-title" class="tavern-display text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-50 sm:text-[2.5rem]">午夜可可·轻酿版</h3>
+                                    <div class="tavern-panel p-5 sm:p-6">
+                                        <div class="module-eyebrow mb-3">RESULT CARD</div>
+                                        <h3 id="res-title" class="tavern-display text-[2rem] font-semibold tracking-tight text-slate-950 dark:text-slate-50 sm:text-[2.2rem]">午夜可可·轻酿版</h3>
                                         <p id="res-subtitle" class="mt-2 text-sm italic text-slate-500 dark:text-slate-400">Midnight Cacao Mild</p>
-                                        <p id="res-story" class="mt-5 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-400">
+                                        <p id="res-story" class="mt-4 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-400">
                                             这杯酒会把你文字里的疲惫、想坚持、以及一点点想逃离的冲动调成更可被理解的层次。
                                         </p>
 
-                                        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+                                        <div class="mt-5 grid gap-3 sm:grid-cols-2">
                                             <div class="tavern-stat">
                                                 <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">基酒 Base</div>
                                                 <div id="res-base" class="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">深色朗姆</div>
@@ -2358,7 +2493,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="mt-6 grid gap-3 sm:grid-cols-3">
+                                        <div class="mt-5 grid gap-3 sm:grid-cols-3">
                                             <div class="tavern-stat text-center">
                                                 <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Top</div>
                                                 <div id="res-top" class="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">柠檬皮</div>
@@ -2373,7 +2508,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+                                        <div class="mt-5 grid gap-3 sm:grid-cols-2">
                                             <div class="tavern-stat">
                                                 <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">体感 Feel</div>
                                                 <div id="res-feel" class="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">Tight / 紧绷</div>
@@ -2384,7 +2519,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="mt-6 rounded-[1.4rem] border border-slate-200/70 bg-white/60 p-5 dark:border-slate-700/60 dark:bg-white/[0.03]">
+                                        <div class="mt-5 rounded-[1.4rem] border border-slate-200/70 bg-white/60 p-4 dark:border-slate-700/60 dark:bg-white/[0.03] sm:p-5">
                                             <div class="flex items-center justify-between gap-4">
                                                 <span class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">浓度</span>
                                                 <span id="res-params" class="text-sm font-semibold text-slate-900 dark:text-slate-100">0.63 / 中度酿制</span>
@@ -2398,14 +2533,14 @@
                                             </div>
                                         </div>
 
-                                        <div class="mt-6 rounded-[1.4rem] border border-slate-200/70 bg-white/60 p-5 dark:border-slate-700/60 dark:bg-white/[0.03]">
+                                        <div class="mt-5 rounded-[1.4rem] border border-slate-200/70 bg-white/60 p-4 dark:border-slate-700/60 dark:bg-white/[0.03] sm:p-5">
                                             <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">调酒师注记</div>
-                                            <p id="res-reason" class="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-400">
+                                            <p id="res-reason" class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">
                                                 这杯酒的前调来自你话里的紧绷，中调留给没有说完的压力，尾调放进你还想继续的那一点执念。
                                             </p>
                                         </div>
 
-                                        <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+                                        <div class="mt-5 flex flex-col gap-3 sm:flex-row">
                                             <button id="btn-remix" class="tavern-action-secondary flex-1">
                                                 <i data-lucide="refresh-cw" class="w-4 h-4"></i> 再调一杯
                                             </button>
@@ -2419,16 +2554,16 @@
                         </div>
 
                         <div id="state-history" class="absolute inset-0 z-0 opacity-0 transition-all duration-500">
-                            <div class="flex min-h-[820px] flex-col p-6 sm:p-8 lg:p-10">
-                                <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                            <div class="flex min-h-[640px] flex-col p-5 sm:p-6 lg:p-7">
+                                <div class="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                                     <div>
                                         <div class="module-eyebrow mb-3">ARCHIVE CELLAR</div>
                                         <h3 class="tavern-display text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-50">历史酒单档案</h3>
-                                        <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-400">
-                                            每一杯都保留了当时的情绪向量、配方结构和一句调酒师注记。以后回看时，不只是“那天心情不好”这么粗糙。
+                                        <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-400">
+                                            每一杯都保留了当时的情绪向量、配方结构和一句调酒师注记，回看时不只剩一句“那天心情不好”。
                                         </p>
                                     </div>
-                                    <div class="flex gap-3">
+                                    <div class="flex flex-wrap gap-3">
                                         <button id="btn-close-history" class="tavern-action-secondary !min-h-[2.9rem] !px-4">
                                             <i data-lucide="arrow-left" class="w-4 h-4"></i> 返回吧台
                                         </button>
@@ -2438,7 +2573,7 @@
                                     </div>
                                 </div>
 
-                                <div class="mb-6 grid gap-3 sm:grid-cols-3">
+                                <div class="mb-5 grid gap-3 sm:grid-cols-3">
                                     <div class="tavern-stat">
                                         <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">已封存</div>
                                         <div id="history-count" class="mt-3 text-2xl font-bold text-slate-950 dark:text-slate-50">0</div>
@@ -2453,7 +2588,7 @@
                                     </div>
                                 </div>
 
-                                <div id="tavern-history-list" class="tavern-history-grid flex-1 content-start overflow-y-auto pr-1 pb-3">
+                                <div id="tavern-history-list" class="tavern-history-grid content-start pb-3">
                                 </div>
                             </div>
                         </div>

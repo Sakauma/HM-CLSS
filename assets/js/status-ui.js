@@ -24,18 +24,22 @@ function getTodayOverview(dayData) {
     const currentMins = now.hour * 60 + now.minute;
     const periods = ['morning', 'afternoon', 'evening'];
     let hasIssues = false;
+    let hasWarnings = false;
 
     for (const period of periods) {
         const status = dayData[period].status;
+        const inStatus = getNormalizedCheckInStatus(status.checkIn);
         if (
-            status.checkIn === false ||
-            status.checkIn === 'danger' ||
+            inStatus === 'danger' ||
             status.checkOut === false ||
-            status.checkOut === 'danger' ||
-            status.checkOut === 'warning'
+            status.checkOut === 'danger'
         ) {
             hasIssues = true;
             break;
+        }
+
+        if (inStatus === 'warning' || status.checkOut === 'warning') {
+            hasWarnings = true;
         }
     }
 
@@ -101,6 +105,19 @@ function getTodayOverview(dayData) {
         };
     }
 
+    if (hasWarnings) {
+        return {
+            chipLevel: 'warning',
+            chipText: '存在警告',
+            overallStatus: '今天有可接受但需留意的记录',
+            overallHint: '至少有一个班次超出推荐时段，但仍保留为警告而非失败。',
+            nextAction: '先看今日值班记录表，确认警告出现在哪个时段。',
+            nextActionHint: '这类记录不用补救式恐慌，但值得在复盘时看一眼。',
+            commandTitle: '先确认警告来源',
+            commandMessage: '今天的值班链路没有坏掉，但至少有一个时段超出了推荐边界。先确认它发生在什么地方，再决定是否需要调整节奏。'
+        };
+    }
+
     const unfinishedPeriod = periods.find((period) => !dayData[period].checkIn || !dayData[period].checkOut);
     if (unfinishedPeriod) {
         return {
@@ -141,17 +158,17 @@ function updateTodayStatus() {
             el.textContent = '全天脱产';
             el.className = 'font-medium text-slate-400';
         } else if (dayData[period].checkIn && dayData[period].checkOut) {
-            const inVal = dayData[period].status.checkIn;
+            const inVal = getNormalizedCheckInStatus(dayData[period].status.checkIn);
             const outVal = dayData[period].status.checkOut;
 
             if (inVal === 'excused' || outVal === 'excused') {
                 el.textContent = '已离舰';
                 el.className = 'font-bold text-blue-500 dark:text-blue-400';
-            } else if (!inVal || outVal === false || outVal === 'danger') {
+            } else if (inVal === 'danger' || outVal === false || outVal === 'danger') {
                 el.textContent = '异常';
                 el.className = 'font-medium text-danger';
-            } else if (outVal === 'warning') {
-                el.textContent = '超时警告';
+            } else if (inVal === 'warning' || outVal === 'warning') {
+                el.textContent = '警告';
                 el.className = 'font-medium text-warning';
             } else {
                 el.textContent = '合规';
