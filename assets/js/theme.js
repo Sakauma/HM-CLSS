@@ -1,9 +1,17 @@
+/**
+ * 主题模块。
+ * 负责在系统偏好、本地显式选择和统计图重绘之间保持一致。
+ */
+
 lucide.createIcons();
 
 const themeToggleBtn = document.getElementById('theme-toggle');
 const htmlElement = document.documentElement;
 const systemThemeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
+/**
+ * 根据当前主题切换页头图标显隐状态。
+ */
 function updateThemeIcon() {
     const iconDark = document.getElementById('theme-icon-dark');
     const iconLight = document.getElementById('theme-icon-light');
@@ -17,6 +25,7 @@ function updateThemeIcon() {
     }
 }
 
+// 首次进入页面时优先恢复用户显式选择，否则退回系统主题偏好。
 if (localStorage.theme === 'dark' || (!('theme' in localStorage) && systemThemeMediaQuery.matches)) {
     htmlElement.classList.add('dark');
 } else {
@@ -25,6 +34,7 @@ if (localStorage.theme === 'dark' || (!('theme' in localStorage) && systemThemeM
 
 updateThemeIcon();
 
+// 手动切换主题后，顺带刷新依赖配色的统计图实例。
 themeToggleBtn?.addEventListener('click', () => {
     htmlElement.classList.toggle('dark');
     localStorage.theme = htmlElement.classList.contains('dark') ? 'dark' : 'light';
@@ -38,6 +48,7 @@ themeToggleBtn?.addEventListener('click', () => {
     }
 });
 
+// 仅当用户没有手动指定主题时，才跟随系统主题变化。
 systemThemeMediaQuery.addEventListener('change', (event) => {
     if (!('theme' in localStorage)) {
         if (event.matches) {

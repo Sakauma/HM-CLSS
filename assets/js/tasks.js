@@ -1,3 +1,11 @@
+/**
+ * 任务模块。
+ * 负责当前任务计时、当日任务列表和时间轴映射的维护与渲染。
+ */
+
+/**
+ * 挂载任务相关按钮，并恢复页面首次渲染所需的任务状态。
+ */
 function initTaskManagement() {
     document.getElementById('start-task').addEventListener('click', startTask);
     document.getElementById('end-task').addEventListener('click', endTask);
@@ -7,6 +15,10 @@ function initTaskManagement() {
     if (currentTask) startTaskTimer();
 }
 
+/**
+ * 启动一个新的主任务。
+ * 若已有任务在运行，则先自动结束旧任务，保证同一时刻只有一条主线。
+ */
 function startTask() {
     const name = document.getElementById('task-name').value.trim();
     const tagValue = document.getElementById('task-tag').value;
@@ -29,6 +41,9 @@ function startTask() {
     updateTodayStatus();
 }
 
+/**
+ * 启动当前任务的秒级刷新计时器，仅用于更新展示层的耗时和进度。
+ */
 function startTaskTimer() {
     if (taskTimer) clearInterval(taskTimer);
     renderCurrentTaskState();
@@ -38,6 +53,9 @@ function startTaskTimer() {
     }, 1000);
 }
 
+/**
+ * 结束当前任务并写入当日任务日志。
+ */
 function endTask() {
     if (!currentTask) return;
 
@@ -56,6 +74,9 @@ function endTask() {
     checkAchievements();
 }
 
+/**
+ * 刷新“今日任务”表格，并展示已完成任务数量。
+ */
 function updateTodayTasksList() {
     const tasks = taskData[getTodayString()] || [];
     const tbody = document.getElementById('today-tasks-table');
@@ -97,6 +118,9 @@ function updateTodayTasksList() {
     });
 }
 
+/**
+ * 将今日任务按开始/结束时间映射到时间轴，用于快速回看节奏分布。
+ */
 function updateSchedule() {
     const tasks = taskData[getTodayString()] || [];
     const container = document.getElementById('schedule-content');
@@ -121,6 +145,7 @@ function updateSchedule() {
         if (startHour < 6) startHour = 6;
         if (endHour > 24) endHour = 24;
 
+        // 以 06:00 作为时间轴起点，将实际时间换算为像素位置。
         const top = (startHour - 6) * hourHeight;
         const height = (endHour - startHour) * hourHeight;
 

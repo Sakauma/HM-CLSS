@@ -1,3 +1,11 @@
+/**
+ * 离舰审批模块。
+ * 负责全天/分段离舰记录的录入、回滚以及对打卡模块的状态联动。
+ */
+
+/**
+ * 初始化离舰表单、时间选项和历史记录交互。
+ */
 function initLeaveManagement() {
     document.getElementById('leave-date').value = getTodayString();
     document.getElementById('add-leave').addEventListener('click', addLeave);
@@ -15,6 +23,7 @@ function initLeaveManagement() {
         endSelect.innerHTML = optionsHtml;
     }
 
+    // 仅在“分段离舰”时展示起止时间输入。
     document.getElementById('leave-type').addEventListener('change', (event) => {
         const timeContainer = document.getElementById('leave-time-container');
         if (event.target.value === 'partial') {
@@ -24,6 +33,7 @@ function initLeaveManagement() {
         }
     });
 
+    // 便捷填充当前时间和默认两小时后的结束时间，减少手工选择成本。
     document.getElementById('btn-current-time').addEventListener('click', (event) => {
         event.preventDefault();
         const now = new Date();
@@ -40,6 +50,7 @@ function initLeaveManagement() {
         document.getElementById('leave-end-time').value = `${endH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
     });
 
+    // 历史记录的删除入口需要同时撤销 checkinData 中的联动状态。
     document.getElementById('leave-records-table').addEventListener('click', function(event) {
         const btn = event.target.closest('.delete-leave');
         if (!btn) return;
@@ -80,6 +91,9 @@ function initLeaveManagement() {
     updateLeaveRecordsList();
 }
 
+/**
+ * 新增一条离舰记录，并把结果同步到当天的打卡状态结构中。
+ */
 function addLeave() {
     const date = document.getElementById('leave-date').value;
     const reason = document.getElementById('leave-reason').value.trim();
@@ -129,6 +143,9 @@ function addLeave() {
     showToast('离舰报备归档成功', 'success');
 }
 
+/**
+ * 重新渲染离舰历史列表，按日期倒序展示。
+ */
 function updateLeaveRecordsList() {
     const tbody = document.getElementById('leave-records-table');
     if (!leaveData.length) {

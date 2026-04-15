@@ -1,3 +1,11 @@
+/**
+ * 抗干扰与成就模块。
+ * 负责记录手机干扰拦截次数、刷新成就面板并计算累计里程碑。
+ */
+
+/**
+ * 初始化抗干扰计数区和成就展示区。
+ */
 function initPhoneResist() {
     document.getElementById('phone-resist-count').textContent = phoneResistData.totalCount;
     document.getElementById('today-phone-resist-count').textContent = phoneResistData.records[getTodayString()].count;
@@ -6,6 +14,9 @@ function initPhoneResist() {
     document.getElementById('add-phone-resist').addEventListener('click', addPhoneResist);
 }
 
+/**
+ * 新增一次抗干扰记录，并同步刷新当天和全局统计。
+ */
 function addPhoneResist() {
     const today = getTodayString();
     phoneResistData.totalCount++;
@@ -22,11 +33,17 @@ function addPhoneResist() {
     updateTodayStatus();
 }
 
+/**
+ * 把今天的抗干扰时间戳串成可读文本。
+ */
 function updateTodayPhoneResistTimes() {
     const times = phoneResistData.records[getTodayString()].times;
     document.getElementById('today-phone-resist-times').textContent = times.length === 0 ? '暂无记录' : '记录时间: ' + times.join(', ');
 }
 
+/**
+ * 根据当前成就解锁状态重绘成就列表。
+ */
 function updateAchievementsList() {
     const list = document.getElementById('achievements-list');
     list.innerHTML = '';
@@ -57,6 +74,10 @@ function updateAchievementsList() {
     lucide.createIcons();
 }
 
+/**
+ * 弹出单个成就的解锁提示。
+ * @param {object} achievement
+ */
 function showAchievementPopup(achievement) {
     const popup = document.getElementById('achievement-popup');
     document.getElementById('popup-achievement-title').textContent = achievement.name;
@@ -65,6 +86,9 @@ function showAchievementPopup(achievement) {
     setTimeout(() => popup.classList.add('hidden'), 5000);
 }
 
+/**
+ * 遍历全部成就条件，判断是否有新的里程碑被满足。
+ */
 function checkAchievements() {
     let hasNew = false;
 
@@ -100,6 +124,11 @@ function checkAchievements() {
     }
 }
 
+/**
+ * 计算当前连续打卡天数。
+ * 规则以“昨天开始向前连续”回溯，避免把未来或缺失日期算入 streak。
+ * @returns {number}
+ */
 function calculateCheckinStreak() {
     const todayStr = getTodayString();
     const dates = Object.keys(checkinData)
@@ -142,6 +171,10 @@ function calculateCheckinStreak() {
     return streak;
 }
 
+/**
+ * 汇总所有已完成任务的累计小时数。
+ * @returns {number}
+ */
 function calculateTotalTaskHours() {
     let mins = 0;
     Object.values(taskData).forEach((day) => day.forEach((task) => {

@@ -14,6 +14,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     
     <script>
+        // Tailwind 运行时配置：统一维护主题色、阴影和字体令牌。
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -44,6 +45,7 @@
         }
     </script>
     <style>
+        /* 全局基底：背景氛围、滚动条和通用交互反馈。 */
         :root { color-scheme: light; }
         .dark { color-scheme: dark; }
 
@@ -143,6 +145,7 @@
             box-shadow: 0 0 0 4px rgba(77, 163, 255, 0.12);
         }
 
+        /* 侧边导航与主控台组件。 */
         .nav-rail-button {
             display: flex;
             align-items: flex-start;
@@ -396,6 +399,7 @@
             color: #eef8ff;
         }
 
+        /* 状态徽章、主要操作按钮与值班卡片。 */
         .status-chip {
             display: inline-flex;
             align-items: center;
@@ -595,6 +599,7 @@
             display: none !important;
         }
 
+        /* 深空酒馆：以 CSS 变量驱动液面、泡泡和色板动画。 */
         .tavern-shell {
             --tavern-a: #f3b35b;
             --tavern-b: #db6a55;
@@ -1451,13 +1456,16 @@
     </style>
 </head>
 <body class="min-h-screen bg-bgLight dark:bg-bgDark text-slate-800 dark:text-slate-200 font-sans overflow-x-hidden transition-colors duration-300">
+    <!-- 全局背景层，只负责氛围，不承载交互。 -->
     <div class="pointer-events-none fixed inset-0 overflow-hidden">
         <div class="shell-aurora shell-aurora-a"></div>
         <div class="shell-aurora shell-aurora-b"></div>
         <div class="shell-grid-mask"></div>
     </div>
 
+    <!-- 主应用壳：左侧导航与右侧业务面板并排。 -->
     <div class="relative z-10 flex min-h-screen w-full flex-col lg:flex-row">
+        <!-- 左侧导航和全局摘要。 -->
         <aside class="shell-panel w-full shrink-0 border-b border-slate-200/60 transition-colors lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[22rem] lg:max-h-screen lg:flex-col lg:overflow-y-auto lg:border-b-0 lg:border-r dark:border-slate-700/40">
             <div class="p-5 pb-4 sm:p-6">
                 <div class="flex items-start justify-between gap-4">
@@ -1603,6 +1611,7 @@
             </div>
         </aside>
 
+        <!-- 右侧主工作区：按模块切换展示不同 section。 -->
         <main class="relative min-w-0 flex-1 p-4 sm:p-6 lg:p-10">
             <div class="mx-auto max-w-6xl">
                 <header class="mb-6">
@@ -1675,6 +1684,7 @@
                     </div>
                 </header>
 
+                <!-- 值班模块。 -->
                 <section id="checkin-section" class="mb-8">
                     <div id="shift-ops-grid" class="grid grid-cols-1 gap-5 xl:grid-cols-3">
                         <div class="shift-card">
@@ -1821,6 +1831,7 @@
                     </div>
                 </section>
 
+                <!-- 抗干扰与成就模块。 -->
                 <section id="phone-section" class="mb-8 hidden">
                     <div class="mission-card mb-5 p-5 sm:p-6">
                         <div class="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(260px,0.65fr)] lg:items-center">
@@ -1861,6 +1872,7 @@
                     </div>
                 </section>
 
+                <!-- 任务管理与今日时间轴。 -->
                 <section id="tasks-section" class="mb-8 hidden">
                     <div class="grid items-stretch gap-6 xl:grid-cols-[minmax(0,1.18fr)_minmax(320px,0.82fr)]">
                         <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 flex h-full flex-col">
@@ -1994,6 +2006,7 @@
                     </div>
                 </section>
 
+                <!-- 速记历史归档。 -->
                 <section id="archive-section" class="mb-8 hidden">
                     <div class="mission-card mb-6 p-5 sm:p-6">
                         <div class="grid gap-5 lg:grid-cols-[minmax(0,0.95fr)_minmax(320px,1.05fr)] lg:items-center">
@@ -2017,6 +2030,7 @@
                         </div>
                 </section>
 
+                <!-- 离舰审批模块。 -->
                 <section id="leave-section" class="mb-8 hidden">
                     <div class="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_minmax(340px,0.92fr)]">
                         <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
@@ -2100,6 +2114,7 @@
                     </div>
                 </section>
 
+                <!-- 统计分析模块。 -->
                 <section id="stats-section" class="mb-8 hidden">
                     <div class="mission-card mb-6 p-5 sm:p-6">
                         <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
@@ -2169,6 +2184,7 @@
                     </div>
                 </section>
 
+                <!-- 深空酒馆模块。 -->
                 <section id="tavern-section" class="mb-8 hidden hidden-flex-col">
                     <div class="mission-card mb-5 p-5 sm:p-6">
                         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -2595,6 +2611,7 @@
                     </div>
                 </section>
 
+                <!-- 同步与配置模块。 -->
                 <section id="settings-section" class="mb-8 hidden">
                     <div class="mission-card mb-5 p-5 sm:p-6">
                         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -2653,6 +2670,7 @@
         </div>
     </div>
 
+    <!-- 全局速记弹窗：可从多个入口快速唤起。 -->
     <div id="quick-capture-modal" class="fixed inset-0 bg-slate-900/46 dark:bg-slate-900/70 backdrop-blur-md z-50 hidden hidden-flex items-center justify-center px-4 py-6 transition-opacity">
         <div id="quick-capture-content" class="quick-capture-shell w-full max-w-5xl transform scale-95 transition-all duration-200">
             <div class="quick-capture-glow"></div>
@@ -2729,6 +2747,7 @@
         </div>
     </div>
 
+    <!-- 脚本加载顺序：先基础层，再业务模块，最后状态与同步。 -->
     <script src="assets/js/theme.js"></script>
     <script src="assets/js/core.js"></script>
     <script src="assets/js/navigation.js"></script>
@@ -2741,6 +2760,7 @@
     <script src="assets/js/stats.js"></script>
     <script src="assets/js/status-ui.js"></script>
     <script src="assets/js/sync.js"></script>
+    <!-- 每日/每周总结弹窗。 -->
     <div id="daily-summary-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-md z-[70] hidden hidden-flex-col items-center justify-center transition-opacity">
         <div class="bg-cardLight dark:bg-cardDark w-full max-w-md rounded-2xl shadow-2xl border border-primary/30 p-8 transform transition-all text-center modal-popup">
             <div class="text-6xl mb-4 animate-bounce">🌌</div>
