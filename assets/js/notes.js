@@ -1,3 +1,8 @@
+/**
+ * 速记与归档模块。
+ * 负责快速捕捉灵感、今日速记列表以及历史归档检索。
+ */
+
 const quickModal = document.getElementById('quick-capture-modal');
 const quickContent = document.getElementById('quick-capture-content');
 const quickInput = document.getElementById('quick-capture-input');
@@ -5,6 +10,9 @@ const quickTagSelect = document.getElementById('quick-capture-tag');
 const quickCount = document.getElementById('quick-capture-count');
 const quickSaveBtn = document.getElementById('quick-capture-save');
 
+/**
+ * 根据输入框内容更新字符计数和保存按钮状态。
+ */
 function updateQuickCaptureCount() {
     if (!quickInput || !quickCount || !quickSaveBtn) return;
 
@@ -15,6 +23,9 @@ function updateQuickCaptureCount() {
     quickSaveBtn.classList.toggle('cursor-not-allowed', trimmedLength === 0);
 }
 
+/**
+ * 打开速记弹窗并聚焦输入框。
+ */
 function openQuickCaptureModal() {
     if (!quickModal || !quickInput) return;
 
@@ -27,6 +38,9 @@ function openQuickCaptureModal() {
     lucide.createIcons();
 }
 
+/**
+ * 关闭速记弹窗并恢复页面滚动。
+ */
 function closeQuickCaptureModal() {
     if (!quickModal) return;
 
@@ -36,6 +50,9 @@ function closeQuickCaptureModal() {
     document.body.classList.remove('overflow-hidden');
 }
 
+/**
+ * 把当前速记写入今日记录，并同步刷新今天列表和归档视图。
+ */
 function saveQuickCapture() {
     if (!quickInput || !quickTagSelect) return;
 
@@ -72,6 +89,7 @@ function saveQuickCapture() {
     showToast('记录已收入捕捉池', 'success');
 }
 
+// 提供全局快捷键和弹窗层级交互，确保速记入口足够轻量。
 document.addEventListener('keydown', (event) => {
     if (!quickModal || !quickInput) return;
 
@@ -121,6 +139,10 @@ document.getElementById('quick-capture-cancel')?.addEventListener('click', close
 quickSaveBtn?.addEventListener('click', saveQuickCapture);
 updateQuickCaptureCount();
 
+/**
+ * 根据关键词渲染归档列表，并按日期分组展示。
+ * @param {string} filterText
+ */
 function renderArchive(filterText = '') {
     const container = document.getElementById('archive-list-container');
     const dates = Object.keys(quickNotesData).sort((a, b) => new Date(b) - new Date(a));
@@ -192,6 +214,9 @@ document.getElementById('archive-search-input')?.addEventListener('input', (even
     renderArchive(event.target.value.trim());
 });
 
+/**
+ * 刷新今天的速记捕捉池卡片列表。
+ */
 function updateQuickNotesList() {
     const container = document.getElementById('quick-notes-container');
     const notes = quickNotesData[getTodayString()] || [];
@@ -235,6 +260,10 @@ function updateQuickNotesList() {
     lucide.createIcons();
 }
 
+/**
+ * 处理归档和今日速记区共用的删除行为。
+ * @param {MouseEvent} event
+ */
 function handleNoteDeletion(event) {
     const btn = event.target.closest('.delete-note-btn');
     if (!btn) return;

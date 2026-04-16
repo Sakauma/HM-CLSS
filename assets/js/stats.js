@@ -1,3 +1,11 @@
+/**
+ * 统计分析模块。
+ * 负责按周期聚合业务数据，并把结果投喂给各类 Chart.js 图表。
+ */
+
+/**
+ * 绑定统计周期按钮，并初始化顶部摘要数据。
+ */
 function initStatistics() {
     document.querySelectorAll('.stats-period-btn').forEach((btn) => {
         btn.addEventListener('click', function() {
@@ -11,6 +19,10 @@ function initStatistics() {
     updateSummaryStatistics();
 }
 
+/**
+ * 根据所选周期统一刷新所有统计图。
+ * @param {'week'|'month'|'year'} period
+ */
 function updateStatisticsCharts(period) {
     const isDark = document.documentElement.classList.contains('dark');
     Chart.defaults.color = isDark ? '#94a3b8' : '#64748b';
@@ -25,6 +37,11 @@ function updateStatisticsCharts(period) {
     try { updateTagChart(prepareTagData(startDate, endDate)); } catch (error) { console.error(error); }
 }
 
+/**
+ * 根据统计周期生成起止日期和横轴标签。
+ * @param {'week'|'month'|'year'} period
+ * @returns {{ startDate: Date, endDate: Date, labels: string[] }}
+ */
 function getDateRange(period) {
     const end = new Date();
     const start = new Date();
@@ -57,12 +74,24 @@ function getDateRange(period) {
     return { startDate: start, endDate: end, labels };
 }
 
+/**
+ * 生成某个月的完整日期范围，供年度统计按月聚合时复用。
+ * @param {Date} baseDate
+ * @param {number} offset
+ * @returns {{ start: Date, end: Date }}
+ */
 function getMonthRange(baseDate, offset = 0) {
     const start = new Date(baseDate.getFullYear(), baseDate.getMonth() + offset, 1);
     const end = new Date(baseDate.getFullYear(), baseDate.getMonth() + offset + 1, 0);
     return { start, end };
 }
 
+/**
+ * 计算指定时间范围内的打卡合规率。
+ * @param {Date} start
+ * @param {Date} end
+ * @returns {number}
+ */
 function calculateCheckinRateForRange(start, end) {
     let total = 0;
     let qualified = 0;
@@ -95,6 +124,12 @@ function calculateCheckinRateForRange(start, end) {
     return total > 0 ? (qualified / total) * 100 : 0;
 }
 
+/**
+ * 统计指定范围内的任务总时长（小时）。
+ * @param {Date} start
+ * @param {Date} end
+ * @returns {number}
+ */
 function calculateTaskHoursForRange(start, end) {
     const current = new Date(start);
     let totalMinutes = 0;
@@ -108,6 +143,12 @@ function calculateTaskHoursForRange(start, end) {
     return totalMinutes / 60;
 }
 
+/**
+ * 统计指定范围内的抗干扰总次数。
+ * @param {Date} start
+ * @param {Date} end
+ * @returns {number}
+ */
 function calculatePhoneResistForRange(start, end) {
     const current = new Date(start);
     let totalCount = 0;
@@ -121,6 +162,14 @@ function calculatePhoneResistForRange(start, end) {
     return totalCount;
 }
 
+/**
+ * 准备打卡合规率趋势图数据。
+ * 周/月视图按日或三天采样，年视图按月聚合。
+ * @param {Date} start
+ * @param {Date} end
+ * @param {string[]} labels
+ * @returns {(number|null)[]}
+ */
 function prepareCheckinRateData(start, end, labels) {
     const data = [];
     for (let i = 0; i < labels.length; i++) {
@@ -167,6 +216,12 @@ function prepareCheckinRateData(start, end, labels) {
     return data;
 }
 
+/**
+ * 统计不同班次的打卡总次数与合格次数。
+ * @param {Date} start
+ * @param {Date} end
+ * @returns {{ m: { i: number, q: number }, a: { i: number, q: number }, e: { i: number, q: number } }}
+ */
 function prepareCheckinPeriodData(start, end) {
     const result = { m: { i: 0, q: 0 }, a: { i: 0, q: 0 }, e: { i: 0, q: 0 } };
     const current = new Date(start);
@@ -182,6 +237,13 @@ function prepareCheckinPeriodData(start, end) {
     return result;
 }
 
+/**
+ * 准备任务时长图数据。
+ * @param {Date} start
+ * @param {Date} end
+ * @param {string[]} labels
+ * @returns {number[]}
+ */
 function prepareTaskDurationData(start, end, labels) {
     const data = [];
     for (let i = 0; i < labels.length; i++) {
@@ -203,6 +265,13 @@ function prepareTaskDurationData(start, end, labels) {
     return data;
 }
 
+/**
+ * 准备抗干扰次数趋势图数据。
+ * @param {Date} start
+ * @param {Date} end
+ * @param {string[]} labels
+ * @returns {number[]}
+ */
 function preparePhoneResistData(start, end, labels) {
     const data = [];
     for (let i = 0; i < labels.length; i++) {
@@ -224,6 +293,12 @@ function preparePhoneResistData(start, end, labels) {
     return data;
 }
 
+/**
+ * 按任务标签汇总时长，供甜甜圈图展示。
+ * @param {Date} start
+ * @param {Date} end
+ * @returns {number[]}
+ */
 function prepareTagData(start, end) {
     const tagCounts = { paper: 0, code: 0, experiment: 0, write: 0, other: 0 };
     const current = new Date(start);
@@ -237,6 +312,11 @@ function prepareTagData(start, end) {
     return [tagCounts.paper, tagCounts.code, tagCounts.experiment, tagCounts.write, tagCounts.other].map((minutes) => Number((minutes / 60).toFixed(2)));
 }
 
+/**
+ * 渲染打卡合规率折线图。
+ * @param {string[]} labels
+ * @param {(number|null)[]} data
+ */
 function updateCheckinRateChart(labels, data) {
     const canvas = document.getElementById('checkin-rate-chart');
     if (!canvas) return;
@@ -259,6 +339,10 @@ function updateCheckinRateChart(labels, data) {
     });
 }
 
+/**
+ * 渲染不同班次的打卡数量对比图。
+ * @param {{ m: { i: number, q: number }, a: { i: number, q: number }, e: { i: number, q: number } }} data
+ */
 function updateCheckinPeriodChart(data) {
     const canvas = document.getElementById('checkin-period-chart');
     if (!canvas) return;
@@ -276,6 +360,11 @@ function updateCheckinPeriodChart(data) {
     });
 }
 
+/**
+ * 渲染任务时长柱状图。
+ * @param {string[]} labels
+ * @param {number[]} data
+ */
 function updateTaskDurationChart(labels, data) {
     const canvas = document.getElementById('task-duration-chart');
     if (!canvas) return;
@@ -290,6 +379,11 @@ function updateTaskDurationChart(labels, data) {
     });
 }
 
+/**
+ * 渲染抗干扰次数折线图。
+ * @param {string[]} labels
+ * @param {number[]} data
+ */
 function updatePhoneResistChart(labels, data) {
     const canvas = document.getElementById('phone-resist-chart');
     if (!canvas) return;
@@ -312,6 +406,11 @@ function updatePhoneResistChart(labels, data) {
     });
 }
 
+/**
+ * 渲染任务标签分布图。
+ * 当没有数据时，使用占位分片保证图表结构稳定。
+ * @param {number[]} data
+ */
 function updateTagChart(data) {
     const canvas = document.getElementById('task-tag-chart');
     if (!canvas) return;
@@ -341,6 +440,9 @@ function updateTagChart(data) {
     });
 }
 
+/**
+ * 刷新统计面板顶部的总览数字。
+ */
 function updateSummaryStatistics() {
     document.getElementById('total-checkin-days').textContent = Object.values(checkinData).filter((day) => !day.leave && (day.morning.checkIn || day.afternoon.checkIn || day.evening.checkIn)).length;
 

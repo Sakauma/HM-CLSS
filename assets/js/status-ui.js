@@ -1,3 +1,13 @@
+/**
+ * 状态概览与提示模块。
+ * 负责把原始业务数据翻译成首页总览、建议动作和全局 toast 提示。
+ */
+
+/**
+ * 将抽象状态级别映射为统一的徽章样式类。
+ * @param {'success'|'warning'|'danger'|'info'} level
+ * @returns {string}
+ */
 function getStatusChipClass(level) {
     const levelMap = {
         success: 'status-chip status-chip-success',
@@ -9,6 +19,11 @@ function getStatusChipClass(level) {
     return levelMap[level] || levelMap.info;
 }
 
+/**
+ * 将内部班次键转换为对用户展示的班次名称。
+ * @param {'morning'|'afternoon'|'evening'} period
+ * @returns {string}
+ */
 function getPeriodLabel(period) {
     const labelMap = {
         morning: 'Alpha 班次',
@@ -19,6 +34,11 @@ function getPeriodLabel(period) {
     return labelMap[period] || period;
 }
 
+/**
+ * 根据今天的值班、任务和离舰状态，生成首页概览卡需要的文案。
+ * @param {object} dayData
+ * @returns {object}
+ */
 function getTodayOverview(dayData) {
     const now = getCurrentTime();
     const currentMins = now.hour * 60 + now.minute;
@@ -26,6 +46,7 @@ function getTodayOverview(dayData) {
     let hasIssues = false;
     let hasWarnings = false;
 
+    // 先找最严重的问题：异常比警告和提示优先级更高。
     for (const period of periods) {
         const status = dayData[period].status;
         const inStatus = getNormalizedCheckInStatus(status.checkIn);
@@ -56,6 +77,7 @@ function getTodayOverview(dayData) {
         };
     }
 
+    // 其次判断是否存在已开始但尚未收尾的班次。
     for (const period of periods) {
         const periodData = dayData[period];
         if (periodData.checkIn && !periodData.checkOut) {
@@ -72,6 +94,7 @@ function getTodayOverview(dayData) {
         }
     }
 
+    // 再判断是否正处于某个应当优先打卡的班次窗口内。
     for (const period of periods) {
         const cfg = CONFIG.schedule[period];
         const startMins = cfg.startHour * 60;
@@ -146,6 +169,9 @@ function getTodayOverview(dayData) {
     };
 }
 
+/**
+ * 刷新首页总览、今日摘要和行动提示。
+ */
 function updateTodayStatus() {
     const today = getTodayString();
     const dayData = checkinData[today];
@@ -254,6 +280,11 @@ function updateTodayStatus() {
     }
 }
 
+/**
+ * 显示顶部 toast 提示，并在动画结束后自动移除。
+ * @param {string} message
+ * @param {'success'|'error'|'warning'} type
+ */
 function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');

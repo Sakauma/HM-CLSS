@@ -1,5 +1,11 @@
+/**
+ * 深空酒馆模块。
+ * 负责把情绪文本分析为风味画像，再映射成酒单配方、结果卡片和历史酒柜视图。
+ */
+
 const MAX_MOOD_CHARS = 50;
 
+// 输入区的示例文案，用于快速生成一条可分析的情绪样本。
 const tavernSuggestionTexts = [
     '今天有点累，但其实还想再推进一点。',
     '刚把一件难事做完，整个人像终于松了一口气。',
@@ -9,6 +15,7 @@ const tavernSuggestionTexts = [
     '明明有一点期待，可身体还是比脑子更想躺下。'
 ];
 
+// 不同情绪家族的展示文案、舞台标签和配色方案。
 const familyMeta = {
     bright: {
         label: 'Bright / 明亮',
@@ -76,6 +83,7 @@ const familyMeta = {
     }
 };
 
+// 关键词词典：把自然语言线索映射到情绪家族、正负倾向和强度。
 const moodLexicon = [
     { keywords: ['开心', '高兴', '轻松', '顺利', '兴奋', '期待', '放晴', '舒服', '舒服点'], family: 'bright', valence: 0.55, intensity: 0.28 },
     { keywords: ['松一口气', '平静', '安静', '稳住', '安心', '放松', '回稳', '缓一缓'], family: 'calm', valence: 0.28, intensity: 0.12 },
@@ -87,6 +95,7 @@ const moodLexicon = [
     { keywords: ['太阳', '地球', '洛基', 'rocky', 'hm-clss', 'hail mary', '挽救计划', '噬星体', '水基'], family: 'cosmic', valence: 0.12, intensity: 0.34 }
 ];
 
+// 常规酒单，按情绪家族分组。
 const familyRecipes = {
     bright: [
         { id: 'solar-paloma', name: '日冕帕洛玛', en: 'Solar Paloma', style: 'Paloma', base: '日晒龙舌兰', glass: 'Highball', garnish: '葡萄柚皮与海盐', top: '葡萄柚皮', middle: '橙花', bottom: '海盐', quote: '适合在重新看见希望时，给自己一点气泡。 ', intensity: [0.32, 0.92] },
@@ -153,6 +162,7 @@ const familyRecipes = {
     ]
 };
 
+// 彩蛋酒单：当文本命中特定主题词时优先使用。
 const specialRecipes = [
     { id: 'astrophage-tonic', family: 'cosmic', name: '噬星体汤力', en: 'Astrophage Tonic', style: 'Tonic', base: '深空汤力金酒', glass: 'Highball', garnish: '萤光青柠', top: '柠檬皮', middle: '奎宁', bottom: '深空金酒', quote: '像在黑暗里发现一种新燃料。', keywords: ['噬星体', 'astrophage', '太阳', '地球'], intensity: [0.18, 0.82], secret: true },
     { id: 'rocky-signal', family: 'cosmic', name: '洛基信号', en: 'Rocky Signal', style: 'Martini', base: '低温伏特加', glass: 'Martini', garnish: '蓝盐晶片', top: '海盐', middle: '干型苦艾', bottom: '伏特加', quote: '有些回应很慢，但一旦收到就再也忘不掉。', keywords: ['洛基', 'rocky', '外星', 'eridian', '厄立德'], intensity: [0.16, 0.74], secret: true },
@@ -165,6 +175,7 @@ const specialRecipes = [
     { id: 'weekend-escape-spritz', family: 'cosmic', name: '周末逃逸喷泉', en: 'Weekend Escape Spritz', style: 'Spritz', base: '白葡萄开胃酒', glass: 'Wine Glass', garnish: '橙片', top: '橙片', middle: '气泡酒', bottom: '草本开胃酒', quote: '适合那种“我今晚想暂时从主线任务里逃逸一下”的心情。', keywords: ['周末', '放假', '出去玩', '旅行'], intensity: [0.12, 0.58], secret: true }
 ];
 
+// 统一酒谱目录，便于后续按条件筛选。
 const cocktailCatalog = [
     ...Object.entries(familyRecipes).flatMap(([family, recipes]) => recipes.map((recipe) => ({ ...recipe, family, secret: false }))),
     ...specialRecipes
@@ -173,6 +184,11 @@ const cocktailCatalog = [
 const familyList = Object.keys(familyMeta);
 let analysisTimeouts = [];
 
+/**
+ * 将文本稳定地映射为整数种子，保证同样输入能得到可复现的结果。
+ * @param {string} str
+ * @returns {number}
+ */
 function hashString(str) {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
@@ -183,24 +199,49 @@ function hashString(str) {
     return Math.abs(hash);
 }
 
+/**
+ * 把数值约束在指定区间内。
+ * @param {number} value
+ * @param {number} min
+ * @param {number} max
+ * @returns {number}
+ */
 function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
 }
 
+/**
+ * 清空分析阶段排队中的定时器，避免状态切换后旧动画继续执行。
+ */
 function clearAnalysisTimers() {
     analysisTimeouts.forEach((timerId) => clearTimeout(timerId));
     analysisTimeouts = [];
 }
 
+/**
+ * 记录一个分析阶段动画步骤，便于统一取消。
+ * @param {Function} callback
+ * @param {number} delay
+ */
 function queueAnalysisStep(callback, delay) {
     const timerId = setTimeout(callback, delay);
     analysisTimeouts.push(timerId);
 }
 
+/**
+ * 获取某个配方的展示色板，若配方未自定义则回退到家族默认色。
+ * @param {object} recipe
+ * @returns {string[]}
+ */
 function getRecipePalette(recipe) {
     return recipe.palette || familyMeta[recipe.family].palette;
 }
 
+/**
+ * 根据强度区间返回标签与酒精系数，供成品卡文案和 ABV 估算复用。
+ * @param {number} intensity
+ * @returns {{ cn: string, en: string, label: string, abvFactor: number }}
+ */
 function getIntensityMeta(intensity) {
     if (intensity < 0.34) {
         return { cn: '轻酿版', en: 'Mild', label: 'LIGHT POUR', abvFactor: 0.82 };
@@ -211,6 +252,11 @@ function getIntensityMeta(intensity) {
     return { cn: '烈性版', en: 'Bold', label: 'BOLD POUR', abvFactor: 1.18 };
 }
 
+/**
+ * 给不同酒款风格一个基础 ABV 参考值。
+ * @param {string} style
+ * @returns {number}
+ */
 function getStyleBaseAbv(style) {
     const map = {
         Paloma: 12,
@@ -254,11 +300,23 @@ function getStyleBaseAbv(style) {
     return map[style] || 16;
 }
 
+/**
+ * 选出次级情绪家族，用于主家族候选不足时做补充筛选。
+ * @param {{ family: string, score: number }[]} sortedFamilies
+ * @param {string} primaryFamily
+ * @returns {string}
+ */
 function getSecondaryFamily(sortedFamilies, primaryFamily) {
     const secondary = sortedFamilies.find((item) => item.family !== primaryFamily && item.score > 0.2);
     return secondary ? secondary.family : primaryFamily;
 }
 
+/**
+ * 解析输入文本，输出情绪正负向、强度和主次情绪家族。
+ * 当未命中词典时，会用文本种子生成一个稳定的回退结果，避免完全随机。
+ * @param {string} text
+ * @returns {{ seed: number, text: string, valence: number, intensity: number, primaryFamily: string, secondaryFamily: string, matchedKeywords: string[] }}
+ */
 function analyzeMoodText(text) {
     const normalizedText = text.trim();
     const lowerText = normalizedText.toLowerCase();
@@ -307,6 +365,7 @@ function analyzeMoodText(text) {
         matchedKeywords.push(emotion.label);
     });
 
+    // 标点、重复字符和文本长度会轻微放大情绪强度，让“语气”也参与结果。
     const punctuationBoost = (normalizedText.match(/[!！?？]/g) || []).length * 0.04;
     const stretchBoost = (normalizedText.match(/(.)\1{2,}/g) || []).length * 0.06;
     const lengthBoost = Math.min(normalizedText.length / MAX_MOOD_CHARS, 1) * 0.1;
@@ -352,6 +411,12 @@ function analyzeMoodText(text) {
     };
 }
 
+/**
+ * 根据情绪画像挑选最合适的配方。
+ * 优先命中彩蛋酒，其次匹配主家族和强度，最后再用次级家族兜底。
+ * @param {object} profile
+ * @returns {object}
+ */
 function pickRecipe(profile) {
     const lowerText = profile.text.toLowerCase();
     const specialMatches = specialRecipes.filter((recipe) => recipe.keywords.some((keyword) => lowerText.includes(keyword.toLowerCase())));
@@ -374,6 +439,12 @@ function pickRecipe(profile) {
     return candidates[profile.seed % candidates.length];
 }
 
+/**
+ * 生成一段“为什么是这杯酒”的解释文本。
+ * @param {object} profile
+ * @param {object} recipe
+ * @returns {string}
+ */
 function getReasonText(profile, recipe) {
     const keywordText = profile.matchedKeywords.length ? profile.matchedKeywords.join('、') : '整体语气';
     const familyReason = {
@@ -390,6 +461,12 @@ function getReasonText(profile, recipe) {
     return `系统从你文字里的 ${keywordText} 取样，最后决定用 ${recipe.base} 做基酒，${familyReason[recipe.family]}。`;
 }
 
+/**
+ * 把分析结果和配方合并成一条完整的展示记录。
+ * @param {object} profile
+ * @param {object} recipe
+ * @returns {object}
+ */
 function buildDrinkRecord(profile, recipe) {
     const intensityMeta = getIntensityMeta(profile.intensity);
     const family = familyMeta[recipe.family];
@@ -433,6 +510,11 @@ function buildDrinkRecord(profile, recipe) {
     };
 }
 
+/**
+ * 根据情绪正负向和强度驱动酒液倾斜、波浪和发光动画参数。
+ * @param {HTMLElement} container
+ * @param {{ valence?: number, intensity?: number, phase?: number }} config
+ */
 function applyTavernMotion(container, { valence = 0, intensity = 0.3, phase = 0 } = {}) {
     if (!container) return;
 
@@ -475,6 +557,10 @@ function applyTavernMotion(container, { valence = 0, intensity = 0.3, phase = 0 
     container.style.setProperty('--tavern-wave-back-up', `${backUp.toFixed(2)}rem`);
 }
 
+/**
+ * 将当前配方的色板和浓度映射到酒杯视觉变量。
+ * @param {object} record
+ */
 function applyPaletteToTavern(record) {
     const container = document.getElementById('view-tavern-container');
     const [a, b, c] = record.palette;
@@ -494,6 +580,10 @@ function applyPaletteToTavern(record) {
     document.getElementById('res-bar').style.background = `linear-gradient(90deg, ${a}, ${b}, ${c})`;
 }
 
+/**
+ * 在正式分析前，先根据输入文本做一层即时预览反馈。
+ * @param {string} text
+ */
 function updateInputPreview(text) {
     const labelEl = document.getElementById('tavern-stage-label');
     const statusEl = document.getElementById('tavern-stage-status');
@@ -534,6 +624,10 @@ function updateInputPreview(text) {
     scaleCopyEl.textContent = `情绪指针已经开始移动，说明这段输入不是空白，它已经带有明确方向。`;
 }
 
+/**
+ * 让酒馆容器高度跟随当前激活状态页自适应，避免切页时突然跳动。
+ * @param {string} targetId
+ */
 function syncTavernContainerHeight(targetId) {
     const container = document.getElementById('view-tavern-container');
     const activeState = document.getElementById(targetId);
@@ -547,6 +641,10 @@ function syncTavernContainerHeight(targetId) {
     });
 }
 
+/**
+ * 切换酒馆内部四种主状态：输入、分析、结果、历史。
+ * @param {'state-input'|'state-analyzing'|'state-result'|'state-history'} targetId
+ */
 function switchTavernState(targetId) {
     ['state-input', 'state-analyzing', 'state-result', 'state-history'].forEach((id) => {
         const el = document.getElementById(id);
@@ -570,6 +668,11 @@ function switchTavernState(targetId) {
     syncTavernContainerHeight(targetId);
 }
 
+/**
+ * 把一条酒单记录渲染到结果卡视图。
+ * @param {object} record
+ * @param {boolean} fromHistory
+ */
 function renderResult(record, fromHistory = false) {
     currentDrinkInfo = { ...record, saved: !!fromHistory || record.saved };
     applyPaletteToTavern(currentDrinkInfo);
@@ -615,6 +718,11 @@ function renderResult(record, fromHistory = false) {
     lucide.createIcons();
 }
 
+/**
+ * 生成便于分享的纯文本卡片，并复制到剪贴板。
+ * @param {object} record
+ * @returns {Promise<void>}
+ */
 function copyDrinkCard(record) {
     const shareText = [
         `${record.name} | ${record.enName}`,
@@ -645,6 +753,11 @@ function copyDrinkCard(record) {
     });
 }
 
+/**
+ * 把旧版本酒单记录补齐到当前结构，保证历史数据仍可渲染。
+ * @param {object} drink
+ * @returns {object}
+ */
 function normalizeDrinkRecord(drink) {
     if (drink.enName && drink.style) {
         return drink;
@@ -684,6 +797,9 @@ function normalizeDrinkRecord(drink) {
     };
 }
 
+/**
+ * 渲染历史酒柜列表，并绑定查看/删除操作。
+ */
 function renderTavernHistory() {
     const container = document.getElementById('tavern-history-list');
     const normalizedHistory = tavernData.map(normalizeDrinkRecord);
@@ -772,6 +888,7 @@ function renderTavernHistory() {
     }
 }
 
+// 酒馆模块在 DOM 完成后再挂载，因为它依赖大量静态容器节点。
 document.addEventListener('DOMContentLoaded', () => {
     const inputEl = document.getElementById('mood-text-input');
     const countEl = document.getElementById('mood-char-count');
@@ -780,6 +897,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('history-library-count').textContent = cocktailCatalog.length;
 
+    // 输入阶段即时更新字数、按钮状态和预览色板。
     inputEl?.addEventListener('input', (event) => {
         let text = event.target.value;
         if (text.length > MAX_MOOD_CHARS) {
@@ -808,6 +926,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateInputPreview(suggestion);
     });
 
+    // 正式分析会走一段“预读 -> 调和 -> 装瓶”的阶段动画，再展示结果。
     analyzeBtn?.addEventListener('click', () => {
         const text = inputEl.value.trim();
         if (!text) return;
@@ -931,6 +1050,7 @@ document.addEventListener('DOMContentLoaded', () => {
     switchTavernState('state-input');
     renderTavernHistory();
     updateInputPreview('');
+    // 窗口尺寸变化时同步修正当前激活状态页的容器高度。
     window.addEventListener('resize', () => {
         const activeState = document.querySelector('#view-tavern-container > [id^="state-"].opacity-100');
         if (activeState?.id) {

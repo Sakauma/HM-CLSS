@@ -1,5 +1,14 @@
+/**
+ * 导航模块。
+ * 负责左侧导航、右侧面板元信息以及各主视图间的切换体验。
+ */
+
+/**
+ * 初始化导航按钮，并把“面板说明区”的内容和当前激活模块保持同步。
+ */
 function initNavigation() {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    // 每个导航项既定义跳转目标，也定义右侧说明区的文案和快捷操作。
     const navigationItems = [
         {
             btnId: 'nav-checkin',
@@ -83,6 +92,7 @@ function initNavigation() {
         }
     ];
 
+    // 切换面板后统一把视口拉回顶部，避免保留上一个面板的滚动位置。
     const scrollCurrentPanelIntoView = () => {
         const scrollingEl = document.scrollingElement || document.documentElement;
         const behavior = prefersReducedMotion.matches ? 'auto' : 'smooth';
@@ -95,12 +105,14 @@ function initNavigation() {
         window.scrollTo(0, 0);
     };
 
+    // 统一处理导航按钮的样式与无障碍状态。
     const setNavButtonState = (button, isActive) => {
         if (!button) return;
         button.className = isActive ? 'nav-rail-button nav-rail-button-active' : 'nav-rail-button';
         button.setAttribute('aria-current', isActive ? 'page' : 'false');
     };
 
+    // 用当前导航项的数据刷新右侧的标题、提示和快捷入口。
     const updatePanelMeta = (item) => {
         const badgeEl = document.getElementById('panel-meta-badge');
         const titleEl = document.getElementById('panel-meta-title');
@@ -127,6 +139,7 @@ function initNavigation() {
         lucide.createIcons();
     };
 
+    // 绑定每个导航按钮的显示/隐藏行为，并在切换时按需刷新对应模块的数据。
     navigationItems.forEach((item) => {
         const button = document.getElementById(item.btnId);
         const section = document.getElementById(item.sectionId);
@@ -172,6 +185,7 @@ function initNavigation() {
         });
     });
 
+    // 首次加载时默认展示第一个面板，并初始化对应说明。
     updatePanelMeta(navigationItems[0]);
     setNavButtonState(document.getElementById(navigationItems[0].btnId), true);
 }

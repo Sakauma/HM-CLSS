@@ -1,13 +1,26 @@
+/**
+ * 值班打卡模块。
+ * 负责班次连线/登出、状态判定、按钮可用性以及今日记录表的刷新。
+ */
+
 const CHECKIN_ACTIVE_BUTTON_CLASS = 'action-btn action-btn-primary';
 const CHECKOUT_ACTIVE_BUTTON_CLASS = 'action-btn action-btn-secondary';
 const CHECKIN_DISABLED_BUTTON_CLASS = 'action-btn action-btn-disabled';
 
+/**
+ * 兼容旧版本使用布尔值表示打卡状态的情况，统一转换成字符串枚举。
+ * @param {boolean|string|null} status
+ * @returns {string|null}
+ */
 function getNormalizedCheckInStatus(status) {
     if (status === true) return 'success';
     if (status === false) return 'warning';
     return status;
 }
 
+/**
+ * 初始化三段班次的按钮监听和今日表格。
+ */
 function initCheckin() {
     ['morning', 'afternoon', 'evening'].forEach((period) => {
         document.getElementById(`${period}-checkin`).addEventListener('click', () => checkIn(period));
@@ -17,6 +30,9 @@ function initCheckin() {
     updateTodayCheckinTable();
 }
 
+/**
+ * 根据当前时间、离舰状态和已有记录动态更新打卡按钮状态。
+ */
 function updateCheckinButtons() {
     const today = getTodayString();
     if (!checkinData[today]) {
@@ -35,6 +51,7 @@ function updateCheckinButtons() {
     const currentMins = now.hour * 60 + now.minute;
     const isLeave = checkinData[today] && checkinData[today].leave;
 
+    // 分段离舰会临时冻结打卡按钮，但不改变全天离舰的主状态。
     let isCurrentlyOnPartialLeave = false;
     if (checkinData[today] && checkinData[today].partialLeaves) {
         for (const leave of checkinData[today].partialLeaves) {
@@ -104,6 +121,9 @@ function updateCheckinButtons() {
     updateCheckinTimeDisplay();
 }
 
+/**
+ * 晚班结束后触发每日/每周彩蛋总结弹窗。
+ */
 function triggerEndOfDayEasterEgg() {
     const today = getTodayString();
     const todayTasks = taskData[today] || [];
@@ -135,6 +155,10 @@ function triggerEndOfDayEasterEgg() {
     }
 }
 
+/**
+ * 判断最近一周是否每天都有至少一次打卡，用于周总结彩蛋。
+ * @returns {boolean}
+ */
 function isThisWeekPerfect() {
     const todayDate = new Date();
     for (let i = 0; i < 7; i++) {
@@ -151,12 +175,21 @@ function isThisWeekPerfect() {
     return true;
 }
 
+/**
+ * 把 HH:MM 转成分钟数，便于统一做时间区间比较。
+ * @param {string} timeStr
+ * @returns {number}
+ */
 function timeStrToMins(timeStr) {
     if (!timeStr) return 0;
     const [h, m] = timeStr.split(':').map(Number);
     return h * 60 + m;
 }
 
+/**
+ * 记录指定班次的连线时间，并根据推荐时限和离舰记录判定状态。
+ * @param {'morning'|'afternoon'|'evening'} period
+ */
 function checkIn(period) {
     const today = getTodayString();
     const now = getCurrentTime();
@@ -167,6 +200,7 @@ function checkIn(period) {
     const thresholdMins = cfg.okCheckInBefore * 60;
     let inStatus = currentMins <= thresholdMins ? 'success' : 'warning';
 
+    // 如果晚到是由分段离舰导致，则将警告升级为豁免。
     if (inStatus === 'warning' && checkinData[today].partialLeaves) {
         for (const leave of checkinData[today].partialLeaves) {
             const leaveStartMins = timeStrToMins(leave.startTime);
@@ -190,6 +224,10 @@ function checkIn(period) {
     checkAchievements();
 }
 
+/**
+ * 记录指定班次的登出时间，并综合时长与离舰信息给出结果。
+ * @param {'morning'|'afternoon'|'evening'} period
+ */
 function checkOut(period) {
     const today = getTodayString();
     const now = getCurrentTime();
@@ -216,6 +254,7 @@ function checkOut(period) {
         }
     }
 
+    // 提前登出只有在离舰记录覆盖推荐结束时间时才算豁免。
     if (isExcusedEarlyLeave) {
         outStatus = 'excused';
     } else if (durationMins < CONFIG.task.minDurationMins) {
@@ -237,6 +276,9 @@ function checkOut(period) {
     }
 }
 
+/**
+ * 刷新主按钮下方的开始/结束时间文案。
+ */
 function updateCheckinTimeDisplay() {
     const today = getTodayString();
     ['morning', 'afternoon', 'evening'].forEach((period) => {
@@ -245,6 +287,9 @@ function updateCheckinTimeDisplay() {
     });
 }
 
+/**
+ * 刷新今日打卡明细表，并把内部状态映射成用户可读文案。
+ */
 function updateTodayCheckinTable() {
     const today = getTodayString();
     ['morning', 'afternoon', 'evening'].forEach((period) => {

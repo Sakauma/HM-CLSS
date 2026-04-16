@@ -1,13 +1,26 @@
+/**
+ * 云同步模块。
+ * 负责将本地数据与 GitHub Gist 间做导入、导出、启动拉取和节流自动同步。
+ */
+
 let githubToken = localStorage.getItem('githubToken') || '';
 let gistId = localStorage.getItem('gistId') || '';
 let localLastSyncTime = localStorage.getItem('localLastSyncTime') || '';
 let autoSyncTimer = null;
 
+/**
+ * 记录最近一次成功同步时间，作为后续冲突判断依据。
+ * @param {string} timeStr
+ */
 function updateLocalSyncTime(timeStr) {
     localLastSyncTime = timeStr;
     localStorage.setItem('localLastSyncTime', timeStr);
 }
 
+/**
+ * 判断当前本地是否已经存在值得保护的数据，避免无同步记录时被云端误覆盖。
+ * @returns {boolean}
+ */
 function hasMeaningfulLocalData() {
     if (currentTask) return true;
 
@@ -34,6 +47,10 @@ function hasMeaningfulLocalData() {
     });
 }
 
+/**
+ * 把云端数据完整覆盖到本地内存态，并刷新所有受影响视图。
+ * @param {object} cloudData
+ */
 function applyImportedData(cloudData) {
     checkinData = cloudData.checkinData || {};
     phoneResistData = cloudData.phoneResistData || { totalCount: 0, records: {} };
@@ -75,6 +92,12 @@ function applyImportedData(cloudData) {
     if (typeof updateQuickNotesList === 'function') updateQuickNotesList();
 }
 
+/**
+ * 判断启动时是否应自动采用云端版本。
+ * 仅在云端时间更新，或本地尚无有效数据时自动覆盖。
+ * @param {object} cloudData
+ * @returns {boolean}
+ */
 function shouldAutoApplyCloudData(cloudData) {
     if (!cloudData.lastSyncTime) return false;
     if (!localLastSyncTime) return !hasMeaningfulLocalData();
@@ -84,6 +107,7 @@ function shouldAutoApplyCloudData(cloudData) {
 document.getElementById('github-token-input').value = githubToken;
 document.getElementById('gist-id-input').value = gistId;
 
+// 保存同步配置本身只落本地，不直接触发网络请求。
 document.getElementById('save-config-btn').addEventListener('click', () => {
     githubToken = document.getElementById('github-token-input').value.trim();
     gistId = document.getElementById('gist-id-input').value.trim();
@@ -92,6 +116,10 @@ document.getElementById('save-config-btn').addEventListener('click', () => {
     showToast('⚙️ 配置已保存到本地！', 'success');
 });
 
+/**
+ * 组装一份可上传到云端的数据快照。
+ * @returns {object}
+ */
 function buildExportData() {
     return {
         checkinData,
@@ -105,6 +133,7 @@ function buildExportData() {
     };
 }
 
+// 推送前先读取云端版本，尽量在覆盖前发现更近的远端更新。
 document.getElementById('push-cloud-btn').addEventListener('click', async () => {
     if (!githubToken || !gistId) return showToast('请先配置并保存 GitHub Token 和 Gist ID', 'error');
 
@@ -173,6 +202,7 @@ document.getElementById('push-cloud-btn').addEventListener('click', async () => 
     }
 });
 
+// 拉取是显式覆盖行为，因此始终需要用户二次确认。
 document.getElementById('pull-cloud-btn').addEventListener('click', async () => {
     if (!githubToken || !gistId) return showToast('请先配置并保存 GitHub Token 和 Gist ID', 'error');
     if (!confirm('⚠️ 拉取云端数据将覆盖你当前的本地数据！确定要继续吗？')) return;
@@ -211,6 +241,9 @@ document.getElementById('pull-cloud-btn').addEventListener('click', async () => 
     }
 });
 
+/**
+ * 在数据变更后启动一个节流自动同步定时器，避免频繁网络写入。
+ */
 function triggerAutoSync() {
     if (!githubToken || !gistId) return;
     if (autoSyncTimer) return;
@@ -247,6 +280,9 @@ function triggerAutoSync() {
     }, syncInterval);
 }
 
+/**
+ * 页面启动后尝试静默检查云端版本，并在合适时自动应用。
+ */
 async function autoPullOnStartup() {
     if (!githubToken || !gistId) return;
 

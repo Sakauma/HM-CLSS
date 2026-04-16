@@ -1,4 +1,10 @@
-// Shared state.
+/**
+ * 核心运行时模块。
+ * 负责维护全局共享状态、初始化本地存储、提供日期/转义等基础工具，
+ * 并在页面启动时串起各业务模块的初始化顺序。
+ */
+
+// 由各业务模块共享的内存态，统一在这里定义以避免脚本加载顺序带来的歧义。
 let checkinData = {};
 let phoneResistData = { totalCount: 0, records: {} };
 let taskData = {};
@@ -12,6 +18,8 @@ let tavernData = [];
 let currentDrinkInfo = null;
 
 const CURRENT_TASK_STORAGE_KEY = 'currentTask';
+
+// 任务标签和界面展示名称之间的映射表。
 const tagMap = {
     paper: '文献阅读',
     code: '代码构建',
@@ -20,6 +28,7 @@ const tagMap = {
     other: '杂项事务'
 };
 
+// 与班次和任务时长判断相关的全局配置。
 const CONFIG = {
     schedule: {
         morning: { startHour: 6, endHour: 12, okCheckInBefore: 8, okCheckOutBefore: 12 },
@@ -31,6 +40,7 @@ const CONFIG = {
     }
 };
 
+// 速记标签的图标、文案和视觉风格配置。
 const noteTagConfig = {
     idea: { icon: 'lightbulb', label: '灵感', color: 'text-warning bg-warning/10 border-warning/20' },
     bug: { icon: 'bug', label: '异常', color: 'text-danger bg-danger/10 border-danger/20' },
@@ -38,6 +48,7 @@ const noteTagConfig = {
     log: { icon: 'book', label: '日志', color: 'text-primary bg-primary/10 border-primary/20' }
 };
 
+// 成就系统的静态配置清单。
 const achievementList = [
     { id: 'first_resist', name: '初次戒断', description: '第一次成功阻断认知(手机)干扰', requirement: 1 },
     { id: 'small_achievement', name: '初步适应', description: '成功阻断干扰10次，你开始适应孤独', requirement: 10 },
@@ -57,6 +68,7 @@ const achievementList = [
     { id: 'eridani_contact', name: '水基就是一切', description: '捕捉100个噬星体碎片，现在你知道这种小玩意是怎么运动、繁殖的了，当然最关键的是，它们依然是水基的', requirement: 100, type: 'notes' }
 ];
 
+// 情绪字典会与酒馆分析模块共享，用于输入文本的情绪加权。
 const emotionDictionary = [
     { id: 'emo_1', label: '焦躁', efi: -0.8, eii: 0.9, style: 'text-red-600 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-900/20 dark:border-red-900/50' },
     { id: 'emo_2', label: '平静', efi: 0.5, eii: 0.2, style: 'text-teal-600 bg-teal-50 border-teal-200 dark:text-teal-400 dark:bg-teal-900/20 dark:border-teal-900/50' },
@@ -74,6 +86,7 @@ const emotionDictionary = [
 
 let selectedEmotions = [];
 
+// 页面入口：先恢复数据，再依次挂载各个业务面板。
 document.addEventListener('DOMContentLoaded', function() {
     initData();
     updateDateTime();
@@ -92,6 +105,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('close-weekly-modal').addEventListener('click', () => document.getElementById('weekly-summary-modal').classList.add('hidden'));
 });
 
+/**
+ * 从本地存储恢复所有模块数据，并补齐当天需要的默认结构。
+ * 同时校验“当前任务”这类可能因旧版本残留而损坏的字段。
+ */
 function initData() {
     const savedCheckinData = localStorage.getItem('checkinData');
     const savedPhoneResistData = localStorage.getItem('phoneResistData');
@@ -155,6 +172,10 @@ function initData() {
     saveData(true);
 }
 
+/**
+ * 将当前内存态统一落盘到 localStorage。
+ * @param {boolean} preventAutoSync 为 true 时仅保存本地，不触发自动云同步。
+ */
 function saveData(preventAutoSync = false) {
     localStorage.setItem('checkinData', JSON.stringify(checkinData));
     localStorage.setItem('phoneResistData', JSON.stringify(phoneResistData));
@@ -173,6 +194,9 @@ function saveData(preventAutoSync = false) {
     }
 }
 
+/**
+ * 单独持久化当前进行中的任务，避免任务计时状态丢失。
+ */
 function persistCurrentTask() {
     if (currentTask) {
         localStorage.setItem(CURRENT_TASK_STORAGE_KEY, JSON.stringify(currentTask));
@@ -181,6 +205,9 @@ function persistCurrentTask() {
     }
 }
 
+/**
+ * 根据 currentTask 的状态刷新任务首屏卡片和进度条展示。
+ */
 function renderCurrentTaskState() {
     const container = document.getElementById('current-task-container');
     const readyPanel = document.getElementById('task-ready-panel');
@@ -215,6 +242,9 @@ function renderCurrentTaskState() {
     container.classList.remove('hidden');
 }
 
+/**
+ * 每秒刷新当前时间，并顺带更新打卡按钮的可用状态。
+ */
 function updateDateTime() {
     const now = new Date();
     const options = { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' };
@@ -222,25 +252,47 @@ function updateDateTime() {
     updateCheckinButtons();
 }
 
+/**
+ * 将 Date 对象格式化为 YYYY-MM-DD，作为各模块统一的日期键。
+ * @param {Date} date
+ * @returns {string}
+ */
 function formatLocalDate(date) {
     return date.getFullYear() + '-' +
         String(date.getMonth() + 1).padStart(2, '0') + '-' +
         String(date.getDate()).padStart(2, '0');
 }
 
+/**
+ * 获取今天的本地日期字符串。
+ * @returns {string}
+ */
 function getTodayString() {
     return formatLocalDate(new Date());
 }
 
+/**
+ * 获取当前本地时间，格式为 HH:MM。
+ * @returns {string}
+ */
 function getCurrentTimeString() {
     return new Date().toTimeString().slice(0, 5);
 }
 
+/**
+ * 以结构化对象返回当前小时和分钟，便于做时间比较。
+ * @returns {{ hour: number, minute: number }}
+ */
 function getCurrentTime() {
     const now = new Date();
     return { hour: now.getHours(), minute: now.getMinutes() };
 }
 
+/**
+ * 对动态插入到 HTML 中的文本做最小转义，避免渲染层注入风险。
+ * @param {unknown} value
+ * @returns {string}
+ */
 function escapeHtml(value) {
     const normalized = value == null ? '' : String(value);
     return normalized.replace(/[&<>"']/g, (char) => ({
@@ -252,10 +304,20 @@ function escapeHtml(value) {
     }[char]));
 }
 
+/**
+ * 兼容旧结构的速记记录，稳定地读取文本内容。
+ * @param {object} note
+ * @returns {string}
+ */
 function getNoteText(note) {
     return note && typeof note.text === 'string' ? note.text : '';
 }
 
+/**
+ * 兼容旧结构的速记记录，稳定地读取时间字段。
+ * @param {object} note
+ * @returns {string}
+ */
 function getNoteTime(note) {
     return note && typeof note.time === 'string' ? note.time : '--:--';
 }
