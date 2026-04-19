@@ -62,8 +62,12 @@ function endTask() {
     clearInterval(taskTimer);
     taskTimer = null;
     const duration = Math.floor((Date.now() - currentTask.startTimestamp) / 60000);
-    if (!taskData[getTodayString()]) taskData[getTodayString()] = [];
-    taskData[getTodayString()].push({ ...currentTask, endTime: getCurrentTimeString(), duration, completed: true });
+    appendDailyEntry(taskData, getTodayString(), {
+        ...currentTask,
+        endTime: getCurrentTimeString(),
+        duration,
+        completed: true
+    });
     currentTask = null;
     persistCurrentTask();
     saveData(true);
@@ -78,7 +82,7 @@ function endTask() {
  * 刷新“今日任务”表格，并展示已完成任务数量。
  */
 function updateTodayTasksList() {
-    const tasks = taskData[getTodayString()] || [];
+    const tasks = getDailyEntries(taskData, getTodayString());
     const tbody = document.getElementById('today-tasks-table');
     const taskReadyCountEl = document.getElementById('task-ready-count');
 
@@ -95,8 +99,6 @@ function updateTodayTasksList() {
 
     tasks.forEach((task) => {
         const durationMins = Number.isFinite(task.duration) ? task.duration : 0;
-        const h = Math.floor(durationMins / 60);
-        const m = durationMins % 60;
         const tagName = tagMap[task.tag || 'other'];
         const startTime = typeof task.startTime === 'string' ? task.startTime : '-';
         const endTime = typeof task.endTime === 'string' ? task.endTime : '-';
@@ -111,7 +113,7 @@ function updateTodayTasksList() {
                 </td>
                 <td class="py-3 px-4 text-slate-500 font-mono">${escapeHtml(startTime)}</td>
                 <td class="py-3 px-4 text-slate-500 font-mono">${escapeHtml(endTime)}</td>
-                <td class="py-3 px-4 text-slate-500">${h > 0 ? `${h}h ${m}m` : `${m}m`}</td>
+                <td class="py-3 px-4 text-slate-500">${formatDurationLabel(durationMins)}</td>
                 <td class="py-3 px-4"><span class="px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-md text-xs font-bold">已完成</span></td>
             </tr>
         `;
@@ -122,7 +124,7 @@ function updateTodayTasksList() {
  * 将今日任务按开始/结束时间映射到时间轴，用于快速回看节奏分布。
  */
 function updateSchedule() {
-    const tasks = taskData[getTodayString()] || [];
+    const tasks = getDailyEntries(taskData, getTodayString());
     const container = document.getElementById('schedule-content');
 
     if (!tasks.length) {

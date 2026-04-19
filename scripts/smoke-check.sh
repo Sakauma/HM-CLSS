@@ -20,6 +20,7 @@ js_files=(
   assets/js/checkin-ui.js
   assets/js/checkin.js
   assets/js/phone-achievements.js
+  assets/js/workspace-entries.js
   assets/js/tasks.js
   assets/js/notes.js
   assets/js/leave-rules.js
@@ -61,6 +62,7 @@ required_scripts=(
   "assets/js/checkin-ui.js"
   "assets/js/leave-rules.js"
   "assets/js/leave-ui.js"
+  "assets/js/workspace-entries.js"
   "assets/js/sync-state.js"
   "assets/js/sync-api.js"
   "assets/js/export-data.js"
@@ -102,6 +104,9 @@ tavern_line="$(rg -n 'assets/js/tavern.js' index.html | cut -d: -f1)"
 checkin_rules_line="$(rg -n 'assets/js/checkin-rules.js' index.html | cut -d: -f1)"
 checkin_ui_line="$(rg -n 'assets/js/checkin-ui.js' index.html | cut -d: -f1)"
 checkin_line="$(rg -n 'assets/js/checkin.js' index.html | cut -d: -f1)"
+workspace_entries_line="$(rg -n 'assets/js/workspace-entries.js' index.html | cut -d: -f1)"
+tasks_line="$(rg -n 'assets/js/tasks.js' index.html | cut -d: -f1)"
+notes_line="$(rg -n 'assets/js/notes.js' index.html | cut -d: -f1)"
 leave_rules_line="$(rg -n 'assets/js/leave-rules.js' index.html | cut -d: -f1)"
 leave_ui_line="$(rg -n 'assets/js/leave-ui.js' index.html | cut -d: -f1)"
 leave_line="$(rg -n 'assets/js/leave.js' index.html | cut -d: -f1)"
@@ -173,8 +178,23 @@ if (( checkin_ui_line >= checkin_line )); then
   exit 1
 fi
 
-if (( checkin_line >= leave_rules_line )); then
-  printf 'checkin.js must load before leave-rules.js\n' >&2
+if (( checkin_line >= workspace_entries_line )); then
+  printf 'checkin.js must load before workspace-entries.js\n' >&2
+  exit 1
+fi
+
+if (( workspace_entries_line >= tasks_line )); then
+  printf 'workspace-entries.js must load before tasks.js\n' >&2
+  exit 1
+fi
+
+if (( tasks_line >= notes_line )); then
+  printf 'tasks.js must load before notes.js\n' >&2
+  exit 1
+fi
+
+if (( notes_line >= leave_rules_line )); then
+  printf 'notes.js must load before leave-rules.js\n' >&2
   exit 1
 fi
 

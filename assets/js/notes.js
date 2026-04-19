@@ -66,9 +66,7 @@ function saveQuickCapture() {
     }
 
     const today = getTodayString();
-    if (!quickNotesData[today]) quickNotesData[today] = [];
-
-    quickNotesData[today].unshift({
+    prependDailyEntry(quickNotesData, today, {
         time: getCurrentTimeString(),
         text,
         tag
@@ -79,10 +77,9 @@ function saveQuickCapture() {
     updateQuickCaptureCount();
     closeQuickCaptureModal();
     updateQuickNotesList();
-
-    if (typeof renderArchive === 'function' && !document.getElementById('archive-section').classList.contains('hidden')) {
+    rerenderVisiblePanel('archive-section', () => {
         renderArchive(document.getElementById('archive-search-input').value.trim());
-    }
+    });
 
     checkAchievements();
     lucide.createIcons();
@@ -219,7 +216,7 @@ document.getElementById('archive-search-input')?.addEventListener('input', (even
  */
 function updateQuickNotesList() {
     const container = document.getElementById('quick-notes-container');
-    const notes = quickNotesData[getTodayString()] || [];
+    const notes = getDailyEntries(quickNotesData, getTodayString());
     if (!notes.length) {
         container.innerHTML = `
             <div class="rounded-[1.4rem] border border-dashed border-slate-200/80 bg-slate-50/70 px-6 py-8 text-center dark:border-slate-700/70 dark:bg-slate-900/40">
@@ -271,21 +268,13 @@ function handleNoteDeletion(event) {
     if (confirm('警告：确定要将这条记录从存储核心中永久抹除吗？')) {
         const date = btn.getAttribute('data-date');
         const index = parseInt(btn.getAttribute('data-index'), 10);
-
-        if (quickNotesData[date]) {
-            quickNotesData[date].splice(index, 1);
-
-            if (quickNotesData[date].length === 0) {
-                delete quickNotesData[date];
-            }
-
+        if (removeDailyEntry(quickNotesData, date, index)) {
             saveData();
             showToast('记录已抹除', 'success');
             updateQuickNotesList();
-
-            if (typeof renderArchive === 'function' && !document.getElementById('archive-section').classList.contains('hidden')) {
+            rerenderVisiblePanel('archive-section', () => {
                 renderArchive(document.getElementById('archive-search-input').value.trim());
-            }
+            });
         }
     }
 }
