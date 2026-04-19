@@ -16,10 +16,14 @@ js_files=(
   assets/js/tavern-logic.js
   assets/js/tavern-ui.js
   assets/js/tavern.js
+  assets/js/checkin-rules.js
+  assets/js/checkin-ui.js
   assets/js/checkin.js
   assets/js/phone-achievements.js
   assets/js/tasks.js
   assets/js/notes.js
+  assets/js/leave-rules.js
+  assets/js/leave-ui.js
   assets/js/leave.js
   assets/js/stats-data.js
   assets/js/stats-charts.js
@@ -49,6 +53,10 @@ required_scripts=(
   "assets/js/tavern-catalog.js"
   "assets/js/tavern-logic.js"
   "assets/js/tavern-ui.js"
+  "assets/js/checkin-rules.js"
+  "assets/js/checkin-ui.js"
+  "assets/js/leave-rules.js"
+  "assets/js/leave-ui.js"
   "assets/js/sync-state.js"
   "assets/js/sync-api.js"
   "assets/js/shortcuts.js"
@@ -83,6 +91,12 @@ tavern_catalog_line="$(rg -n 'assets/js/tavern-catalog.js' index.html | cut -d: 
 tavern_logic_line="$(rg -n 'assets/js/tavern-logic.js' index.html | cut -d: -f1)"
 tavern_ui_line="$(rg -n 'assets/js/tavern-ui.js' index.html | cut -d: -f1)"
 tavern_line="$(rg -n 'assets/js/tavern.js' index.html | cut -d: -f1)"
+checkin_rules_line="$(rg -n 'assets/js/checkin-rules.js' index.html | cut -d: -f1)"
+checkin_ui_line="$(rg -n 'assets/js/checkin-ui.js' index.html | cut -d: -f1)"
+checkin_line="$(rg -n 'assets/js/checkin.js' index.html | cut -d: -f1)"
+leave_rules_line="$(rg -n 'assets/js/leave-rules.js' index.html | cut -d: -f1)"
+leave_ui_line="$(rg -n 'assets/js/leave-ui.js' index.html | cut -d: -f1)"
+leave_line="$(rg -n 'assets/js/leave.js' index.html | cut -d: -f1)"
 stats_data_line="$(rg -n 'assets/js/stats-data.js' index.html | cut -d: -f1)"
 stats_charts_line="$(rg -n 'assets/js/stats-charts.js' index.html | cut -d: -f1)"
 stats_line="$(rg -n 'assets/js/stats.js' index.html | cut -d: -f1)"
@@ -128,6 +142,36 @@ fi
 
 if (( tavern_ui_line >= tavern_line )); then
   printf 'tavern-ui.js must load before tavern.js\n' >&2
+  exit 1
+fi
+
+if (( tavern_line >= checkin_rules_line )); then
+  printf 'tavern.js must load before checkin-rules.js\n' >&2
+  exit 1
+fi
+
+if (( checkin_rules_line >= checkin_ui_line )); then
+  printf 'checkin-rules.js must load before checkin-ui.js\n' >&2
+  exit 1
+fi
+
+if (( checkin_ui_line >= checkin_line )); then
+  printf 'checkin-ui.js must load before checkin.js\n' >&2
+  exit 1
+fi
+
+if (( checkin_line >= leave_rules_line )); then
+  printf 'checkin.js must load before leave-rules.js\n' >&2
+  exit 1
+fi
+
+if (( leave_rules_line >= leave_ui_line )); then
+  printf 'leave-rules.js must load before leave-ui.js\n' >&2
+  exit 1
+fi
+
+if (( leave_ui_line >= leave_line )); then
+  printf 'leave-ui.js must load before leave.js\n' >&2
   exit 1
 fi
 

@@ -449,7 +449,10 @@ def main() -> int:
             log("Navigation hit the page-load timeout; continuing with DOM checks.")
         wait_ready(driver)
         driver.execute_script("window.localStorage.clear(); window.sessionStorage.clear();")
-        driver.refresh()
+        try:
+            driver.refresh()
+        except TimeoutException:
+            log("Refresh hit the page-load timeout; continuing with DOM checks.")
         wait_ready(driver)
 
         test_bootstrap(driver)

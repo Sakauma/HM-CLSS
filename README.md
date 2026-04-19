@@ -60,10 +60,14 @@ node --check assets/js/tavern-catalog.js
 node --check assets/js/tavern-logic.js
 node --check assets/js/tavern-ui.js
 node --check assets/js/tavern.js
+node --check assets/js/checkin-rules.js
+node --check assets/js/checkin-ui.js
 node --check assets/js/checkin.js
 node --check assets/js/phone-achievements.js
 node --check assets/js/tasks.js
 node --check assets/js/notes.js
+node --check assets/js/leave-rules.js
+node --check assets/js/leave-ui.js
 node --check assets/js/leave.js
 node --check assets/js/stats-data.js
 node --check assets/js/stats-charts.js
@@ -163,16 +167,24 @@ bash scripts/browser-smoke.sh
   酒馆舞台动画、结果卡、历史酒柜与事件绑定。
 - `assets/js/tavern.js`
   深空酒馆入口，负责在 DOM 就绪后挂载酒馆交互。
+- `assets/js/checkin-rules.js`
+  值班状态归一化、时间判定、补录评估与记录写入。
+- `assets/js/checkin-ui.js`
+  值班按钮、今日记录表、补打卡面板和每日/每周彩蛋弹窗。
 - `assets/js/checkin.js`
-  考勤打卡、时段判定、今日打卡状态表。
+  值班控制器，负责实时打卡、补打卡提交与初始化监听。
 - `assets/js/phone-achievements.js`
   戒断次数记录、成就判定与成就弹窗。
 - `assets/js/tasks.js`
   任务开始/结束、计时器、任务表格与时间轴。
 - `assets/js/notes.js`
   `Ctrl+K` 快速记录、归档面板、笔记检索与删除。
+- `assets/js/leave-rules.js`
+  离舰工作流状态、目标日期校验与离舰状态重建。
+- `assets/js/leave-ui.js`
+  离舰流程切换、表单动态提示与历史列表渲染。
 - `assets/js/leave.js`
-  全天/分时段离舰报备与撤销逻辑。
+  离舰控制器，负责时间下拉、提交与撤销监听。
 - `assets/js/stats-data.js`
   统计区间、时间范围、聚合口径与图表数据准备。
 - `assets/js/stats-charts.js`
@@ -347,22 +359,26 @@ const CONFIG = {
 10. `tavern-logic.js`
 11. `tavern-ui.js`
 12. `tavern.js`
-13. `checkin.js`
-14. `phone-achievements.js`
-15. `tasks.js`
-16. `notes.js`
-17. `leave.js`
-18. `stats-data.js`
-19. `stats-charts.js`
-20. `stats.js`
-21. `status-ui.js`
-22. `sync-state.js`
-23. `sync-api.js`
-24. `sync.js`
-25. `export.js`
-26. `shortcuts.js`
+13. `checkin-rules.js`
+14. `checkin-ui.js`
+15. `checkin.js`
+16. `phone-achievements.js`
+17. `tasks.js`
+18. `notes.js`
+19. `leave-rules.js`
+20. `leave-ui.js`
+21. `leave.js`
+22. `stats-data.js`
+23. `stats-charts.js`
+24. `stats.js`
+25. `status-ui.js`
+26. `sync-state.js`
+27. `sync-api.js`
+28. `sync.js`
+29. `export.js`
+30. `shortcuts.js`
 
-其中 `runtime-state.js`、`runtime-storage.js` 与 `core.js` 负责提供共享运行时；`workspace-metrics.js` 与 `workspace-data.js` 负责统一指标和数据边界；`app-init.js` 提前注册启动编排，确保它比其他 `DOMContentLoaded` 监听更早挂上；酒馆链路现在拆成 `tavern-catalog.js -> tavern-logic.js -> tavern-ui.js -> tavern.js`，同步链路拆成 `sync-state.js -> sync-api.js -> sync.js`，统计链路拆成 `stats-data.js -> stats-charts.js -> stats.js`。顺序错乱会导致飞船在启动时失压。
+其中 `runtime-state.js`、`runtime-storage.js` 与 `core.js` 负责提供共享运行时；`workspace-metrics.js` 与 `workspace-data.js` 负责统一指标和数据边界；`app-init.js` 提前注册启动编排，确保它比其他 `DOMContentLoaded` 监听更早挂上；酒馆链路现在拆成 `tavern-catalog.js -> tavern-logic.js -> tavern-ui.js -> tavern.js`，值班链路拆成 `checkin-rules.js -> checkin-ui.js -> checkin.js`，离舰链路拆成 `leave-rules.js -> leave-ui.js -> leave.js`，同步链路拆成 `sync-state.js -> sync-api.js -> sync.js`，统计链路拆成 `stats-data.js -> stats-charts.js -> stats.js`。顺序错乱会导致飞船在启动时失压。
 
 
 ## 🧪 手动巡检建议
