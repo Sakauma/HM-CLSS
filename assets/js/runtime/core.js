@@ -257,6 +257,49 @@ function escapeHtml(value) {
 }
 
 /**
+ * 创建轻量 DOM 节点，便于列表和卡片渲染摆脱大段字符串拼接。
+ * @param {string} tagName
+ * @param {{ className?: string, text?: string, html?: string, attrs?: Record<string, unknown> }} [options]
+ * @returns {HTMLElement}
+ */
+function createDomElement(tagName, options = {}) {
+    const { className = '', text, html, attrs = {} } = options;
+    const element = document.createElement(tagName);
+
+    if (className) {
+        element.className = className;
+    }
+
+    if (text != null) {
+        element.textContent = String(text);
+    } else if (html != null) {
+        element.innerHTML = html;
+    }
+
+    Object.entries(attrs).forEach(([key, value]) => {
+        if (value == null) return;
+        element.setAttribute(key, String(value));
+    });
+
+    return element;
+}
+
+/**
+ * 向父节点按顺序挂载一组子节点，并自动跳过空值。
+ * @param {HTMLElement | DocumentFragment} parent
+ * @param {Array<Node | null | undefined | false>} children
+ * @returns {HTMLElement | DocumentFragment}
+ */
+function appendDomChildren(parent, children) {
+    children.forEach((child) => {
+        if (child) {
+            parent.appendChild(child);
+        }
+    });
+    return parent;
+}
+
+/**
  * 兼容旧结构的速记记录，稳定地读取文本内容。
  * @param {object} note
  * @returns {string}

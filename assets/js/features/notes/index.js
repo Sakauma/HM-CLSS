@@ -168,6 +168,145 @@ document.getElementById('quick-capture-cancel')?.addEventListener('click', close
 quickSaveBtn?.addEventListener('click', saveQuickCapture);
 updateQuickCaptureCount();
 
+function createLucideIconNode(icon, className) {
+    return createDomElement('i', {
+        className,
+        attrs: { 'data-lucide': icon }
+    });
+}
+
+function createMarkdownNoteNode(noteText, className) {
+    return createDomElement('div', {
+        className,
+        html: DOMPurify.sanitize(marked.parse(noteText))
+    });
+}
+
+function createArchiveEmptyState(filterText) {
+    return appendDomChildren(createDomElement('div', {
+        className: 'bg-cardLight dark:bg-cardDark rounded-2xl p-10 shadow-soft border border-slate-100 dark:border-slate-800 text-center flex flex-col items-center justify-center text-slate-400'
+    }), [
+        createLucideIconNode('inbox', 'w-12 h-12 mb-3 opacity-50'),
+        createDomElement('p', {
+            text: filterText ? '没有找到这条线索' : '归档区暂时还没有记录'
+        })
+    ]);
+}
+
+function createQuickNotesEmptyState() {
+    return appendDomChildren(createDomElement('div', {
+        className: 'rounded-[1.4rem] border border-dashed border-slate-200/80 bg-slate-50/70 px-6 py-8 text-center dark:border-slate-700/70 dark:bg-slate-900/40'
+    }), [
+        createDomElement('div', {
+            className: 'module-eyebrow mb-3',
+            text: 'EMPTY CAPTURE POOL'
+        }),
+        createDomElement('h4', {
+            className: 'tavern-display text-2xl font-semibold text-slate-950 dark:text-slate-50',
+            text: '今天的捕捉池还很安静'
+        }),
+        createDomElement('p', {
+            className: 'mt-3 text-sm leading-7 text-slate-500 dark:text-slate-400',
+            text: '丢下一条灵感、异常或待办就够了，捕捉台会先替你记住。'
+        }),
+        appendDomChildren(createDomElement('button', {
+            className: 'open-quick-capture-btn quick-capture-ghost mt-5'
+        }), [
+            createLucideIconNode('square-pen', 'w-4 h-4'),
+            document.createTextNode(' 现在记录一条')
+        ])
+    ]);
+}
+
+function createArchiveNoteCard(note, date, index) {
+    const noteText = getNoteText(note);
+    const tagKey = note.tag || 'idea';
+    const tagCfg = noteTagConfig[tagKey] || noteTagConfig.idea;
+
+    const tagChip = appendDomChildren(createDomElement('span', {
+        className: `text-[10px] flex items-center justify-center gap-1 border px-1.5 py-0.5 rounded w-full ${tagCfg.color}`
+    }), [
+        createLucideIconNode(tagCfg.icon, 'w-3 h-3'),
+        document.createTextNode(` ${tagCfg.label}`)
+    ]);
+
+    return appendDomChildren(createDomElement('div', {
+        className: 'flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 hover:border-primary/30 transition-colors relative group'
+    }), [
+        appendDomChildren(createDomElement('div', {
+            className: 'flex flex-col gap-2 mt-1 shrink-0 w-16 items-center'
+        }), [
+            createDomElement('span', {
+                className: 'text-sm font-mono text-slate-400 bg-slate-200/50 dark:bg-slate-800/50 px-2 py-0.5 rounded w-full text-center',
+                text: getNoteTime(note)
+            }),
+            tagChip
+        ]),
+        createMarkdownNoteNode(noteText, 'text-sm text-slate-700 dark:text-slate-300 md-content w-full overflow-hidden break-words pr-8'),
+        appendDomChildren(createDomElement('button', {
+            className: 'delete-note-btn absolute top-4 right-4 text-slate-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity',
+            attrs: {
+                'data-date': date,
+                'data-index': index,
+                title: '删除记录'
+            }
+        }), [
+            createLucideIconNode('trash-2', 'w-4 h-4')
+        ])
+    ]);
+}
+
+function createArchiveSection(date, noteCards) {
+    const noteList = createDomElement('div', { className: 'space-y-4' });
+    noteCards.forEach((card) => noteList.appendChild(card));
+
+    return appendDomChildren(createDomElement('div', {
+        className: 'bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800'
+    }), [
+        appendDomChildren(createDomElement('h3', {
+            className: 'text-lg font-bold mb-4 text-primary flex items-center gap-2'
+        }), [
+            createLucideIconNode('calendar', 'w-5 h-5'),
+            document.createTextNode(` ${date}`)
+        ]),
+        noteList
+    ]);
+}
+
+function createTodayNoteCard(note, index, date) {
+    const noteText = getNoteText(note);
+    const tagKey = note.tag || 'idea';
+    const tagCfg = noteTagConfig[tagKey] || noteTagConfig.idea;
+
+    return appendDomChildren(createDomElement('div', {
+        className: 'flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 transition-colors relative group hover:border-primary/30 dark:border-slate-700/50 dark:bg-slate-900/50'
+    }), [
+        appendDomChildren(createDomElement('div', {
+            className: 'flex flex-col gap-1.5 mt-1 shrink-0 w-12 items-center'
+        }), [
+            createDomElement('span', {
+                className: 'text-xs font-mono text-slate-400',
+                text: getNoteTime(note)
+            }),
+            createDomElement('span', {
+                className: `text-[9px] border px-1 rounded w-full text-center ${tagCfg.color}`,
+                text: tagCfg.label
+            })
+        ]),
+        createMarkdownNoteNode(noteText, 'text-sm text-slate-700 dark:text-slate-300 md-content w-full overflow-hidden break-words pr-6'),
+        appendDomChildren(createDomElement('button', {
+            className: 'delete-note-btn absolute top-3 right-3 text-slate-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity p-1',
+            attrs: {
+                'data-date': date,
+                'data-index': index,
+                title: '删除记录'
+            }
+        }), [
+            createLucideIconNode('trash-2', 'w-3 h-3')
+        ])
+    ]);
+}
+
 /**
  * 根据关键词渲染归档列表，并按日期分组展示。
  * @param {string} filterText
@@ -176,64 +315,31 @@ function renderArchive(filterText = '') {
     const container = document.getElementById('archive-list-container');
     const dates = Object.keys(quickNotesData).sort((a, b) => new Date(b) - new Date(a));
 
-    let html = '';
+    const fragment = document.createDocumentFragment();
     let hasResults = false;
     const searchText = filterText.toLowerCase();
 
     dates.forEach((date) => {
         const notes = quickNotesData[date];
         if (!notes || !notes.length) return;
-        const safeDate = escapeHtml(date);
-
-        let sectionHtml = '';
+        const sectionCards = [];
         notes.forEach((note, originalIndex) => {
             const noteText = getNoteText(note);
             if (!noteText.toLowerCase().includes(searchText)) return;
 
             hasResults = true;
-            const tagKey = note.tag || 'idea';
-            const tagCfg = noteTagConfig[tagKey] || noteTagConfig.idea;
-            sectionHtml += `
-                <div class="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 hover:border-primary/30 transition-colors relative group">
-                    <div class="flex flex-col gap-2 mt-1 shrink-0 w-16 items-center">
-                        <span class="text-sm font-mono text-slate-400 bg-slate-200/50 dark:bg-slate-800/50 px-2 py-0.5 rounded w-full text-center">${escapeHtml(getNoteTime(note))}</span>
-                        <span class="text-[10px] flex items-center justify-center gap-1 border px-1.5 py-0.5 rounded w-full ${tagCfg.color}">
-                            <i data-lucide="${tagCfg.icon}" class="w-3 h-3"></i> ${tagCfg.label}
-                        </span>
-                    </div>
-                    <div class="text-sm text-slate-700 dark:text-slate-300 md-content w-full overflow-hidden break-words pr-8">
-                        ${DOMPurify.sanitize(marked.parse(noteText))}
-                    </div>
-                    <button class="delete-note-btn absolute top-4 right-4 text-slate-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity" data-date="${safeDate}" data-index="${originalIndex}" title="删除记录">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            `;
+            sectionCards.push(createArchiveNoteCard(note, date, originalIndex));
         });
 
-        if (!sectionHtml) return;
+        if (!sectionCards.length) return;
 
-        html += `
-            <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
-                <h3 class="text-lg font-bold mb-4 text-primary flex items-center gap-2">
-                    <i data-lucide="calendar" class="w-5 h-5"></i> ${safeDate}
-                </h3>
-                <div class="space-y-4">
-                    ${sectionHtml}
-                </div>
-            </div>
-        `;
+        fragment.appendChild(createArchiveSection(date, sectionCards));
     });
 
     if (!hasResults) {
-        container.innerHTML = `
-            <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-10 shadow-soft border border-slate-100 dark:border-slate-800 text-center flex flex-col items-center justify-center text-slate-400">
-                <i data-lucide="inbox" class="w-12 h-12 mb-3 opacity-50"></i>
-                <p>${filterText ? '没有找到这条线索' : '归档区暂时还没有记录'}</p>
-            </div>
-        `;
+        container.replaceChildren(createArchiveEmptyState(filterText));
     } else {
-        container.innerHTML = html;
+        container.replaceChildren(fragment);
     }
 
     lucide.createIcons();
@@ -250,41 +356,18 @@ function updateQuickNotesList() {
     const container = document.getElementById('quick-notes-container');
     const notes = getDailyEntries(quickNotesData, getTodayString());
     if (!notes.length) {
-        container.innerHTML = `
-            <div class="rounded-[1.4rem] border border-dashed border-slate-200/80 bg-slate-50/70 px-6 py-8 text-center dark:border-slate-700/70 dark:bg-slate-900/40">
-                <div class="module-eyebrow mb-3">EMPTY CAPTURE POOL</div>
-                <h4 class="tavern-display text-2xl font-semibold text-slate-950 dark:text-slate-50">今天的捕捉池还很安静</h4>
-                <p class="mt-3 text-sm leading-7 text-slate-500 dark:text-slate-400">
-                    丢下一条灵感、异常或待办就够了，捕捉台会先替你记住。
-                </p>
-                <button class="open-quick-capture-btn quick-capture-ghost mt-5">
-                    <i data-lucide="square-pen" class="w-4 h-4"></i> 现在记录一条
-                </button>
-            </div>
-        `;
+        container.replaceChildren(createQuickNotesEmptyState());
         lucide.createIcons();
         return;
     }
 
-    container.innerHTML = notes.map((note, index) => {
-        const noteText = getNoteText(note);
-        const tagKey = note.tag || 'idea';
-        const tagCfg = noteTagConfig[tagKey] || noteTagConfig.idea;
-        return `
-            <div class="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 transition-colors relative group hover:border-primary/30 dark:border-slate-700/50 dark:bg-slate-900/50">
-                <div class="flex flex-col gap-1.5 mt-1 shrink-0 w-12 items-center">
-                    <span class="text-xs font-mono text-slate-400">${escapeHtml(getNoteTime(note))}</span>
-                    <span class="text-[9px] border px-1 rounded w-full text-center ${tagCfg.color}">${tagCfg.label}</span>
-                </div>
-                <div class="text-sm text-slate-700 dark:text-slate-300 md-content w-full overflow-hidden break-words pr-6">
-                    ${DOMPurify.sanitize(marked.parse(noteText))}
-                </div>
-                <button class="delete-note-btn absolute top-3 right-3 text-slate-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity p-1" data-date="${getTodayString()}" data-index="${index}" title="删除记录">
-                    <i data-lucide="trash-2" class="w-3 h-3"></i>
-                </button>
-            </div>
-        `;
-    }).join('');
+    const fragment = document.createDocumentFragment();
+    const today = getTodayString();
+    notes.forEach((note, index) => {
+        fragment.appendChild(createTodayNoteCard(note, index, today));
+    });
+
+    container.replaceChildren(fragment);
 
     lucide.createIcons();
 }

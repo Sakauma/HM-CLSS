@@ -7,6 +7,53 @@ const CHECKIN_ACTIVE_BUTTON_CLASS = 'action-btn action-btn-primary';
 const CHECKOUT_ACTIVE_BUTTON_CLASS = 'action-btn action-btn-secondary';
 const CHECKIN_DISABLED_BUTTON_CLASS = 'action-btn action-btn-disabled';
 
+function createRetroEmptyState() {
+    return createDomElement('div', {
+        className: 'rounded-2xl border border-dashed border-slate-200/80 bg-white/50 px-4 py-4 text-sm text-slate-500 dark:border-slate-700/80 dark:bg-slate-900/40 dark:text-slate-400',
+        text: '暂无补录记录。'
+    });
+}
+
+function createRetroEntryCard(entry) {
+    const toneClassMap = {
+        success: 'bg-success/10 text-success border-success/20',
+        warning: 'bg-warning/10 text-warning border-warning/20',
+        danger: 'bg-danger/10 text-danger border-danger/20',
+        info: 'bg-primary/10 text-primary border-primary/20'
+    };
+
+    return appendDomChildren(createDomElement('div', {
+        className: 'rounded-2xl border border-slate-200/70 bg-white/70 px-4 py-3 dark:border-slate-700/70 dark:bg-slate-900/40'
+    }), [
+        appendDomChildren(createDomElement('div', {
+            className: 'flex items-start justify-between gap-3'
+        }), [
+            appendDomChildren(createDomElement('div'), [
+                createDomElement('div', {
+                    className: 'text-xs font-mono text-slate-400',
+                    text: formatDisplayDate(entry.date)
+                }),
+                createDomElement('div', {
+                    className: 'mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100',
+                    text: getPeriodLabel(entry.period)
+                })
+            ]),
+            createDomElement('span', {
+                className: `inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold ${toneClassMap[entry.tone] || toneClassMap.info}`,
+                text: `补录 · ${entry.statusText}`
+            })
+        ]),
+        createDomElement('div', {
+            className: 'mt-2 text-xs font-mono text-slate-500 dark:text-slate-400',
+            text: `${entry.checkIn} → ${entry.checkOut}`
+        }),
+        createDomElement('div', {
+            className: 'mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400',
+            text: entry.correctionReason || '无说明'
+        })
+    ]);
+}
+
 /**
  * 根据当前时间、离舰状态和已有记录动态更新打卡按钮状态。
  */
@@ -220,34 +267,16 @@ function renderRetroRecentEntries() {
 
     const entries = getRecentRetroEntries();
     if (!entries.length) {
-        container.innerHTML = '<div class="rounded-2xl border border-dashed border-slate-200/80 bg-white/50 px-4 py-4 text-sm text-slate-500 dark:border-slate-700/80 dark:bg-slate-900/40 dark:text-slate-400">暂无补录记录。</div>';
+        container.replaceChildren(createRetroEmptyState());
         return;
     }
 
-    container.innerHTML = entries.map((entry) => {
-        const toneClassMap = {
-            success: 'bg-success/10 text-success border-success/20',
-            warning: 'bg-warning/10 text-warning border-warning/20',
-            danger: 'bg-danger/10 text-danger border-danger/20',
-            info: 'bg-primary/10 text-primary border-primary/20'
-        };
+    const fragment = document.createDocumentFragment();
+    entries.forEach((entry) => {
+        fragment.appendChild(createRetroEntryCard(entry));
+    });
 
-        return `
-            <div class="rounded-2xl border border-slate-200/70 bg-white/70 px-4 py-3 dark:border-slate-700/70 dark:bg-slate-900/40">
-                <div class="flex items-start justify-between gap-3">
-                    <div>
-                        <div class="text-xs font-mono text-slate-400">${escapeHtml(formatDisplayDate(entry.date))}</div>
-                        <div class="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">${escapeHtml(getPeriodLabel(entry.period))}</div>
-                    </div>
-                    <span class="inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold ${toneClassMap[entry.tone] || toneClassMap.info}">
-                        补录 · ${escapeHtml(entry.statusText)}
-                    </span>
-                </div>
-                <div class="mt-2 text-xs font-mono text-slate-500 dark:text-slate-400">${escapeHtml(entry.checkIn)} → ${escapeHtml(entry.checkOut)}</div>
-                <div class="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400">${escapeHtml(entry.correctionReason || '无说明')}</div>
-            </div>
-        `;
-    }).join('');
+    container.replaceChildren(fragment);
 }
 
 /**
