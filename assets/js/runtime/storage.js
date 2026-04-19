@@ -3,50 +3,165 @@
  * 负责共享状态的初始化、归一化与持久化，不承担页面渲染职责。
  */
 
+const STORAGE_SCHEMA_VERSION_KEY = 'hmclss_storage_schema_version';
+const CURRENT_STORAGE_SCHEMA_VERSION = 1;
+
+function safeParseStoredJson(rawValue, fallbackValue) {
+    if (rawValue == null) return fallbackValue;
+
+    try {
+        return JSON.parse(rawValue);
+    } catch (error) {
+        return fallbackValue;
+    }
+}
+
+function getStoredSchemaVersion() {
+    const rawVersion = Number(localStorage.getItem(STORAGE_SCHEMA_VERSION_KEY));
+    return Number.isFinite(rawVersion) && rawVersion > 0 ? rawVersion : 0;
+}
+
+function isValidCurrentTaskRecord(task) {
+    return Boolean(
+        task &&
+        typeof task === 'object' &&
+        typeof task.name === 'string' &&
+        typeof task.startTimestamp === 'number' &&
+        typeof task.startTime === 'string'
+    );
+}
+
+function readStoredWorkspacePayload() {
+    return {
+        checkinData: safeParseStoredJson(localStorage.getItem('checkinData'), {}),
+        phoneResistData: safeParseStoredJson(localStorage.getItem('phoneResistData'), { totalCount: 0, records: {} }),
+        taskData: safeParseStoredJson(localStorage.getItem('taskData'), {}),
+        leaveData: safeParseStoredJson(localStorage.getItem('leaveData'), []),
+        achievements: safeParseStoredJson(localStorage.getItem('achievements'), []),
+        quickNotesData: safeParseStoredJson(localStorage.getItem('quickNotesData'), {}),
+        tavernData: safeParseStoredJson(localStorage.getItem('tavernData'), []),
+        currentTask: safeParseStoredJson(localStorage.getItem(CURRENT_TASK_STORAGE_KEY), null),
+        ambientPreferences: safeParseStoredJson(localStorage.getItem(AMBIENT_PREFS_STORAGE_KEY), null)
+    };
+}
+
+function normalizeLegacyQuickNotes(rawNotes) {
+    if (!rawNotes || typeof rawNotes !== 'object' || Array.isArray(rawNotes)) return {};
+
+    return Object.fromEntries(
+        Object.entries(rawNotes).map(([dateKey, entries]) => {
+            if (!Array.isArray(entries)) return [dateKey, []];
+
+            const normalizedEntries = entries.map((entry) => {
+                if (typeof entry === 'string') {
+                    return { time: null, text: entry, tag: 'idea' };
+                }
+
+                const normalized = entry && typeof entry === 'object' ? entry : {};
+                return {
+                    time: typeof normalized.time === 'string' ? normalized.time : null,
+                    text: getNoteText(normalized),
+                    tag: normalized.tag || 'idea'
+                };
+            }).filter((entry) => entry.text);
+
+            return [dateKey, normalizedEntries];
+        })
+    );
+}
+
+function normalizeLegacyPhoneResist(rawPhoneResistData) {
+    const normalized = rawPhoneResistData && typeof rawPhoneResistData === 'object'
+        ? rawPhoneResistData
+        : { totalCount: 0, records: {} };
+
+    const records = normalized.records && typeof normalized.records === 'object' && !Array.isArray(normalized.records)
+        ? normalized.records
+        : {};
+
+    return {
+        totalCount: Number(normalized.totalCount) || 0,
+        records: Object.fromEntries(
+            Object.entries(records).map(([dateKey, record]) => {
+                const normalizedRecord = record && typeof record === 'object' ? record : {};
+                return [dateKey, {
+                    count: Number(normalizedRecord.count) || 0,
+                    times: Array.isArray(normalizedRecord.times) ? normalizedRecord.times.filter((time) => typeof time === 'string') : []
+                }];
+            })
+        )
+    };
+}
+
+function normalizeLegacyTaskData(rawTaskData) {
+    if (!rawTaskData || typeof rawTaskData !== 'object' || Array.isArray(rawTaskData)) return {};
+
+    return Object.fromEntries(
+        Object.entries(rawTaskData).map(([dateKey, entries]) => {
+            if (!Array.isArray(entries)) return [dateKey, []];
+
+            return [dateKey, entries
+                .filter((entry) => entry && typeof entry === 'object')
+                .map((entry) => ({
+                    ...entry,
+                    duration: Number(entry.duration) || 0
+                }))];
+        })
+    );
+}
+
+function normalizeLegacyCheckinData(rawCheckinData) {
+    if (!rawCheckinData || typeof rawCheckinData !== 'object' || Array.isArray(rawCheckinData)) return {};
+
+    return Object.fromEntries(
+        Object.entries(rawCheckinData).map(([dateKey, dayData]) => [dateKey, ensureDayRecord(dayData)])
+    );
+}
+
+function applyStorageMigrationV1(payload) {
+    return {
+        ...payload,
+        quickNotesData: normalizeLegacyQuickNotes(payload.quickNotesData),
+        checkinData: normalizeLegacyCheckinData(payload.checkinData),
+        phoneResistData: normalizeLegacyPhoneResist(payload.phoneResistData),
+        taskData: normalizeLegacyTaskData(payload.taskData),
+        leaveData: Array.isArray(payload.leaveData) ? payload.leaveData.map((leave) => normalizeLeaveRecord(leave)) : [],
+        achievements: Array.isArray(payload.achievements) ? payload.achievements.filter((entry) => typeof entry === 'string') : [],
+        tavernData: Array.isArray(payload.tavernData) ? payload.tavernData : [],
+        currentTask: isValidCurrentTaskRecord(payload.currentTask) ? payload.currentTask : null,
+        ambientPreferences: normalizeAmbientPreferences(payload.ambientPreferences)
+    };
+}
+
+function migrateStoredWorkspacePayload(payload, fromVersion) {
+    let migratedPayload = { ...payload };
+    let currentVersion = fromVersion;
+
+    if (currentVersion < 1) {
+        migratedPayload = applyStorageMigrationV1(migratedPayload);
+        currentVersion = 1;
+    }
+
+    return migratedPayload;
+}
+
 function initData() {
-    const savedCheckinData = localStorage.getItem('checkinData');
-    const savedPhoneResistData = localStorage.getItem('phoneResistData');
-    const savedTaskData = localStorage.getItem('taskData');
-    const savedLeaveData = localStorage.getItem('leaveData');
-    const savedAchievements = localStorage.getItem('achievements');
-    const savedNotes = localStorage.getItem('quickNotesData');
-    const savedTavernData = localStorage.getItem('tavernData');
-    const savedCurrentTask = localStorage.getItem(CURRENT_TASK_STORAGE_KEY);
-    const savedAmbientPrefs = localStorage.getItem(AMBIENT_PREFS_STORAGE_KEY);
+    const storedVersion = getStoredSchemaVersion();
+    const payload = storedVersion < CURRENT_STORAGE_SCHEMA_VERSION
+        ? migrateStoredWorkspacePayload(readStoredWorkspacePayload(), storedVersion)
+        : readStoredWorkspacePayload();
 
-    try {
-        quickNotesData = savedNotes ? JSON.parse(savedNotes) : {};
-        checkinData = savedCheckinData ? JSON.parse(savedCheckinData) : {};
-        phoneResistData = savedPhoneResistData ? JSON.parse(savedPhoneResistData) : { totalCount: 0, records: {} };
-        taskData = savedTaskData ? JSON.parse(savedTaskData) : {};
-        leaveData = savedLeaveData ? JSON.parse(savedLeaveData) : [];
-        achievements = savedAchievements ? JSON.parse(savedAchievements) : [];
-        tavernData = savedTavernData ? JSON.parse(savedTavernData) : [];
-        ambientPreferences = savedAmbientPrefs ? JSON.parse(savedAmbientPrefs) : null;
-    } catch (error) {
-        quickNotesData = {};
-        checkinData = {};
-        phoneResistData = { totalCount: 0, records: {} };
-        taskData = {};
-        leaveData = [];
-        achievements = [];
-        tavernData = [];
-        ambientPreferences = null;
-    }
+    quickNotesData = payload.quickNotesData;
+    checkinData = payload.checkinData;
+    phoneResistData = payload.phoneResistData;
+    taskData = payload.taskData;
+    leaveData = payload.leaveData;
+    achievements = payload.achievements;
+    tavernData = payload.tavernData;
+    ambientPreferences = payload.ambientPreferences;
+    currentTask = payload.currentTask;
 
-    try {
-        currentTask = savedCurrentTask ? JSON.parse(savedCurrentTask) : null;
-    } catch (error) {
-        currentTask = null;
-    }
-
-    if (
-        !currentTask ||
-        typeof currentTask !== 'object' ||
-        typeof currentTask.name !== 'string' ||
-        typeof currentTask.startTimestamp !== 'number' ||
-        typeof currentTask.startTime !== 'string'
-    ) {
+    if (!isValidCurrentTaskRecord(currentTask)) {
         currentTask = null;
         localStorage.removeItem(CURRENT_TASK_STORAGE_KEY);
     }
@@ -163,6 +278,7 @@ function normalizeAmbientPreferences(preferences) {
 }
 
 function saveData(preventAutoSync = false) {
+    localStorage.setItem(STORAGE_SCHEMA_VERSION_KEY, String(CURRENT_STORAGE_SCHEMA_VERSION));
     localStorage.setItem('checkinData', JSON.stringify(checkinData));
     localStorage.setItem('phoneResistData', JSON.stringify(phoneResistData));
     localStorage.setItem('taskData', JSON.stringify(taskData));

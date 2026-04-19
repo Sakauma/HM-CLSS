@@ -160,7 +160,7 @@ bash scripts/browser-smoke.sh
 - `assets/js/runtime/state.js`
   全局共享状态、配置常量、标签映射与情绪/成就静态清单。
 - `assets/js/runtime/storage.js`
-  本地存储初始化、结构归一化、持久化与当前任务恢复。
+  本地存储初始化、schema 迁移、结构归一化、持久化与当前任务恢复。
 - `assets/js/runtime/core.js`
   时间工具、环境态派生、任务首屏状态与通用转义函数。
 - `assets/js/workspace/metrics.js`
