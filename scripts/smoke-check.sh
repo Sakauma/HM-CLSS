@@ -28,6 +28,7 @@ js_files=(
   assets/js/stats-data.js
   assets/js/stats-charts.js
   assets/js/stats.js
+  assets/js/status-copy.js
   assets/js/status-ui.js
   assets/js/sync-state.js
   assets/js/sync-api.js
@@ -69,6 +70,7 @@ required_scripts=(
   "assets/js/app-init.js"
   "assets/js/stats-data.js"
   "assets/js/stats-charts.js"
+  "assets/js/status-copy.js"
   "assets/js/export.js"
 )
 
@@ -106,6 +108,8 @@ leave_line="$(rg -n 'assets/js/leave.js' index.html | cut -d: -f1)"
 stats_data_line="$(rg -n 'assets/js/stats-data.js' index.html | cut -d: -f1)"
 stats_charts_line="$(rg -n 'assets/js/stats-charts.js' index.html | cut -d: -f1)"
 stats_line="$(rg -n 'assets/js/stats.js' index.html | cut -d: -f1)"
+status_copy_line="$(rg -n 'assets/js/status-copy.js' index.html | cut -d: -f1)"
+status_ui_line="$(rg -n 'assets/js/status-ui.js' index.html | cut -d: -f1)"
 sync_state_line="$(rg -n 'assets/js/sync-state.js' index.html | cut -d: -f1)"
 sync_api_line="$(rg -n 'assets/js/sync-api.js' index.html | cut -d: -f1)"
 sync_line="$(rg -n 'assets/js/sync.js' index.html | cut -d: -f1)"
@@ -191,6 +195,21 @@ fi
 
 if (( stats_charts_line >= stats_line )); then
   printf 'stats-charts.js must load before stats.js\n' >&2
+  exit 1
+fi
+
+if (( stats_line >= status_copy_line )); then
+  printf 'stats.js must load before status-copy.js\n' >&2
+  exit 1
+fi
+
+if (( status_copy_line >= status_ui_line )); then
+  printf 'status-copy.js must load before status-ui.js\n' >&2
+  exit 1
+fi
+
+if (( status_ui_line >= sync_state_line )); then
+  printf 'status-ui.js must load before sync-state.js\n' >&2
   exit 1
 fi
 

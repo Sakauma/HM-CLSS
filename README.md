@@ -72,6 +72,7 @@ node --check assets/js/leave.js
 node --check assets/js/stats-data.js
 node --check assets/js/stats-charts.js
 node --check assets/js/stats.js
+node --check assets/js/status-copy.js
 node --check assets/js/status-ui.js
 node --check assets/js/sync-state.js
 node --check assets/js/sync-api.js
@@ -194,8 +195,10 @@ bash scripts/browser-smoke.sh
   Chart.js 图表渲染与实例更新。
 - `assets/js/stats.js`
   统计控制器，负责周期按钮、顶部摘要与图表刷新入口。
+- `assets/js/status-copy.js`
+  状态徽章、班次标签和首页总览文案派生。
 - `assets/js/status-ui.js`
-  今日状态面板与通用 Toast 提示。
+  今日状态面板渲染、航行情绪刷新与通用 Toast 提示。
 - `assets/js/sync-state.js`
   云同步凭据、本地同步时间与自动同步计时器状态。
 - `assets/js/sync-api.js`
@@ -380,17 +383,18 @@ const CONFIG = {
 22. `stats-data.js`
 23. `stats-charts.js`
 24. `stats.js`
-25. `status-ui.js`
-26. `sync-state.js`
-27. `sync-api.js`
-28. `sync.js`
-29. `export-data.js`
-30. `export-formats.js`
-31. `export-ui.js`
-32. `export.js`
-33. `shortcuts.js`
+25. `status-copy.js`
+26. `status-ui.js`
+27. `sync-state.js`
+28. `sync-api.js`
+29. `sync.js`
+30. `export-data.js`
+31. `export-formats.js`
+32. `export-ui.js`
+33. `export.js`
+34. `shortcuts.js`
 
-其中 `runtime-state.js`、`runtime-storage.js` 与 `core.js` 负责提供共享运行时；`workspace-metrics.js` 与 `workspace-data.js` 负责统一指标和数据边界；`app-init.js` 提前注册启动编排，确保它比其他 `DOMContentLoaded` 监听更早挂上；酒馆链路现在拆成 `tavern-catalog.js -> tavern-logic.js -> tavern-ui.js -> tavern.js`，值班链路拆成 `checkin-rules.js -> checkin-ui.js -> checkin.js`，离舰链路拆成 `leave-rules.js -> leave-ui.js -> leave.js`，同步链路拆成 `sync-state.js -> sync-api.js -> sync.js`，导出链路拆成 `export-data.js -> export-formats.js -> export-ui.js -> export.js`，统计链路拆成 `stats-data.js -> stats-charts.js -> stats.js`。顺序错乱会导致飞船在启动时失压。
+其中 `runtime-state.js`、`runtime-storage.js` 与 `core.js` 负责提供共享运行时；`workspace-metrics.js` 与 `workspace-data.js` 负责统一指标和数据边界；`app-init.js` 提前注册启动编排，确保它比其他 `DOMContentLoaded` 监听更早挂上；酒馆链路现在拆成 `tavern-catalog.js -> tavern-logic.js -> tavern-ui.js -> tavern.js`，值班链路拆成 `checkin-rules.js -> checkin-ui.js -> checkin.js`，离舰链路拆成 `leave-rules.js -> leave-ui.js -> leave.js`，状态链路拆成 `status-copy.js -> status-ui.js`，同步链路拆成 `sync-state.js -> sync-api.js -> sync.js`，导出链路拆成 `export-data.js -> export-formats.js -> export-ui.js -> export.js`，统计链路拆成 `stats-data.js -> stats-charts.js -> stats.js`。顺序错乱会导致飞船在启动时失压。
 
 
 ## 🧪 手动巡检建议
