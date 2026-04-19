@@ -9,6 +9,17 @@ const quickInput = document.getElementById('quick-capture-input');
 const quickTagSelect = document.getElementById('quick-capture-tag');
 const quickCount = document.getElementById('quick-capture-count');
 const quickSaveBtn = document.getElementById('quick-capture-save');
+let lastQuickCaptureTrigger = null;
+
+function getQuickCaptureFocusables() {
+    if (!quickModal) return [];
+
+    return Array.from(
+        quickModal.querySelectorAll(
+            'button:not([disabled]), textarea:not([disabled]), select:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+        )
+    ).filter((element) => !element.closest('.hidden'));
+}
 
 /**
  * 根据输入框内容更新字符计数和保存按钮状态。
@@ -26,10 +37,12 @@ function updateQuickCaptureCount() {
 /**
  * 打开速记弹窗并聚焦输入框。
  */
-function openQuickCaptureModal() {
+function openQuickCaptureModal(triggerSource = document.activeElement) {
     if (!quickModal || !quickInput) return;
 
+    lastQuickCaptureTrigger = triggerSource instanceof HTMLElement ? triggerSource : null;
     quickModal.classList.remove('hidden');
+    quickModal.setAttribute('aria-hidden', 'false');
     quickContent?.classList.remove('scale-95');
     quickContent?.classList.add('scale-100');
     document.body.classList.add('overflow-hidden');
@@ -47,7 +60,11 @@ function closeQuickCaptureModal() {
     quickContent?.classList.remove('scale-100');
     quickContent?.classList.add('scale-95');
     quickModal.classList.add('hidden');
+    quickModal.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('overflow-hidden');
+    if (lastQuickCaptureTrigger && typeof lastQuickCaptureTrigger.focus === 'function') {
+        lastQuickCaptureTrigger.focus();
+    }
 }
 
 /**
@@ -93,11 +110,26 @@ document.addEventListener('keydown', (event) => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
         if (quickModal.classList.contains('hidden')) {
-            openQuickCaptureModal();
+            openQuickCaptureModal(document.activeElement);
         } else {
             closeQuickCaptureModal();
         }
         return;
+    }
+
+    if (event.key === 'Tab' && !quickModal.classList.contains('hidden')) {
+        const focusables = getQuickCaptureFocusables();
+        if (!focusables.length) return;
+
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
     }
 
     if (event.key === 'Escape' && !quickModal.classList.contains('hidden')) {
@@ -109,7 +141,7 @@ document.addEventListener('click', (event) => {
     const openBtn = event.target.closest('.open-quick-capture-btn');
     if (openBtn) {
         event.preventDefault();
-        openQuickCaptureModal();
+        openQuickCaptureModal(openBtn);
         return;
     }
 

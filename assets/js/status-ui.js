@@ -151,23 +151,31 @@ function updateTodayStatus() {
  */
 function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
+    if (!container) return;
+
     const toast = document.createElement('div');
 
     const colors = {
         success: 'bg-white dark:bg-slate-800 border-l-4 border-success text-slate-700 dark:text-slate-200',
         error: 'bg-white dark:bg-slate-800 border-l-4 border-danger text-slate-700 dark:text-slate-200',
-        warning: 'bg-white dark:bg-slate-800 border-l-4 border-warning text-slate-700 dark:text-slate-200'
+        warning: 'bg-white dark:bg-slate-800 border-l-4 border-warning text-slate-700 dark:text-slate-200',
+        info: 'bg-white dark:bg-slate-800 border-l-4 border-primary text-slate-700 dark:text-slate-200'
     };
 
     const icons = {
         success: '<i data-lucide="check-circle" class="w-5 h-5 text-success shrink-0"></i>',
         error: '<i data-lucide="x-circle" class="w-5 h-5 text-danger shrink-0"></i>',
-        warning: '<i data-lucide="alert-triangle" class="w-5 h-5 text-warning shrink-0"></i>'
+        warning: '<i data-lucide="alert-triangle" class="w-5 h-5 text-warning shrink-0"></i>',
+        info: '<i data-lucide="info" class="w-5 h-5 text-primary shrink-0"></i>'
     };
 
-    toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 pointer-events-auto animate-toast-in ${colors[type]}`;
+    const tone = colors[type] ? type : 'success';
+    toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 pointer-events-auto animate-toast-in ${colors[tone]}`;
+    toast.setAttribute('role', tone === 'error' ? 'alert' : 'status');
+    toast.setAttribute('aria-live', tone === 'error' ? 'assertive' : 'polite');
+    toast.setAttribute('aria-atomic', 'true');
     toast.innerHTML = `
-        ${icons[type]}
+        ${icons[tone]}
         <span class="text-sm font-medium">${escapeHtml(message)}</span>
     `;
 

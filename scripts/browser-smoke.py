@@ -144,6 +144,7 @@ def test_bootstrap(driver: webdriver.Firefox) -> None:
 def test_theme_toggle(driver: webdriver.Firefox) -> None:
     log("2. Checking theme toggle")
     before = bool(driver.execute_script("return document.documentElement.classList.contains('dark');"))
+    before_pressed = find(driver, "theme-toggle").get_attribute("aria-pressed")
     click(driver, "theme-toggle")
     wait_for(
         driver,
@@ -152,7 +153,9 @@ def test_theme_toggle(driver: webdriver.Firefox) -> None:
     )
     stored = driver.execute_script("return localStorage.theme || '';")
     after = bool(driver.execute_script("return document.documentElement.classList.contains('dark');"))
+    after_pressed = find(driver, "theme-toggle").get_attribute("aria-pressed")
     require(stored == ("dark" if after else "light"), "Theme toggle did not persist localStorage.theme")
+    require(before_pressed != after_pressed, "Theme toggle did not update aria-pressed")
     log("   theme toggle ok")
 
 
@@ -165,6 +168,8 @@ def test_navigation_shortcuts(driver: webdriver.Firefox) -> None:
     send_shortcut(driver, Keys.ALT, "5")
     wait_visible(driver, "leave-section")
     wait_text_contains(driver, "panel-meta-title", "离舰活动审批")
+    require(find(driver, "nav-leave").get_attribute("aria-expanded") == "true", "nav-leave should be expanded")
+    require(find(driver, "leave-section").get_attribute("aria-hidden") == "false", "leave-section should be announced as visible")
 
     send_shortcut(driver, Keys.ALT, "]")
     wait_visible(driver, "tavern-section")
@@ -308,6 +313,20 @@ def test_quick_capture_flow(driver: webdriver.Firefox) -> None:
 
     send_shortcut(driver, Keys.CONTROL, "k")
     wait_visible(driver, "quick-capture-modal")
+    require(find(driver, "quick-capture-modal").get_attribute("aria-hidden") == "false", "quick-capture-modal should expose aria-hidden=false")
+    wait_for(
+        driver,
+        lambda d: d.switch_to.active_element.get_attribute("id") == "quick-capture-input",
+        "quick-capture-input did not receive focus on open",
+    )
+
+    driver.execute_script("document.getElementById('quick-capture-tag').focus();")
+    driver.switch_to.active_element.send_keys(Keys.TAB)
+    wait_for(
+        driver,
+        lambda d: d.switch_to.active_element.get_attribute("id") == "quick-capture-close",
+        "Quick capture tab loop did not wrap to the first control",
+    )
 
     token = f"browser-smoke-{int(time.time())}"
     set_field_value(driver, "quick-capture-input", token)

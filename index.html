@@ -1746,7 +1746,7 @@
                             用一张舰桥工作台处理值班、专注、记录和同步。
                         </p>
                     </div>
-                    <button id="theme-toggle" class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200/70 bg-white/70 text-slate-500 shadow-sm hover:-translate-y-0.5 hover:border-primary/30 hover:text-primary dark:border-slate-700/70 dark:bg-slate-900/70 dark:text-slate-300 dark:hover:border-primary/30">
+                    <button id="theme-toggle" type="button" aria-label="切换主题" class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200/70 bg-white/70 text-slate-500 shadow-sm hover:-translate-y-0.5 hover:border-primary/30 hover:text-primary dark:border-slate-700/70 dark:bg-slate-900/70 dark:text-slate-300 dark:hover:border-primary/30">
                         <i data-lucide="moon" id="theme-icon-dark" class="w-5 h-5 hidden"></i>
                         <i data-lucide="sun" id="theme-icon-light" class="w-5 h-5 hidden"></i>
                     </button>
@@ -1759,7 +1759,7 @@
             <div class="px-4 pb-4 lg:px-5">
                 <div class="module-eyebrow mb-3 px-1">主控台模块</div>
                 <nav class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-2">
-                    <button id="nav-checkin" class="nav-rail-button nav-rail-button-active">
+                    <button id="nav-checkin" type="button" class="nav-rail-button nav-rail-button-active">
                         <span class="nav-rail-icon">
                             <i data-lucide="radar" class="w-4 h-4"></i>
                         </span>
@@ -1768,7 +1768,7 @@
                             <span class="nav-rail-desc">今日状态、班次窗口与值班记录</span>
                         </span>
                     </button>
-                    <button id="nav-phone" class="nav-rail-button">
+                    <button id="nav-phone" type="button" class="nav-rail-button">
                         <span class="nav-rail-icon">
                             <i data-lucide="shield-check" class="w-4 h-4"></i>
                         </span>
@@ -1777,7 +1777,7 @@
                             <span class="nav-rail-desc">记录抗干扰次数并追踪成就</span>
                         </span>
                     </button>
-                    <button id="nav-tasks" class="nav-rail-button">
+                    <button id="nav-tasks" type="button" class="nav-rail-button">
                         <span class="nav-rail-icon">
                             <i data-lucide="terminal" class="w-4 h-4"></i>
                         </span>
@@ -1786,7 +1786,7 @@
                             <span class="nav-rail-desc">启动深度工作并回看今日沉淀</span>
                         </span>
                     </button>
-                    <button id="nav-archive" class="nav-rail-button">
+                    <button id="nav-archive" type="button" class="nav-rail-button">
                         <span class="nav-rail-icon">
                             <i data-lucide="book-open" class="w-4 h-4"></i>
                         </span>
@@ -1795,7 +1795,7 @@
                             <span class="nav-rail-desc">搜索历史灵感、日志与异常条目</span>
                         </span>
                     </button>
-                    <button id="nav-leave" class="nav-rail-button">
+                    <button id="nav-leave" type="button" class="nav-rail-button">
                         <span class="nav-rail-icon">
                             <i data-lucide="power-off" class="w-4 h-4"></i>
                         </span>
@@ -1804,7 +1804,7 @@
                             <span class="nav-rail-desc">登记全天或临时离舰并查看影响</span>
                         </span>
                     </button>
-                    <button id="nav-tavern" class="nav-rail-button">
+                    <button id="nav-tavern" type="button" class="nav-rail-button">
                         <span class="nav-rail-icon">
                             <i data-lucide="martini" class="w-4 h-4"></i>
                         </span>
@@ -1813,7 +1813,7 @@
                             <span class="nav-rail-desc">把情绪记录成更容易回看的配方</span>
                         </span>
                     </button>
-                    <button id="nav-stats" class="nav-rail-button">
+                    <button id="nav-stats" type="button" class="nav-rail-button">
                         <span class="nav-rail-icon">
                             <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
                         </span>
@@ -1822,7 +1822,7 @@
                             <span class="nav-rail-desc">查看趋势、时段分布与长期沉淀</span>
                         </span>
                     </button>
-                    <button id="nav-settings" class="nav-rail-button">
+                    <button id="nav-settings" type="button" class="nav-rail-button">
                         <span class="nav-rail-icon">
                             <i data-lucide="settings" class="w-4 h-4"></i>
                         </span>
@@ -3174,7 +3174,7 @@
     </div>
 
     <!-- 全局速记弹窗：可从多个入口快速唤起。 -->
-    <div id="quick-capture-modal" class="fixed inset-0 bg-slate-900/46 dark:bg-slate-900/70 backdrop-blur-md z-50 hidden hidden-flex items-center justify-center px-4 py-6 transition-opacity">
+    <div id="quick-capture-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="quick-capture-title" aria-describedby="quick-capture-desc" class="fixed inset-0 bg-slate-900/46 dark:bg-slate-900/70 backdrop-blur-md z-50 hidden hidden-flex items-center justify-center px-4 py-6 transition-opacity">
         <div id="quick-capture-content" class="quick-capture-shell w-full max-w-5xl transform scale-95 transition-all duration-200">
             <div class="quick-capture-glow"></div>
             <div class="quick-capture-grid">
@@ -3182,12 +3182,12 @@
                     <div class="module-eyebrow mb-3">CAPTURE CONSOLE</div>
                     <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                         <div class="max-w-2xl">
-                            <h3 class="tavern-display text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-50">把一闪而过的想法，稳稳收进缓存。</h3>
-                            <p class="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-400">
+                            <h3 id="quick-capture-title" class="tavern-display text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-50">把一闪而过的想法，稳稳收进缓存。</h3>
+                            <p id="quick-capture-desc" class="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-400">
                                 不用等它完整。把灵感、异常、待办或航行日志扔进来，系统会先替你接住这一刻。
                             </p>
                         </div>
-                        <button id="quick-capture-close" class="quick-capture-ghost shrink-0">
+                        <button id="quick-capture-close" type="button" class="quick-capture-ghost shrink-0">
                             <i data-lucide="x" class="w-4 h-4"></i> 关闭
                         </button>
                     </div>
@@ -3207,10 +3207,10 @@
                                 <span class="quick-capture-chip"><i data-lucide="keyboard" class="w-4 h-4"></i> Esc 关闭</span>
                             </div>
                             <div class="flex flex-wrap gap-3">
-                                <button id="quick-capture-cancel" class="quick-capture-ghost">
+                                <button id="quick-capture-cancel" type="button" class="quick-capture-ghost">
                                     <i data-lucide="arrow-left" class="w-4 h-4"></i> 稍后再记
                                 </button>
-                                <button id="quick-capture-save" class="quick-capture-primary">
+                                <button id="quick-capture-save" type="button" class="quick-capture-primary">
                                     <i data-lucide="archive" class="w-4 h-4"></i> 保存到捕捉池
                                 </button>
                             </div>
@@ -3328,6 +3328,6 @@
             <button id="close-weekly-modal" class="w-full bg-warning hover:bg-yellow-600 text-slate-900 py-3 rounded-xl font-bold transition-all shadow-md">引擎出力提升1&#37 (归档本周)</button>
         </div>
     </div>
-    <div id="toast-container" class="fixed bottom-6 right-6 z-[60] flex flex-col gap-3 pointer-events-none"></div>
+    <div id="toast-container" aria-live="polite" aria-relevant="additions text" class="fixed bottom-6 right-6 z-[60] flex flex-col gap-3 pointer-events-none"></div>
 </body>
 </html>

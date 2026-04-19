@@ -118,6 +118,7 @@ function initNavigation() {
         if (!button) return;
         button.className = isActive ? 'nav-rail-button nav-rail-button-active' : 'nav-rail-button';
         button.setAttribute('aria-current', isActive ? 'page' : 'false');
+        button.setAttribute('aria-expanded', isActive ? 'true' : 'false');
     };
 
     // 用当前导航项的数据刷新右侧的标题、提示和快捷入口。
@@ -156,6 +157,9 @@ function initNavigation() {
         if (item.hotkey) {
             button.setAttribute('title', `${item.title} · ${item.hotkey}`);
         }
+        button.setAttribute('aria-controls', item.sectionId);
+        button.setAttribute('aria-label', item.hotkey ? `${item.title}，快捷键 ${item.hotkey}` : item.title);
+        section.setAttribute('aria-hidden', button.id === navigationItems[0].btnId ? 'false' : 'true');
 
         button.addEventListener('click', function() {
             navigationItems.forEach((navItem) => {
@@ -163,10 +167,12 @@ function initNavigation() {
                 const targetButton = document.getElementById(navItem.btnId);
 
                 targetSection?.classList.add('hidden');
+                targetSection?.setAttribute('aria-hidden', 'true');
                 setNavButtonState(targetButton, false);
             });
 
             section.classList.remove('hidden');
+            section.setAttribute('aria-hidden', 'false');
             setNavButtonState(button, true);
             updatePanelMeta(item);
             requestAnimationFrame(scrollCurrentPanelIntoView);

@@ -25,6 +25,16 @@ function updateThemeIcon() {
     }
 }
 
+function syncThemeToggleAccessibility() {
+    if (!themeToggleBtn) return;
+
+    const isDark = htmlElement.classList.contains('dark');
+    const label = isDark ? '切换到浅色模式' : '切换到深色模式';
+    themeToggleBtn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+    themeToggleBtn.setAttribute('aria-label', label);
+    themeToggleBtn.setAttribute('title', label);
+}
+
 // 首次进入页面时优先恢复用户显式选择，否则退回系统主题偏好。
 if (localStorage.theme === 'dark' || (!('theme' in localStorage) && systemThemeMediaQuery.matches)) {
     htmlElement.classList.add('dark');
@@ -33,12 +43,14 @@ if (localStorage.theme === 'dark' || (!('theme' in localStorage) && systemThemeM
 }
 
 updateThemeIcon();
+syncThemeToggleAccessibility();
 
 // 手动切换主题后，顺带刷新依赖配色的统计图实例。
 themeToggleBtn?.addEventListener('click', () => {
     htmlElement.classList.toggle('dark');
     localStorage.theme = htmlElement.classList.contains('dark') ? 'dark' : 'light';
     updateThemeIcon();
+    syncThemeToggleAccessibility();
 
     if (window.checkinRateChart) {
         const activePeriodBtn = document.querySelector('.stats-period-btn.bg-white, .stats-period-btn.bg-slate-700');
@@ -58,6 +70,7 @@ systemThemeMediaQuery.addEventListener('change', (event) => {
         }
 
         updateThemeIcon();
+        syncThemeToggleAccessibility();
 
         if (window.checkinRateChart) {
             const activePeriodBtn = document.querySelector('.stats-period-btn.bg-white, .stats-period-btn.bg-slate-700');
