@@ -135,3 +135,9 @@ function submitRetroCheckin() {
 
     showToast(`已补录 ${formatDisplayDate(date)} 的 ${getPeriodLabel(period)}`, 'success');
 }
+
+registerAppModule({
+    id: 'checkin',
+    order: 30,
+    init: initCheckin
+});

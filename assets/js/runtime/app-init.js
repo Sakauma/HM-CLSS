@@ -22,22 +22,41 @@ function bindSummaryModalControls() {
     });
 }
 
+registerAppModule({
+    id: 'runtime-clock',
+    order: 10,
+    init() {
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+    }
+});
+
+registerAppModule({
+    id: 'dashboard-home',
+    order: 100,
+    init() {
+        updateTodayStatus();
+        updateQuickNotesList();
+    }
+});
+
+registerAppModule({
+    id: 'cloud-startup',
+    order: 110,
+    init() {
+        autoPullOnStartup();
+    }
+});
+
+registerAppModule({
+    id: 'summary-modals',
+    order: 120,
+    init: bindSummaryModalControls
+});
+
 function initApp() {
     initData();
-    updateDateTime();
-    setInterval(updateDateTime, 1000);
-    initNavigation();
-    initCheckin();
-    initPhoneResist();
-    initTaskManagement();
-    initLeaveManagement();
-    initStatistics();
-    if (typeof initExportTools === 'function') initExportTools();
-    initKeyboardShortcuts();
-    updateTodayStatus();
-    updateQuickNotesList();
-    autoPullOnStartup();
-    bindSummaryModalControls();
+    initializeAppModules();
 }
 
 document.addEventListener('DOMContentLoaded', initApp);

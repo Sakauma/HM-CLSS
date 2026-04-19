@@ -10,6 +10,7 @@ js_files=(
   assets/js/runtime/state.js
   assets/js/runtime/storage.js
   assets/js/runtime/core.js
+  assets/js/runtime/module-registry.js
   assets/js/workspace/metrics.js
   assets/js/workspace/data.js
   assets/js/ui/navigation.js
@@ -59,6 +60,7 @@ required_scripts=(
   "assets/js/runtime/state.js"
   "assets/js/runtime/storage.js"
   "assets/js/workspace/metrics.js"
+  "assets/js/runtime/module-registry.js"
   "assets/js/workspace/data.js"
   "assets/js/features/tavern/catalog.js"
   "assets/js/features/tavern/logic.js"
@@ -104,6 +106,7 @@ runtime_store_line="$(rg -n 'assets/js/runtime/store.js' index.html | cut -d: -f
 runtime_state_line="$(rg -n 'assets/js/runtime/state.js' index.html | cut -d: -f1)"
 runtime_storage_line="$(rg -n 'assets/js/runtime/storage.js' index.html | cut -d: -f1)"
 core_line="$(rg -n 'assets/js/runtime/core.js' index.html | cut -d: -f1)"
+module_registry_line="$(rg -n 'assets/js/runtime/module-registry.js' index.html | cut -d: -f1)"
 metrics_line="$(rg -n 'assets/js/workspace/metrics.js' index.html | cut -d: -f1)"
 workspace_data_line="$(rg -n 'assets/js/workspace/data.js' index.html | cut -d: -f1)"
 app_init_line="$(rg -n 'assets/js/runtime/app-init.js' index.html | cut -d: -f1)"
@@ -151,8 +154,13 @@ if (( runtime_storage_line >= core_line )); then
   exit 1
 fi
 
-if (( core_line >= metrics_line )); then
-  printf 'core.js must load before workspace-metrics.js\n' >&2
+if (( core_line >= module_registry_line )); then
+  printf 'core.js must load before module-registry.js\n' >&2
+  exit 1
+fi
+
+if (( module_registry_line >= metrics_line )); then
+  printf 'module-registry.js must load before workspace-metrics.js\n' >&2
   exit 1
 fi
 
@@ -161,8 +169,13 @@ if (( metrics_line >= workspace_data_line )); then
   exit 1
 fi
 
-if (( app_init_line >= tavern_line )); then
-  printf 'app-init.js must register before tavern.js\n' >&2
+if (( workspace_data_line >= app_init_line )); then
+  printf 'workspace-data.js must load before app-init.js\n' >&2
+  exit 1
+fi
+
+if (( app_init_line >= tavern_catalog_line )); then
+  printf 'app-init.js must load before tavern-catalog.js\n' >&2
   exit 1
 fi
 

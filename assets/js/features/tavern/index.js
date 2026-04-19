@@ -3,4 +3,8 @@
  * 负责在 DOM 就绪后挂载酒馆交互。
  */
 
-document.addEventListener('DOMContentLoaded', initTavernModule);
+registerAppModule({
+    id: 'tavern',
+    order: 25,
+    init: initTavernModule
+});

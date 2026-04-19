@@ -123,3 +123,8 @@ function initKeyboardShortcuts() {
     updateKeyboardShortcutHint();
 }
 
+registerAppModule({
+    id: 'keyboard-shortcuts',
+    order: 90,
+    init: initKeyboardShortcuts
+});

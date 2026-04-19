@@ -54,6 +54,7 @@ node --check assets/js/runtime/store.js
 node --check assets/js/runtime/state.js
 node --check assets/js/runtime/storage.js
 node --check assets/js/runtime/core.js
+node --check assets/js/runtime/module-registry.js
 node --check assets/js/workspace/metrics.js
 node --check assets/js/workspace/data.js
 node --check assets/js/ui/navigation.js
@@ -166,6 +167,8 @@ bash scripts/browser-smoke.sh
   本地存储初始化、schema 迁移、结构归一化、持久化与当前任务恢复。
 - `assets/js/runtime/core.js`
   时间工具、环境态派生、任务首屏状态与通用转义函数。
+- `assets/js/runtime/module-registry.js`
+  启动模块注册中心，负责统一收集和执行各功能模块的 `init` 入口。
 - `assets/js/workspace/metrics.js`
   成就、统计、导出共用的工作区累计指标与计数口径。
 - `assets/js/workspace/data.js`
@@ -381,42 +384,43 @@ const CONFIG = {
 3. `runtime/state.js`
 4. `runtime/storage.js`
 5. `runtime/core.js`
-6. `workspace/metrics.js`
-7. `workspace/data.js`
-8. `runtime/app-init.js`
-9. `ui/navigation.js`
-10. `features/tavern/catalog.js`
-11. `features/tavern/logic.js`
-12. `features/tavern/stage.js`
-13. `features/tavern/result.js`
-14. `features/tavern/history.js`
-15. `features/tavern/ui.js`
-16. `features/tavern/index.js`
-17. `features/checkin/rules.js`
-18. `features/checkin/ui.js`
-19. `features/checkin/index.js`
-20. `features/focus/achievements.js`
-21. `workspace/entries.js`
-22. `features/tasks/index.js`
-23. `features/notes/index.js`
-24. `features/leave/rules.js`
-25. `features/leave/ui.js`
-26. `features/leave/index.js`
-27. `features/stats/data.js`
-28. `features/stats/charts.js`
-29. `features/stats/index.js`
-30. `features/dashboard/copy.js`
-31. `features/dashboard/ui.js`
-32. `features/sync/state.js`
-33. `features/sync/api.js`
-34. `features/sync/index.js`
-35. `features/export/data.js`
-36. `features/export/formats.js`
-37. `features/export/ui.js`
-38. `features/export/index.js`
-39. `ui/shortcuts.js`
+6. `runtime/module-registry.js`
+7. `workspace/metrics.js`
+8. `workspace/data.js`
+9. `runtime/app-init.js`
+10. `ui/navigation.js`
+11. `features/tavern/catalog.js`
+12. `features/tavern/logic.js`
+13. `features/tavern/stage.js`
+14. `features/tavern/result.js`
+15. `features/tavern/history.js`
+16. `features/tavern/ui.js`
+17. `features/tavern/index.js`
+18. `features/checkin/rules.js`
+19. `features/checkin/ui.js`
+20. `features/checkin/index.js`
+21. `features/focus/achievements.js`
+22. `workspace/entries.js`
+23. `features/tasks/index.js`
+24. `features/notes/index.js`
+25. `features/leave/rules.js`
+26. `features/leave/ui.js`
+27. `features/leave/index.js`
+28. `features/stats/data.js`
+29. `features/stats/charts.js`
+30. `features/stats/index.js`
+31. `features/dashboard/copy.js`
+32. `features/dashboard/ui.js`
+33. `features/sync/state.js`
+34. `features/sync/api.js`
+35. `features/sync/index.js`
+36. `features/export/data.js`
+37. `features/export/formats.js`
+38. `features/export/ui.js`
+39. `features/export/index.js`
+40. `ui/shortcuts.js`
 
-现在目录按 `runtime / workspace / ui / features` 分层：`runtime` 负责启动、共享运行时和可变状态容器，`workspace` 负责跨模块共享的数据与口径，`ui` 负责导航和快捷键这类外层交互，`features` 按值班、酒馆、离舰、统计、同步、导出等功能继续拆分。顺序错乱会导致飞船在启动时失压。
+现在目录按 `runtime / workspace / ui / features` 分层：`runtime` 负责启动、模块注册、共享运行时和可变状态容器，`workspace` 负责跨模块共享的数据与口径，`ui` 负责导航和快捷键这类外层交互，`features` 按值班、酒馆、离舰、统计、同步、导出等功能继续拆分。`app-init.js` 现在只负责 `initData()` 和触发模块注册中心，具体功能模块各自向注册中心报到。顺序错乱会导致飞船在启动时失压。
 
 
 ## 🧪 手动巡检建议

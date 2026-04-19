@@ -219,3 +219,9 @@ function updateSchedule() {
 
     container.replaceChildren(fragment);
 }
+
+registerAppModule({
+    id: 'tasks',
+    order: 50,
+    init: initTaskManagement
+});

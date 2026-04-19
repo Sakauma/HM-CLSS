@@ -123,3 +123,9 @@ function checkAchievements() {
         updateTodayStatus();
     }
 }
+
+registerAppModule({
+    id: 'focus-achievements',
+    order: 40,
+    init: initPhoneResist
+});

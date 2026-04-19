@@ -105,3 +105,9 @@ function initExportTools() {
     profileSelect.addEventListener('change', updateExportPreview);
     triggerBtn.addEventListener('click', executeSelectedExport);
 }
+
+registerAppModule({
+    id: 'export-tools',
+    order: 80,
+    init: initExportTools
+});

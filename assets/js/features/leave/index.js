@@ -165,3 +165,9 @@ function addLeave() {
     };
     showToast(successMessageMap[workflow] || '离舰记录已归档', 'success');
 }
+
+registerAppModule({
+    id: 'leave',
+    order: 60,
+    init: initLeaveManagement
+});

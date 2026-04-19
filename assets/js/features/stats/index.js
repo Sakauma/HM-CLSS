@@ -68,3 +68,9 @@ function updateSummaryStatistics() {
     document.getElementById('total-phone-resist').textContent = summary.phoneResistCount;
     document.getElementById('achievement-count').textContent = summary.achievementCount;
 }
+
+registerAppModule({
+    id: 'statistics',
+    order: 70,
+    init: initStatistics
+});

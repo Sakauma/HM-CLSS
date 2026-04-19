@@ -207,3 +207,9 @@ function initNavigation() {
     updatePanelMeta(navigationItems[0]);
     setNavButtonState(document.getElementById(navigationItems[0].btnId), true);
 }
+
+registerAppModule({
+    id: 'navigation',
+    order: 20,
+    init: initNavigation
+});
