@@ -81,6 +81,7 @@ for script_path in "${required_scripts[@]}"; do
 done
 
 required_files=(
+  "assets/css/app.css"
   "environment.browser-test.yml"
   "scripts/browser-smoke.sh"
   "scripts/browser-smoke.py"

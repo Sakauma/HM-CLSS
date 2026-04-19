@@ -149,7 +149,9 @@ bash scripts/browser-smoke.sh
 当前仓库的主结构如下：
 
 - `index.html`
-  飞船主舱。负责页面骨架、Tailwind 配置、自定义样式，以及脚本加载顺序。
+  飞船主舱。负责页面骨架、Tailwind 配置，以及脚本加载顺序。
+- `assets/css/app.css`
+  全站样式、主题令牌、动画和各模块外观细节。
 - `assets/js/runtime/theme.js`
   主题切换与深浅色图标同步。
 - `assets/js/runtime/state.js`
@@ -341,7 +343,7 @@ const CONFIG = {
 
 ### 4. 自定义“系统主题色”
 
-当前主题色通过 `index.html` 顶部的 `:root` 颜色令牌驱动，`tailwind.config` 只是消费这些变量。
+当前主题色通过 `assets/css/app.css` 顶部的 `:root` 颜色令牌驱动，`index.html` 里的 `tailwind.config` 只是消费这些变量。
 
 ```css
 :root {
