@@ -5,41 +5,41 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 js_files=(
-  assets/js/theme.js
-  assets/js/runtime-state.js
-  assets/js/runtime-storage.js
-  assets/js/core.js
-  assets/js/workspace-metrics.js
-  assets/js/workspace-data.js
-  assets/js/navigation.js
-  assets/js/tavern-catalog.js
-  assets/js/tavern-logic.js
-  assets/js/tavern-ui.js
-  assets/js/tavern.js
-  assets/js/checkin-rules.js
-  assets/js/checkin-ui.js
-  assets/js/checkin.js
-  assets/js/phone-achievements.js
-  assets/js/workspace-entries.js
-  assets/js/tasks.js
-  assets/js/notes.js
-  assets/js/leave-rules.js
-  assets/js/leave-ui.js
-  assets/js/leave.js
-  assets/js/stats-data.js
-  assets/js/stats-charts.js
-  assets/js/stats.js
-  assets/js/status-copy.js
-  assets/js/status-ui.js
-  assets/js/sync-state.js
-  assets/js/sync-api.js
-  assets/js/sync.js
-  assets/js/export-data.js
-  assets/js/export-formats.js
-  assets/js/export-ui.js
-  assets/js/export.js
-  assets/js/shortcuts.js
-  assets/js/app-init.js
+  assets/js/runtime/theme.js
+  assets/js/runtime/state.js
+  assets/js/runtime/storage.js
+  assets/js/runtime/core.js
+  assets/js/workspace/metrics.js
+  assets/js/workspace/data.js
+  assets/js/ui/navigation.js
+  assets/js/features/tavern/catalog.js
+  assets/js/features/tavern/logic.js
+  assets/js/features/tavern/ui.js
+  assets/js/features/tavern/index.js
+  assets/js/features/checkin/rules.js
+  assets/js/features/checkin/ui.js
+  assets/js/features/checkin/index.js
+  assets/js/features/focus/achievements.js
+  assets/js/workspace/entries.js
+  assets/js/features/tasks/index.js
+  assets/js/features/notes/index.js
+  assets/js/features/leave/rules.js
+  assets/js/features/leave/ui.js
+  assets/js/features/leave/index.js
+  assets/js/features/stats/data.js
+  assets/js/features/stats/charts.js
+  assets/js/features/stats/index.js
+  assets/js/features/dashboard/copy.js
+  assets/js/features/dashboard/ui.js
+  assets/js/features/sync/state.js
+  assets/js/features/sync/api.js
+  assets/js/features/sync/index.js
+  assets/js/features/export/data.js
+  assets/js/features/export/formats.js
+  assets/js/features/export/ui.js
+  assets/js/features/export/index.js
+  assets/js/ui/shortcuts.js
+  assets/js/runtime/app-init.js
 )
 
 for file in "${js_files[@]}"; do
@@ -51,29 +51,29 @@ bash -n scripts/browser-smoke.sh
 bash -n scripts/setup-browser-test.sh
 
 required_scripts=(
-  "assets/js/runtime-state.js"
-  "assets/js/runtime-storage.js"
-  "assets/js/workspace-metrics.js"
-  "assets/js/workspace-data.js"
-  "assets/js/tavern-catalog.js"
-  "assets/js/tavern-logic.js"
-  "assets/js/tavern-ui.js"
-  "assets/js/checkin-rules.js"
-  "assets/js/checkin-ui.js"
-  "assets/js/leave-rules.js"
-  "assets/js/leave-ui.js"
-  "assets/js/workspace-entries.js"
-  "assets/js/sync-state.js"
-  "assets/js/sync-api.js"
-  "assets/js/export-data.js"
-  "assets/js/export-formats.js"
-  "assets/js/export-ui.js"
-  "assets/js/shortcuts.js"
-  "assets/js/app-init.js"
-  "assets/js/stats-data.js"
-  "assets/js/stats-charts.js"
-  "assets/js/status-copy.js"
-  "assets/js/export.js"
+  "assets/js/runtime/state.js"
+  "assets/js/runtime/storage.js"
+  "assets/js/workspace/metrics.js"
+  "assets/js/workspace/data.js"
+  "assets/js/features/tavern/catalog.js"
+  "assets/js/features/tavern/logic.js"
+  "assets/js/features/tavern/ui.js"
+  "assets/js/features/checkin/rules.js"
+  "assets/js/features/checkin/ui.js"
+  "assets/js/features/leave/rules.js"
+  "assets/js/features/leave/ui.js"
+  "assets/js/workspace/entries.js"
+  "assets/js/features/sync/state.js"
+  "assets/js/features/sync/api.js"
+  "assets/js/features/export/data.js"
+  "assets/js/features/export/formats.js"
+  "assets/js/features/export/ui.js"
+  "assets/js/ui/shortcuts.js"
+  "assets/js/runtime/app-init.js"
+  "assets/js/features/stats/data.js"
+  "assets/js/features/stats/charts.js"
+  "assets/js/features/dashboard/copy.js"
+  "assets/js/features/export/index.js"
 )
 
 for script_path in "${required_scripts[@]}"; do
@@ -91,37 +91,37 @@ for file_path in "${required_files[@]}"; do
   test -f "$file_path"
 done
 
-runtime_state_line="$(rg -n 'assets/js/runtime-state.js' index.html | cut -d: -f1)"
-runtime_storage_line="$(rg -n 'assets/js/runtime-storage.js' index.html | cut -d: -f1)"
-core_line="$(rg -n 'assets/js/core.js' index.html | cut -d: -f1)"
-metrics_line="$(rg -n 'assets/js/workspace-metrics.js' index.html | cut -d: -f1)"
-workspace_data_line="$(rg -n 'assets/js/workspace-data.js' index.html | cut -d: -f1)"
-app_init_line="$(rg -n 'assets/js/app-init.js' index.html | cut -d: -f1)"
-tavern_catalog_line="$(rg -n 'assets/js/tavern-catalog.js' index.html | cut -d: -f1)"
-tavern_logic_line="$(rg -n 'assets/js/tavern-logic.js' index.html | cut -d: -f1)"
-tavern_ui_line="$(rg -n 'assets/js/tavern-ui.js' index.html | cut -d: -f1)"
-tavern_line="$(rg -n 'assets/js/tavern.js' index.html | cut -d: -f1)"
-checkin_rules_line="$(rg -n 'assets/js/checkin-rules.js' index.html | cut -d: -f1)"
-checkin_ui_line="$(rg -n 'assets/js/checkin-ui.js' index.html | cut -d: -f1)"
-checkin_line="$(rg -n 'assets/js/checkin.js' index.html | cut -d: -f1)"
-workspace_entries_line="$(rg -n 'assets/js/workspace-entries.js' index.html | cut -d: -f1)"
-tasks_line="$(rg -n 'assets/js/tasks.js' index.html | cut -d: -f1)"
-notes_line="$(rg -n 'assets/js/notes.js' index.html | cut -d: -f1)"
-leave_rules_line="$(rg -n 'assets/js/leave-rules.js' index.html | cut -d: -f1)"
-leave_ui_line="$(rg -n 'assets/js/leave-ui.js' index.html | cut -d: -f1)"
-leave_line="$(rg -n 'assets/js/leave.js' index.html | cut -d: -f1)"
-stats_data_line="$(rg -n 'assets/js/stats-data.js' index.html | cut -d: -f1)"
-stats_charts_line="$(rg -n 'assets/js/stats-charts.js' index.html | cut -d: -f1)"
-stats_line="$(rg -n 'assets/js/stats.js' index.html | cut -d: -f1)"
-status_copy_line="$(rg -n 'assets/js/status-copy.js' index.html | cut -d: -f1)"
-status_ui_line="$(rg -n 'assets/js/status-ui.js' index.html | cut -d: -f1)"
-sync_state_line="$(rg -n 'assets/js/sync-state.js' index.html | cut -d: -f1)"
-sync_api_line="$(rg -n 'assets/js/sync-api.js' index.html | cut -d: -f1)"
-sync_line="$(rg -n 'assets/js/sync.js' index.html | cut -d: -f1)"
-export_data_line="$(rg -n 'assets/js/export-data.js' index.html | cut -d: -f1)"
-export_formats_line="$(rg -n 'assets/js/export-formats.js' index.html | cut -d: -f1)"
-export_ui_line="$(rg -n 'assets/js/export-ui.js' index.html | cut -d: -f1)"
-export_line="$(rg -n 'assets/js/export.js' index.html | cut -d: -f1)"
+runtime_state_line="$(rg -n 'assets/js/runtime/state.js' index.html | cut -d: -f1)"
+runtime_storage_line="$(rg -n 'assets/js/runtime/storage.js' index.html | cut -d: -f1)"
+core_line="$(rg -n 'assets/js/runtime/core.js' index.html | cut -d: -f1)"
+metrics_line="$(rg -n 'assets/js/workspace/metrics.js' index.html | cut -d: -f1)"
+workspace_data_line="$(rg -n 'assets/js/workspace/data.js' index.html | cut -d: -f1)"
+app_init_line="$(rg -n 'assets/js/runtime/app-init.js' index.html | cut -d: -f1)"
+tavern_catalog_line="$(rg -n 'assets/js/features/tavern/catalog.js' index.html | cut -d: -f1)"
+tavern_logic_line="$(rg -n 'assets/js/features/tavern/logic.js' index.html | cut -d: -f1)"
+tavern_ui_line="$(rg -n 'assets/js/features/tavern/ui.js' index.html | cut -d: -f1)"
+tavern_line="$(rg -n 'assets/js/features/tavern/index.js' index.html | cut -d: -f1)"
+checkin_rules_line="$(rg -n 'assets/js/features/checkin/rules.js' index.html | cut -d: -f1)"
+checkin_ui_line="$(rg -n 'assets/js/features/checkin/ui.js' index.html | cut -d: -f1)"
+checkin_line="$(rg -n 'assets/js/features/checkin/index.js' index.html | cut -d: -f1)"
+workspace_entries_line="$(rg -n 'assets/js/workspace/entries.js' index.html | cut -d: -f1)"
+tasks_line="$(rg -n 'assets/js/features/tasks/index.js' index.html | cut -d: -f1)"
+notes_line="$(rg -n 'assets/js/features/notes/index.js' index.html | cut -d: -f1)"
+leave_rules_line="$(rg -n 'assets/js/features/leave/rules.js' index.html | cut -d: -f1)"
+leave_ui_line="$(rg -n 'assets/js/features/leave/ui.js' index.html | cut -d: -f1)"
+leave_line="$(rg -n 'assets/js/features/leave/index.js' index.html | cut -d: -f1)"
+stats_data_line="$(rg -n 'assets/js/features/stats/data.js' index.html | cut -d: -f1)"
+stats_charts_line="$(rg -n 'assets/js/features/stats/charts.js' index.html | cut -d: -f1)"
+stats_line="$(rg -n 'assets/js/features/stats/index.js' index.html | cut -d: -f1)"
+status_copy_line="$(rg -n 'assets/js/features/dashboard/copy.js' index.html | cut -d: -f1)"
+status_ui_line="$(rg -n 'assets/js/features/dashboard/ui.js' index.html | cut -d: -f1)"
+sync_state_line="$(rg -n 'assets/js/features/sync/state.js' index.html | cut -d: -f1)"
+sync_api_line="$(rg -n 'assets/js/features/sync/api.js' index.html | cut -d: -f1)"
+sync_line="$(rg -n 'assets/js/features/sync/index.js' index.html | cut -d: -f1)"
+export_data_line="$(rg -n 'assets/js/features/export/data.js' index.html | cut -d: -f1)"
+export_formats_line="$(rg -n 'assets/js/features/export/formats.js' index.html | cut -d: -f1)"
+export_ui_line="$(rg -n 'assets/js/features/export/ui.js' index.html | cut -d: -f1)"
+export_line="$(rg -n 'assets/js/features/export/index.js' index.html | cut -d: -f1)"
 
 if (( runtime_state_line >= runtime_storage_line )); then
   printf 'runtime-state.js must load before runtime-storage.js\n' >&2

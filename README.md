@@ -49,41 +49,41 @@ http://localhost:8000
 ### 脚本语法巡检
 
 ```bash
-node --check assets/js/theme.js
-node --check assets/js/runtime-state.js
-node --check assets/js/runtime-storage.js
-node --check assets/js/core.js
-node --check assets/js/workspace-metrics.js
-node --check assets/js/workspace-data.js
-node --check assets/js/navigation.js
-node --check assets/js/tavern-catalog.js
-node --check assets/js/tavern-logic.js
-node --check assets/js/tavern-ui.js
-node --check assets/js/tavern.js
-node --check assets/js/checkin-rules.js
-node --check assets/js/checkin-ui.js
-node --check assets/js/checkin.js
-node --check assets/js/phone-achievements.js
-node --check assets/js/workspace-entries.js
-node --check assets/js/tasks.js
-node --check assets/js/notes.js
-node --check assets/js/leave-rules.js
-node --check assets/js/leave-ui.js
-node --check assets/js/leave.js
-node --check assets/js/stats-data.js
-node --check assets/js/stats-charts.js
-node --check assets/js/stats.js
-node --check assets/js/status-copy.js
-node --check assets/js/status-ui.js
-node --check assets/js/sync-state.js
-node --check assets/js/sync-api.js
-node --check assets/js/sync.js
-node --check assets/js/export-data.js
-node --check assets/js/export-formats.js
-node --check assets/js/export-ui.js
-node --check assets/js/export.js
-node --check assets/js/shortcuts.js
-node --check assets/js/app-init.js
+node --check assets/js/runtime/theme.js
+node --check assets/js/runtime/state.js
+node --check assets/js/runtime/storage.js
+node --check assets/js/runtime/core.js
+node --check assets/js/workspace/metrics.js
+node --check assets/js/workspace/data.js
+node --check assets/js/ui/navigation.js
+node --check assets/js/features/tavern/catalog.js
+node --check assets/js/features/tavern/logic.js
+node --check assets/js/features/tavern/ui.js
+node --check assets/js/features/tavern/index.js
+node --check assets/js/features/checkin/rules.js
+node --check assets/js/features/checkin/ui.js
+node --check assets/js/features/checkin/index.js
+node --check assets/js/features/focus/achievements.js
+node --check assets/js/workspace/entries.js
+node --check assets/js/features/tasks/index.js
+node --check assets/js/features/notes/index.js
+node --check assets/js/features/leave/rules.js
+node --check assets/js/features/leave/ui.js
+node --check assets/js/features/leave/index.js
+node --check assets/js/features/stats/data.js
+node --check assets/js/features/stats/charts.js
+node --check assets/js/features/stats/index.js
+node --check assets/js/features/dashboard/copy.js
+node --check assets/js/features/dashboard/ui.js
+node --check assets/js/features/sync/state.js
+node --check assets/js/features/sync/api.js
+node --check assets/js/features/sync/index.js
+node --check assets/js/features/export/data.js
+node --check assets/js/features/export/formats.js
+node --check assets/js/features/export/ui.js
+node --check assets/js/features/export/index.js
+node --check assets/js/ui/shortcuts.js
+node --check assets/js/runtime/app-init.js
 python3 -m py_compile scripts/browser-smoke.py
 bash -n scripts/browser-smoke.sh
 bash -n scripts/setup-browser-test.sh
@@ -150,75 +150,75 @@ bash scripts/browser-smoke.sh
 
 - `index.html`
   飞船主舱。负责页面骨架、Tailwind 配置、自定义样式，以及脚本加载顺序。
-- `assets/js/theme.js`
+- `assets/js/runtime/theme.js`
   主题切换与深浅色图标同步。
-- `assets/js/runtime-state.js`
+- `assets/js/runtime/state.js`
   全局共享状态、配置常量、标签映射与情绪/成就静态清单。
-- `assets/js/runtime-storage.js`
+- `assets/js/runtime/storage.js`
   本地存储初始化、结构归一化、持久化与当前任务恢复。
-- `assets/js/core.js`
+- `assets/js/runtime/core.js`
   时间工具、环境态派生、任务首屏状态与通用转义函数。
-- `assets/js/workspace-metrics.js`
+- `assets/js/workspace/metrics.js`
   成就、统计、导出共用的工作区累计指标与计数口径。
-- `assets/js/workspace-data.js`
+- `assets/js/workspace/data.js`
   可同步数据集与本地运行态的边界定义、快照与应用逻辑。
-- `assets/js/navigation.js`
+- `assets/js/ui/navigation.js`
   左侧导航与舱段切换。
-- `assets/js/tavern-catalog.js`
+- `assets/js/features/tavern/catalog.js`
   情绪词典、家族元数据与酒谱目录。
-- `assets/js/tavern-logic.js`
+- `assets/js/features/tavern/logic.js`
   情绪解析、配方选择、结果记录生成与旧酒单归一化。
-- `assets/js/tavern-ui.js`
+- `assets/js/features/tavern/ui.js`
   酒馆舞台动画、结果卡、历史酒柜与事件绑定。
-- `assets/js/tavern.js`
+- `assets/js/features/tavern/index.js`
   深空酒馆入口，负责在 DOM 就绪后挂载酒馆交互。
-- `assets/js/checkin-rules.js`
+- `assets/js/features/checkin/rules.js`
   值班状态归一化、时间判定、补录评估与记录写入。
-- `assets/js/checkin-ui.js`
+- `assets/js/features/checkin/ui.js`
   值班按钮、今日记录表、补打卡面板和每日/每周彩蛋弹窗。
-- `assets/js/checkin.js`
+- `assets/js/features/checkin/index.js`
   值班控制器，负责实时打卡、补打卡提交与初始化监听。
-- `assets/js/phone-achievements.js`
+- `assets/js/features/focus/achievements.js`
   戒断次数记录、成就判定与成就弹窗。
-- `assets/js/workspace-entries.js`
+- `assets/js/workspace/entries.js`
   任务与速记共用的按日期写入、删除和轻量回刷工具。
-- `assets/js/tasks.js`
+- `assets/js/features/tasks/index.js`
   任务开始/结束、计时器、任务表格与时间轴。
-- `assets/js/notes.js`
+- `assets/js/features/notes/index.js`
   `Ctrl+K` 快速记录、归档面板、笔记检索与删除。
-- `assets/js/leave-rules.js`
+- `assets/js/features/leave/rules.js`
   离舰工作流状态、目标日期校验与离舰状态重建。
-- `assets/js/leave-ui.js`
+- `assets/js/features/leave/ui.js`
   离舰流程切换、表单动态提示与历史列表渲染。
-- `assets/js/leave.js`
+- `assets/js/features/leave/index.js`
   离舰控制器，负责时间下拉、提交与撤销监听。
-- `assets/js/stats-data.js`
+- `assets/js/features/stats/data.js`
   统计区间、时间范围、聚合口径与图表数据准备。
-- `assets/js/stats-charts.js`
+- `assets/js/features/stats/charts.js`
   Chart.js 图表渲染与实例更新。
-- `assets/js/stats.js`
+- `assets/js/features/stats/index.js`
   统计控制器，负责周期按钮、顶部摘要与图表刷新入口。
-- `assets/js/status-copy.js`
+- `assets/js/features/dashboard/copy.js`
   状态徽章、班次标签和首页总览文案派生。
-- `assets/js/status-ui.js`
+- `assets/js/features/dashboard/ui.js`
   今日状态面板渲染、航行情绪刷新与通用 Toast 提示。
-- `assets/js/sync-state.js`
+- `assets/js/features/sync/state.js`
   云同步凭据、本地同步时间与自动同步计时器状态。
-- `assets/js/sync-api.js`
+- `assets/js/features/sync/api.js`
   GitHub Gist 请求与响应解析。
-- `assets/js/sync.js`
+- `assets/js/features/sync/index.js`
   云同步控制器，负责按钮交互、冲突确认、自动同步与云端数据应用。
-- `assets/js/export-data.js`
+- `assets/js/features/export/data.js`
   导出配置、工作区快照、月度快照和预览摘要口径。
-- `assets/js/export-formats.js`
+- `assets/js/features/export/formats.js`
   Markdown / CSV 序列化与导出文件描述生成。
-- `assets/js/export-ui.js`
+- `assets/js/features/export/ui.js`
   导出面板的选择联动、预览更新与交互绑定。
-- `assets/js/export.js`
+- `assets/js/features/export/index.js`
   导出控制器，负责执行当前选中的下载动作。
-- `assets/js/shortcuts.js`
+- `assets/js/ui/shortcuts.js`
   全局快捷键层，负责舱段切换、循环浏览与快捷值班。
-- `assets/js/app-init.js`
+- `assets/js/runtime/app-init.js`
   DOM 就绪后的统一启动编排。
 - `scripts/smoke-check.sh`
   常见回归场景的本地冒烟脚本。
@@ -271,7 +271,7 @@ bash scripts/browser-smoke.sh
 
 ### 1. 自定义“成就图鉴”
 
-在 `assets/js/core.js` 中找到 `const achievementList = [...]`。
+在 `assets/js/runtime/state.js` 中找到 `const achievementList = [...]`。
 
 示例：
 
@@ -296,7 +296,7 @@ bash scripts/browser-smoke.sh
 
 ### 2. 自定义“科研任务分类”
 
-在 `assets/js/core.js` 中找到：
+在 `assets/js/runtime/state.js` 中找到：
 
 ```javascript
 const tagMap = {
@@ -314,7 +314,7 @@ const tagMap = {
 
 ### 3. 自定义“维生巡检时间窗口”
 
-在 `assets/js/core.js` 中找到 `const CONFIG = {...}`。
+在 `assets/js/runtime/state.js` 中找到 `const CONFIG = {...}`。
 
 ```javascript
 const CONFIG = {
@@ -362,44 +362,43 @@ const CONFIG = {
 
 当前顺序遵循依赖关系：
 
-1. `theme.js`
-2. `runtime-state.js`
-3. `runtime-storage.js`
-4. `core.js`
-5. `workspace-metrics.js`
-6. `workspace-data.js`
-7. `app-init.js`
-8. `navigation.js`
-9. `tavern-catalog.js`
-10. `tavern-logic.js`
-11. `tavern-ui.js`
-12. `tavern.js`
-13. `checkin-rules.js`
-14. `checkin-ui.js`
-15. `checkin.js`
-16. `phone-achievements.js`
-17. `tasks.js`
-18. `workspace-entries.js`
-19. `tasks.js`
-20. `notes.js`
-21. `leave-rules.js`
-22. `leave-ui.js`
-23. `leave.js`
-24. `stats-data.js`
-25. `stats-charts.js`
-26. `stats.js`
-27. `status-copy.js`
-28. `status-ui.js`
-29. `sync-state.js`
-30. `sync-api.js`
-31. `sync.js`
-32. `export-data.js`
-33. `export-formats.js`
-34. `export-ui.js`
-35. `export.js`
-36. `shortcuts.js`
+1. `runtime/theme.js`
+2. `runtime/state.js`
+3. `runtime/storage.js`
+4. `runtime/core.js`
+5. `workspace/metrics.js`
+6. `workspace/data.js`
+7. `runtime/app-init.js`
+8. `ui/navigation.js`
+9. `features/tavern/catalog.js`
+10. `features/tavern/logic.js`
+11. `features/tavern/ui.js`
+12. `features/tavern/index.js`
+13. `features/checkin/rules.js`
+14. `features/checkin/ui.js`
+15. `features/checkin/index.js`
+16. `features/focus/achievements.js`
+17. `workspace/entries.js`
+18. `features/tasks/index.js`
+19. `features/notes/index.js`
+20. `features/leave/rules.js`
+21. `features/leave/ui.js`
+22. `features/leave/index.js`
+23. `features/stats/data.js`
+24. `features/stats/charts.js`
+25. `features/stats/index.js`
+26. `features/dashboard/copy.js`
+27. `features/dashboard/ui.js`
+28. `features/sync/state.js`
+29. `features/sync/api.js`
+30. `features/sync/index.js`
+31. `features/export/data.js`
+32. `features/export/formats.js`
+33. `features/export/ui.js`
+34. `features/export/index.js`
+35. `ui/shortcuts.js`
 
-其中 `runtime-state.js`、`runtime-storage.js` 与 `core.js` 负责提供共享运行时；`workspace-metrics.js` 与 `workspace-data.js` 负责统一指标和数据边界；`app-init.js` 提前注册启动编排，确保它比其他 `DOMContentLoaded` 监听更早挂上；酒馆链路现在拆成 `tavern-catalog.js -> tavern-logic.js -> tavern-ui.js -> tavern.js`，值班链路拆成 `checkin-rules.js -> checkin-ui.js -> checkin.js`，任务与速记共用 `workspace-entries.js` 这层日粒度工具，离舰链路拆成 `leave-rules.js -> leave-ui.js -> leave.js`，状态链路拆成 `status-copy.js -> status-ui.js`，同步链路拆成 `sync-state.js -> sync-api.js -> sync.js`，导出链路拆成 `export-data.js -> export-formats.js -> export-ui.js -> export.js`，统计链路拆成 `stats-data.js -> stats-charts.js -> stats.js`。顺序错乱会导致飞船在启动时失压。
+现在目录按 `runtime / workspace / ui / features` 分层：`runtime` 负责启动与共享运行时，`workspace` 负责跨模块共享的数据与口径，`ui` 负责导航和快捷键这类外层交互，`features` 按值班、酒馆、离舰、统计、同步、导出等功能继续拆分。顺序错乱会导致飞船在启动时失压。
 
 
 ## 🧪 手动巡检建议
