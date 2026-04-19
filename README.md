@@ -60,6 +60,8 @@ node --check assets/js/phone-achievements.js
 node --check assets/js/tasks.js
 node --check assets/js/notes.js
 node --check assets/js/leave.js
+node --check assets/js/stats-data.js
+node --check assets/js/stats-charts.js
 node --check assets/js/stats.js
 node --check assets/js/status-ui.js
 node --check assets/js/sync.js
@@ -154,14 +156,18 @@ bash scripts/browser-smoke.sh
   `Ctrl+K` 快速记录、归档面板、笔记检索与删除。
 - `assets/js/leave.js`
   全天/分时段离舰报备与撤销逻辑。
+- `assets/js/stats-data.js`
+  统计区间、时间范围、聚合口径与图表数据准备。
+- `assets/js/stats-charts.js`
+  Chart.js 图表渲染与实例更新。
 - `assets/js/stats.js`
-  统计区间、图表数据准备、图表渲染、汇总统计。
+  统计控制器，负责周期按钮、顶部摘要与图表刷新入口。
 - `assets/js/status-ui.js`
   今日状态面板与通用 Toast 提示。
 - `assets/js/sync.js`
   GitHub Gist 配置、手动推送/拉取、自动同步与云端数据合并。
 - `assets/js/export.js`
-  本地全量快照、单月 JSON 和单月 Markdown 导出。
+  本地全量快照、单月 JSON / Markdown / CSV 导出。
 - `assets/js/shortcuts.js`
   全局快捷键层，负责舱段切换、循环浏览与快捷值班。
 - `assets/js/app-init.js`
@@ -320,13 +326,15 @@ const CONFIG = {
 10. `tasks.js`
 11. `notes.js`
 12. `leave.js`
-13. `stats.js`
-14. `status-ui.js`
-15. `sync.js`
-16. `export.js`
-17. `shortcuts.js`
+13. `stats-data.js`
+14. `stats-charts.js`
+15. `stats.js`
+16. `status-ui.js`
+17. `sync.js`
+18. `export.js`
+19. `shortcuts.js`
 
-其中 `runtime-state.js`、`runtime-storage.js` 与 `core.js` 负责提供共享运行时；`app-init.js` 提前注册启动编排，确保它比其他 `DOMContentLoaded` 监听更早挂上；后面的业务脚本再补齐具体功能。顺序错乱会导致飞船在启动时失压。
+其中 `runtime-state.js`、`runtime-storage.js` 与 `core.js` 负责提供共享运行时；`app-init.js` 提前注册启动编排，确保它比其他 `DOMContentLoaded` 监听更早挂上；统计链路现在拆成 `stats-data.js -> stats-charts.js -> stats.js`，先聚合，再渲染，最后由控制器接管交互。顺序错乱会导致飞船在启动时失压。
 
 
 ## 🧪 手动巡检建议

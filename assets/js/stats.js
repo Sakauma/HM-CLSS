@@ -1,21 +1,33 @@
 /**
- * 统计分析模块。
- * 负责按周期聚合业务数据，并把结果投喂给各类 Chart.js 图表。
+ * 统计控制器模块。
+ * 负责连接周期按钮、顶部摘要和图表渲染入口。
  */
+
+const STATS_PERIOD_BUTTON_ACTIVE_CLASS = 'stats-period-btn bg-white dark:bg-slate-700 text-slate-900 dark:text-white py-1.5 px-5 rounded-lg font-medium shadow-sm text-sm transition-all';
+const STATS_PERIOD_BUTTON_IDLE_CLASS = 'stats-period-btn text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 py-1.5 px-5 rounded-lg font-medium text-sm transition-all';
+
+function setActiveStatsPeriodButton(activeBtn) {
+    document.querySelectorAll('.stats-period-btn').forEach((button) => {
+        button.className = button === activeBtn ? STATS_PERIOD_BUTTON_ACTIVE_CLASS : STATS_PERIOD_BUTTON_IDLE_CLASS;
+    });
+}
+
+function getActiveStatsPeriod() {
+    const activePeriodBtn = document.querySelector('.stats-period-btn.bg-white, .stats-period-btn.bg-slate-700');
+    return activePeriodBtn?.getAttribute('data-period') || 'week';
+}
 
 /**
  * 绑定统计周期按钮，并初始化顶部摘要数据。
  */
 function initStatistics() {
     document.querySelectorAll('.stats-period-btn').forEach((btn) => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.stats-period-btn').forEach((button) => {
-                button.className = 'stats-period-btn text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 py-1.5 px-5 rounded-lg font-medium text-sm transition-all';
-            });
-            this.className = 'stats-period-btn bg-white dark:bg-slate-700 text-slate-900 dark:text-white py-1.5 px-5 rounded-lg font-medium shadow-sm text-sm transition-all';
-            updateStatisticsCharts(this.getAttribute('data-period'));
+        btn.addEventListener('click', () => {
+            setActiveStatsPeriodButton(btn);
+            updateStatisticsCharts(btn.getAttribute('data-period'));
         });
     });
+
     updateSummaryStatistics();
 }
 
@@ -28,460 +40,31 @@ function refreshStatisticsView() {
     const statsSection = document.getElementById('stats-section');
     if (!statsSection || statsSection.classList.contains('hidden')) return;
 
-    const activePeriodBtn = document.querySelector('.stats-period-btn.bg-white, .stats-period-btn.bg-slate-700');
-    if (activePeriodBtn) {
-        updateStatisticsCharts(activePeriodBtn.getAttribute('data-period'));
-    }
+    updateStatisticsCharts(getActiveStatsPeriod());
 }
 
 /**
- * 根据所选周期统一刷新所有统计图。
+ * 对外暴露的统计图刷新入口。
  * @param {'week'|'month'|'year'} period
  */
 function updateStatisticsCharts(period) {
-    const isDark = document.documentElement.classList.contains('dark');
-    Chart.defaults.color = isDark ? '#94a3b8' : '#64748b';
-    Chart.defaults.borderColor = isDark ? '#334155' : '#e2e8f0';
-
-    const { startDate, endDate, labels } = getDateRange(period);
-
-    try { updateCheckinRateChart(labels, prepareCheckinRateData(startDate, endDate, labels)); } catch (error) { console.error(error); }
-    try { updateCheckinPeriodChart(prepareCheckinPeriodData(startDate, endDate)); } catch (error) { console.error(error); }
-    try { updateTaskDurationChart(labels, prepareTaskDurationData(startDate, endDate, labels)); } catch (error) { console.error(error); }
-    try { updatePhoneResistChart(labels, preparePhoneResistData(startDate, endDate, labels)); } catch (error) { console.error(error); }
-    try { updateTagChart(prepareTagData(startDate, endDate)); } catch (error) { console.error(error); }
-}
-
-/**
- * 根据统计周期生成起止日期和横轴标签。
- * @param {'week'|'month'|'year'} period
- * @returns {{ startDate: Date, endDate: Date, labels: string[] }}
- */
-function getDateRange(period) {
-    const end = new Date();
-    const start = new Date();
-    const labels = [];
-
-    if (period === 'week') {
-        start.setDate(end.getDate() - 6);
-        for (let i = 0; i < 7; i++) {
-            const date = new Date(start);
-            date.setDate(start.getDate() + i);
-            labels.push(date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }));
-        }
-    } else if (period === 'month') {
-        start.setDate(end.getDate() - 29);
-        for (let i = 0; i < 30; i += 3) {
-            const date = new Date(start);
-            date.setDate(start.getDate() + i);
-            labels.push(date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }));
-        }
-    } else if (period === 'year') {
-        start.setDate(1);
-        start.setMonth(end.getMonth() - 11);
-        for (let i = 0; i < 12; i++) {
-            const date = new Date(start);
-            date.setMonth(start.getMonth() + i);
-            labels.push(date.toLocaleDateString('zh-CN', { month: 'short' }));
-        }
-    }
-
-    return { startDate: start, endDate: end, labels };
-}
-
-/**
- * 生成某个月的完整日期范围，供年度统计按月聚合时复用。
- * @param {Date} baseDate
- * @param {number} offset
- * @returns {{ start: Date, end: Date }}
- */
-function getMonthRange(baseDate, offset = 0) {
-    const start = new Date(baseDate.getFullYear(), baseDate.getMonth() + offset, 1);
-    const end = new Date(baseDate.getFullYear(), baseDate.getMonth() + offset + 1, 0);
-    return { start, end };
-}
-
-/**
- * 计算指定时间范围内的打卡合规率。
- * @param {Date} start
- * @param {Date} end
- * @returns {number}
- */
-function calculateCheckinRateForRange(start, end) {
-    let total = 0;
-    let qualified = 0;
-    const current = new Date(start);
-
-    while (current <= end) {
-        const day = checkinData[formatLocalDate(current)];
-        if (day && !day.leave) {
-            ['morning', 'afternoon', 'evening'].forEach((period) => {
-                if (day[period].checkIn !== null) {
-                    total++;
-                    const inStatus = getNormalizedCheckInStatus(day[period].status.checkIn);
-                    if (inStatus === 'success' || inStatus === 'warning' || inStatus === 'excused') qualified++;
-                }
-                if (day[period].checkOut !== null) {
-                    total++;
-                    if (
-                        day[period].status.checkOut === true ||
-                        day[period].status.checkOut === 'success' ||
-                        day[period].status.checkOut === 'warning'
-                    ) {
-                        qualified++;
-                    }
-                }
-            });
-        }
-        current.setDate(current.getDate() + 1);
-    }
-
-    return total > 0 ? (qualified / total) * 100 : 0;
-}
-
-/**
- * 统计指定范围内的任务总时长（小时）。
- * @param {Date} start
- * @param {Date} end
- * @returns {number}
- */
-function calculateTaskHoursForRange(start, end) {
-    const current = new Date(start);
-    let totalMinutes = 0;
-
-    while (current <= end) {
-        const dayTasks = taskData[formatLocalDate(current)] || [];
-        totalMinutes += dayTasks.reduce((sum, task) => sum + (task.duration || 0), 0);
-        current.setDate(current.getDate() + 1);
-    }
-
-    return totalMinutes / 60;
-}
-
-/**
- * 统计指定范围内的抗干扰总次数。
- * @param {Date} start
- * @param {Date} end
- * @returns {number}
- */
-function calculatePhoneResistForRange(start, end) {
-    const current = new Date(start);
-    let totalCount = 0;
-
-    while (current <= end) {
-        const dayRecord = phoneResistData.records[formatLocalDate(current)];
-        totalCount += dayRecord ? dayRecord.count : 0;
-        current.setDate(current.getDate() + 1);
-    }
-
-    return totalCount;
-}
-
-/**
- * 准备打卡合规率趋势图数据。
- * 周/月视图按日或三天采样，年视图按月聚合。
- * @param {Date} start
- * @param {Date} end
- * @param {string[]} labels
- * @returns {(number|null)[]}
- */
-function prepareCheckinRateData(start, end, labels) {
-    const data = [];
-    for (let i = 0; i < labels.length; i++) {
-        if (labels.length === 12) {
-            const { start: monthStart, end: monthEnd } = getMonthRange(start, i);
-            data.push(calculateCheckinRateForRange(monthStart, monthEnd));
-            continue;
-        }
-
-        const date = new Date(start);
-        if (labels.length === 7) {
-            date.setDate(start.getDate() + i);
-        } else if (labels.length === 10) {
-            date.setDate(start.getDate() + i * 3);
-        }
-
-        const ds = formatLocalDate(date);
-        const day = checkinData[ds];
-        if (!day || day.leave) {
-            data.push(null);
-        } else {
-            let total = 0;
-            let qualified = 0;
-            ['morning', 'afternoon', 'evening'].forEach((period) => {
-                if (day[period].checkIn !== null) {
-                    total++;
-                    const inStatus = getNormalizedCheckInStatus(day[period].status.checkIn);
-                    if (inStatus === 'success' || inStatus === 'warning' || inStatus === 'excused') qualified++;
-                }
-                if (day[period].checkOut !== null) {
-                    total++;
-                    if (
-                        day[period].status.checkOut === true ||
-                        day[period].status.checkOut === 'success' ||
-                        day[period].status.checkOut === 'warning'
-                    ) {
-                        qualified++;
-                    }
-                }
-            });
-            data.push(total > 0 ? (qualified / total) * 100 : 0);
-        }
-    }
-    return data;
-}
-
-/**
- * 统计不同班次的打卡总次数与合格次数。
- * @param {Date} start
- * @param {Date} end
- * @returns {{ m: { i: number, q: number }, a: { i: number, q: number }, e: { i: number, q: number } }}
- */
-function prepareCheckinPeriodData(start, end) {
-    const result = { m: { i: 0, q: 0 }, a: { i: 0, q: 0 }, e: { i: 0, q: 0 } };
-    const current = new Date(start);
-    while (current <= end) {
-        const day = checkinData[formatLocalDate(current)];
-        if (day && !day.leave) {
-            if (day.morning.checkIn) {
-                result.m.i++;
-                const inStatus = getNormalizedCheckInStatus(day.morning.status.checkIn);
-                if (inStatus === 'success' || inStatus === 'warning' || inStatus === 'excused') result.m.q++;
-            }
-            if (day.afternoon.checkIn) {
-                result.a.i++;
-                const inStatus = getNormalizedCheckInStatus(day.afternoon.status.checkIn);
-                if (inStatus === 'success' || inStatus === 'warning' || inStatus === 'excused') result.a.q++;
-            }
-            if (day.evening.checkIn) {
-                result.e.i++;
-                const inStatus = getNormalizedCheckInStatus(day.evening.status.checkIn);
-                if (inStatus === 'success' || inStatus === 'warning' || inStatus === 'excused') result.e.q++;
-            }
-        }
-        current.setDate(current.getDate() + 1);
-    }
-    return result;
-}
-
-/**
- * 准备任务时长图数据。
- * @param {Date} start
- * @param {Date} end
- * @param {string[]} labels
- * @returns {number[]}
- */
-function prepareTaskDurationData(start, end, labels) {
-    const data = [];
-    for (let i = 0; i < labels.length; i++) {
-        if (labels.length === 12) {
-            const { start: monthStart, end: monthEnd } = getMonthRange(start, i);
-            data.push(Number(calculateTaskHoursForRange(monthStart, monthEnd).toFixed(2)));
-            continue;
-        }
-
-        const date = new Date(start);
-        if (labels.length === 7) {
-            date.setDate(start.getDate() + i);
-        } else if (labels.length === 10) {
-            date.setDate(start.getDate() + i * 3);
-        }
-        const ds = formatLocalDate(date);
-        data.push((taskData[ds] || []).reduce((sum, task) => sum + task.duration, 0) / 60);
-    }
-    return data;
-}
-
-/**
- * 准备抗干扰次数趋势图数据。
- * @param {Date} start
- * @param {Date} end
- * @param {string[]} labels
- * @returns {number[]}
- */
-function preparePhoneResistData(start, end, labels) {
-    const data = [];
-    for (let i = 0; i < labels.length; i++) {
-        if (labels.length === 12) {
-            const { start: monthStart, end: monthEnd } = getMonthRange(start, i);
-            data.push(calculatePhoneResistForRange(monthStart, monthEnd));
-            continue;
-        }
-
-        const date = new Date(start);
-        if (labels.length === 7) {
-            date.setDate(start.getDate() + i);
-        } else if (labels.length === 10) {
-            date.setDate(start.getDate() + i * 3);
-        }
-        const ds = formatLocalDate(date);
-        data.push(phoneResistData.records[ds] ? phoneResistData.records[ds].count : 0);
-    }
-    return data;
-}
-
-/**
- * 按任务标签汇总时长，供甜甜圈图展示。
- * @param {Date} start
- * @param {Date} end
- * @returns {number[]}
- */
-function prepareTagData(start, end) {
-    const tagCounts = { paper: 0, code: 0, experiment: 0, write: 0, other: 0 };
-    const current = new Date(start);
-    while (current <= end) {
-        const dayTasks = taskData[formatLocalDate(current)] || [];
-        dayTasks.forEach((task) => {
-            if (task.duration) tagCounts[task.tag || 'other'] += task.duration;
-        });
-        current.setDate(current.getDate() + 1);
-    }
-    return [tagCounts.paper, tagCounts.code, tagCounts.experiment, tagCounts.write, tagCounts.other].map((minutes) => Number((minutes / 60).toFixed(2)));
-}
-
-/**
- * 渲染打卡合规率折线图。
- * @param {string[]} labels
- * @param {(number|null)[]} data
- */
-function updateCheckinRateChart(labels, data) {
-    const canvas = document.getElementById('checkin-rate-chart');
-    if (!canvas) return;
-    if (window.checkinRateChart) window.checkinRateChart.destroy();
-    window.checkinRateChart = new Chart(canvas, {
-        type: 'line',
-        data: {
-            labels,
-            datasets: [{
-                label: '打卡合规率(%)',
-                data,
-                borderColor: '#6366f1',
-                backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
-    });
-}
-
-/**
- * 渲染不同班次的打卡数量对比图。
- * @param {{ m: { i: number, q: number }, a: { i: number, q: number }, e: { i: number, q: number } }} data
- */
-function updateCheckinPeriodChart(data) {
-    const canvas = document.getElementById('checkin-period-chart');
-    if (!canvas) return;
-    if (window.checkinPeriodChart) window.checkinPeriodChart.destroy();
-    window.checkinPeriodChart = new Chart(canvas, {
-        type: 'bar',
-        data: {
-            labels: ['上午', '下午', '晚上'],
-            datasets: [
-                { label: '总打卡次数', data: [data.m.i, data.a.i, data.e.i], backgroundColor: 'rgba(99, 102, 241, 0.8)' },
-                { label: '合格次数', data: [data.m.q, data.a.q, data.e.q], backgroundColor: 'rgba(16, 185, 129, 0.8)' }
-            ]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-    });
-}
-
-/**
- * 渲染任务时长柱状图。
- * @param {string[]} labels
- * @param {number[]} data
- */
-function updateTaskDurationChart(labels, data) {
-    const canvas = document.getElementById('task-duration-chart');
-    if (!canvas) return;
-    if (window.taskDurationChart) window.taskDurationChart.destroy();
-    window.taskDurationChart = new Chart(canvas, {
-        type: 'bar',
-        data: {
-            labels,
-            datasets: [{ label: '任务时长(小时)', data, backgroundColor: '#6366f1', borderRadius: 4 }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-    });
-}
-
-/**
- * 渲染抗干扰次数折线图。
- * @param {string[]} labels
- * @param {number[]} data
- */
-function updatePhoneResistChart(labels, data) {
-    const canvas = document.getElementById('phone-resist-chart');
-    if (!canvas) return;
-    if (window.phoneResistChart) window.phoneResistChart.destroy();
-    window.phoneResistChart = new Chart(canvas, {
-        type: 'line',
-        data: {
-            labels,
-            datasets: [{
-                label: '克制次数',
-                data,
-                borderColor: '#f59e0b',
-                backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.3
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-    });
-}
-
-/**
- * 渲染任务标签分布图。
- * 当没有数据时，使用占位分片保证图表结构稳定。
- * @param {number[]} data
- */
-function updateTagChart(data) {
-    const canvas = document.getElementById('task-tag-chart');
-    if (!canvas) return;
-    if (window.taskTagChart) window.taskTagChart.destroy();
-
-    const hasData = data.some((value) => value > 0);
-    window.taskTagChart = new Chart(canvas, {
-        type: 'doughnut',
-        data: {
-            labels: hasData ? ['文献阅读', '代码构建', '实验跑数', '文档撰写', '杂项'] : ['暂无数据'],
-            datasets: [{
-                data: hasData ? data : [1],
-                backgroundColor: hasData ? ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'] : ['#e2e8f0'],
-                borderWidth: 0,
-                hoverOffset: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'right', labels: { boxWidth: 12 } },
-                tooltip: { enabled: hasData }
-            },
-            cutout: '75%'
-        }
-    });
+    renderStatisticsCharts(period);
 }
 
 /**
  * 刷新统计面板顶部的总览数字。
  */
 function updateSummaryStatistics() {
-    document.getElementById('total-checkin-days').textContent = Object.values(checkinData).filter((day) => !day.leave && (day.morning.checkIn || day.afternoon.checkIn || day.evening.checkIn)).length;
+    const summary = buildSummaryStatisticsSnapshot();
 
-    const totalHours = calculateTotalTaskHours();
-    document.getElementById('total-task-hours').textContent = totalHours;
+    document.getElementById('total-checkin-days').textContent = summary.checkinDays;
+    document.getElementById('total-task-hours').textContent = summary.taskHours;
 
-    const sols = (totalHours * 1.5).toFixed(1);
     const eggElement = document.getElementById('space-survival-egg');
     if (eggElement) {
-        eggElement.innerHTML = `🛸 折合飞船 <b>${sols} Sols</b> 维生能源`;
+        eggElement.innerHTML = `🛸 折合飞船 <b>${summary.sols} Sols</b> 维生能源`;
     }
 
-    document.getElementById('total-phone-resist').textContent = phoneResistData.totalCount;
-    document.getElementById('achievement-count').textContent = achievements.length;
+    document.getElementById('total-phone-resist').textContent = summary.phoneResistCount;
+    document.getElementById('achievement-count').textContent = summary.achievementCount;
 }

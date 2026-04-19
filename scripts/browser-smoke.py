@@ -175,8 +175,57 @@ def test_navigation_shortcuts(driver: webdriver.Firefox) -> None:
     log("   navigation shortcuts ok")
 
 
+def test_statistics_panel(driver: webdriver.Firefox) -> None:
+    log("4. Checking statistics panel")
+    send_shortcut(driver, Keys.ALT, "7")
+    wait_visible(driver, "stats-section")
+    wait_text_contains(driver, "panel-meta-title", "维生统计分析")
+
+    wait_for(
+        driver,
+        lambda d: d.execute_script(
+            "return !!window.checkinRateChart && !!window.checkinPeriodChart && !!window.taskDurationChart && !!window.phoneResistChart && !!window.taskTagChart;"
+        ),
+        "Statistics charts did not initialize",
+    )
+
+    period_buttons = driver.find_elements(By.CSS_SELECTOR, ".stats-period-btn")
+    period_buttons[1].click()
+    wait_for(
+        driver,
+        lambda d: d.execute_script(
+            "return document.querySelector('.stats-period-btn.bg-white, .stats-period-btn.bg-slate-700')?.getAttribute('data-period')"
+        ) == "month",
+        "Month statistics period did not activate",
+    )
+    wait_for(
+        driver,
+        lambda d: d.execute_script(
+            "return Array.isArray(window.checkinRateChart?.data?.labels) && window.checkinRateChart.data.labels.length === 10"
+        ),
+        "Month statistics labels did not update",
+    )
+
+    period_buttons[2].click()
+    wait_for(
+        driver,
+        lambda d: d.execute_script(
+            "return document.querySelector('.stats-period-btn.bg-white, .stats-period-btn.bg-slate-700')?.getAttribute('data-period')"
+        ) == "year",
+        "Year statistics period did not activate",
+    )
+    wait_for(
+        driver,
+        lambda d: d.execute_script(
+            "return Array.isArray(window.checkinRateChart?.data?.labels) && window.checkinRateChart.data.labels.length === 12"
+        ),
+        "Year statistics labels did not update",
+    )
+    log("   statistics panel ok")
+
+
 def test_quick_capture_flow(driver: webdriver.Firefox) -> None:
-    log("4. Checking quick capture flow")
+    log("5. Checking quick capture flow")
     send_shortcut(driver, Keys.ALT, "3")
     wait_visible(driver, "tasks-section")
 
@@ -206,7 +255,7 @@ def test_quick_capture_flow(driver: webdriver.Firefox) -> None:
 
 
 def test_leave_workflows(driver: webdriver.Firefox) -> None:
-    log("5. Checking leave workflow split")
+    log("6. Checking leave workflow split")
     send_shortcut(driver, Keys.ALT, "5")
     wait_visible(driver, "leave-section")
     wait_text_contains(driver, "leave-form-title", "今日离舰")
@@ -229,7 +278,7 @@ def test_leave_workflows(driver: webdriver.Firefox) -> None:
 
 
 def test_retro_checkin_flow(driver: webdriver.Firefox) -> None:
-    log("6. Checking retro checkin workflow")
+    log("7. Checking retro checkin workflow")
     send_shortcut(driver, Keys.ALT, "1")
     wait_visible(driver, "checkin-section")
 
@@ -261,7 +310,7 @@ def test_retro_checkin_flow(driver: webdriver.Firefox) -> None:
 
 
 def test_tavern_flow(driver: webdriver.Firefox) -> None:
-    log("7. Checking tavern analysis flow")
+    log("8. Checking tavern analysis flow")
     send_shortcut(driver, Keys.ALT, "6")
     wait_visible(driver, "tavern-section")
     require(find(driver, "btn-start-analyze").get_attribute("disabled") is not None, "Analyze button should start disabled")
@@ -329,6 +378,7 @@ def main() -> int:
         test_bootstrap(driver)
         test_theme_toggle(driver)
         test_navigation_shortcuts(driver)
+        test_statistics_panel(driver)
         test_quick_capture_flow(driver)
         test_leave_workflows(driver)
         test_retro_checkin_flow(driver)

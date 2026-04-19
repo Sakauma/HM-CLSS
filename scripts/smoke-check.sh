@@ -16,6 +16,8 @@ js_files=(
   assets/js/tasks.js
   assets/js/notes.js
   assets/js/leave.js
+  assets/js/stats-data.js
+  assets/js/stats-charts.js
   assets/js/stats.js
   assets/js/status-ui.js
   assets/js/sync.js
@@ -37,6 +39,8 @@ required_scripts=(
   "assets/js/runtime-storage.js"
   "assets/js/shortcuts.js"
   "assets/js/app-init.js"
+  "assets/js/stats-data.js"
+  "assets/js/stats-charts.js"
   "assets/js/export.js"
 )
 
@@ -60,6 +64,9 @@ runtime_storage_line="$(rg -n 'assets/js/runtime-storage.js' index.html | cut -d
 core_line="$(rg -n 'assets/js/core.js' index.html | cut -d: -f1)"
 app_init_line="$(rg -n 'assets/js/app-init.js' index.html | cut -d: -f1)"
 tavern_line="$(rg -n 'assets/js/tavern.js' index.html | cut -d: -f1)"
+stats_data_line="$(rg -n 'assets/js/stats-data.js' index.html | cut -d: -f1)"
+stats_charts_line="$(rg -n 'assets/js/stats-charts.js' index.html | cut -d: -f1)"
+stats_line="$(rg -n 'assets/js/stats.js' index.html | cut -d: -f1)"
 sync_line="$(rg -n 'assets/js/sync.js' index.html | cut -d: -f1)"
 export_line="$(rg -n 'assets/js/export.js' index.html | cut -d: -f1)"
 
@@ -75,6 +82,16 @@ fi
 
 if (( app_init_line >= tavern_line )); then
   printf 'app-init.js must register before tavern.js\n' >&2
+  exit 1
+fi
+
+if (( stats_data_line >= stats_charts_line )); then
+  printf 'stats-data.js must load before stats-charts.js\n' >&2
+  exit 1
+fi
+
+if (( stats_charts_line >= stats_line )); then
+  printf 'stats-charts.js must load before stats.js\n' >&2
   exit 1
 fi
 
