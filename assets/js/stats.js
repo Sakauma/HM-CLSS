@@ -20,6 +20,21 @@ function initStatistics() {
 }
 
 /**
+ * 在统计面板可见时刷新当前图表，否则只刷新顶部摘要数字。
+ */
+function refreshStatisticsView() {
+    updateSummaryStatistics();
+
+    const statsSection = document.getElementById('stats-section');
+    if (!statsSection || statsSection.classList.contains('hidden')) return;
+
+    const activePeriodBtn = document.querySelector('.stats-period-btn.bg-white, .stats-period-btn.bg-slate-700');
+    if (activePeriodBtn) {
+        updateStatisticsCharts(activePeriodBtn.getAttribute('data-period'));
+    }
+}
+
+/**
  * 根据所选周期统一刷新所有统计图。
  * @param {'week'|'month'|'year'} period
  */
@@ -228,9 +243,21 @@ function prepareCheckinPeriodData(start, end) {
     while (current <= end) {
         const day = checkinData[formatLocalDate(current)];
         if (day && !day.leave) {
-            if (day.morning.checkIn) { result.m.i++; if (day.morning.status.checkIn) result.m.q++; }
-            if (day.afternoon.checkIn) { result.a.i++; if (day.afternoon.status.checkIn) result.a.q++; }
-            if (day.evening.checkIn) { result.e.i++; if (day.evening.status.checkIn) result.e.q++; }
+            if (day.morning.checkIn) {
+                result.m.i++;
+                const inStatus = getNormalizedCheckInStatus(day.morning.status.checkIn);
+                if (inStatus === 'success' || inStatus === 'warning' || inStatus === 'excused') result.m.q++;
+            }
+            if (day.afternoon.checkIn) {
+                result.a.i++;
+                const inStatus = getNormalizedCheckInStatus(day.afternoon.status.checkIn);
+                if (inStatus === 'success' || inStatus === 'warning' || inStatus === 'excused') result.a.q++;
+            }
+            if (day.evening.checkIn) {
+                result.e.i++;
+                const inStatus = getNormalizedCheckInStatus(day.evening.status.checkIn);
+                if (inStatus === 'success' || inStatus === 'warning' || inStatus === 'excused') result.e.q++;
+            }
         }
         current.setDate(current.getDate() + 1);
     }

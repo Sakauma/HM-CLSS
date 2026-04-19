@@ -16,8 +16,10 @@ let taskStartTime = null;
 let quickNotesData = {};
 let tavernData = [];
 let currentDrinkInfo = null;
+let ambientPreferences = null;
 
 const CURRENT_TASK_STORAGE_KEY = 'currentTask';
+const AMBIENT_PREFS_STORAGE_KEY = 'hmclss_ambient_preferences';
 
 // 任务标签和界面展示名称之间的映射表。
 const tagMap = {
@@ -37,6 +39,11 @@ const CONFIG = {
     },
     task: {
         minDurationMins: 30
+    },
+    retro: {
+        maxDaysPast: 30,
+        last7DayQuota: 2,
+        monthlyQuota: 6
     }
 };
 
@@ -118,6 +125,7 @@ function initData() {
     const savedNotes = localStorage.getItem('quickNotesData');
     const savedTavernData = localStorage.getItem('tavernData');
     const savedCurrentTask = localStorage.getItem(CURRENT_TASK_STORAGE_KEY);
+    const savedAmbientPrefs = localStorage.getItem(AMBIENT_PREFS_STORAGE_KEY);
 
     try {
         quickNotesData = savedNotes ? JSON.parse(savedNotes) : {};
@@ -127,6 +135,7 @@ function initData() {
         leaveData = savedLeaveData ? JSON.parse(savedLeaveData) : [];
         achievements = savedAchievements ? JSON.parse(savedAchievements) : [];
         tavernData = savedTavernData ? JSON.parse(savedTavernData) : [];
+        ambientPreferences = savedAmbientPrefs ? JSON.parse(savedAmbientPrefs) : null;
     } catch (error) {
         quickNotesData = {};
         checkinData = {};
@@ -135,6 +144,7 @@ function initData() {
         leaveData = [];
         achievements = [];
         tavernData = [];
+        ambientPreferences = null;
     }
 
     try {
@@ -155,21 +165,143 @@ function initData() {
     }
 
     if (!phoneResistData.records) phoneResistData.records = {};
+    if (!Array.isArray(leaveData)) leaveData = [];
+    leaveData = leaveData.map((leave) => normalizeLeaveRecord(leave));
+    Object.keys(checkinData).forEach((date) => {
+        checkinData[date] = ensureDayRecord(checkinData[date]);
+    });
+    ambientPreferences = normalizeAmbientPreferences(ambientPreferences);
 
     const today = getTodayString();
-    if (!checkinData[today]) {
-        checkinData[today] = {
-            morning: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
-            afternoon: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
-            evening: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
-            leave: false,
-            leaveReason: ''
-        };
-    }
+    if (!checkinData[today]) checkinData[today] = createEmptyDayRecord();
     if (!phoneResistData.records[today]) phoneResistData.records[today] = { count: 0, times: [] };
     if (!taskData[today]) taskData[today] = [];
 
     saveData(true);
+}
+
+/**
+ * 生成空的单班次记录，供今日初始化和旧数据补齐复用。
+ * @returns {{ checkIn: string|null, checkOut: string|null, status: { checkIn: string|null, checkOut: string|null }, entrySource: string|null, updatedAt: string|null, correctionReason: string }}
+ */
+function createEmptyPeriodRecord() {
+    return {
+        checkIn: null,
+        checkOut: null,
+        status: { checkIn: null, checkOut: null },
+        entrySource: null,
+        updatedAt: null,
+        correctionReason: ''
+    };
+}
+
+/**
+ * 生成空的日值班结构，保证所有模块读到的是同一套形状。
+ * @returns {{ morning: object, afternoon: object, evening: object, leave: boolean, leaveReason: string, leaveMeta: object|null, partialLeaves: object[] }}
+ */
+function createEmptyDayRecord() {
+    return {
+        morning: createEmptyPeriodRecord(),
+        afternoon: createEmptyPeriodRecord(),
+        evening: createEmptyPeriodRecord(),
+        leave: false,
+        leaveReason: '',
+        leaveMeta: null,
+        partialLeaves: []
+    };
+}
+
+/**
+ * 把旧版或不完整的班次记录补齐为当前统一结构。
+ * @param {object|null} periodData
+ * @returns {object}
+ */
+function normalizePeriodRecord(periodData) {
+    const fallback = createEmptyPeriodRecord();
+    const normalized = periodData && typeof periodData === 'object' ? periodData : {};
+    const status = normalized.status && typeof normalized.status === 'object'
+        ? normalized.status
+        : fallback.status;
+
+    const hasSavedRecord = normalized.checkIn || normalized.checkOut;
+    const entrySource = normalized.entrySource || (hasSavedRecord ? 'live' : null);
+
+    return {
+        checkIn: typeof normalized.checkIn === 'string' ? normalized.checkIn : null,
+        checkOut: typeof normalized.checkOut === 'string' ? normalized.checkOut : null,
+        status: {
+            checkIn: getNormalizedCheckInStatus(status.checkIn ?? null),
+            checkOut: status.checkOut ?? null
+        },
+        entrySource,
+        updatedAt: typeof normalized.updatedAt === 'string' ? normalized.updatedAt : null,
+        correctionReason: typeof normalized.correctionReason === 'string' ? normalized.correctionReason : ''
+    };
+}
+
+/**
+ * 把旧版或不完整的日记录补齐为当前统一结构。
+ * @param {object|null} dayData
+ * @returns {object}
+ */
+function ensureDayRecord(dayData) {
+    const normalized = dayData && typeof dayData === 'object' ? dayData : {};
+
+    return {
+        morning: normalizePeriodRecord(normalized.morning),
+        afternoon: normalizePeriodRecord(normalized.afternoon),
+        evening: normalizePeriodRecord(normalized.evening),
+        leave: Boolean(normalized.leave),
+        leaveReason: typeof normalized.leaveReason === 'string' ? normalized.leaveReason : '',
+        leaveMeta: normalized.leaveMeta && typeof normalized.leaveMeta === 'object'
+            ? {
+                requestMode: normalized.leaveMeta.requestMode || 'normal',
+                createdAt: typeof normalized.leaveMeta.createdAt === 'string' ? normalized.leaveMeta.createdAt : null,
+                correctionNote: typeof normalized.leaveMeta.correctionNote === 'string' ? normalized.leaveMeta.correctionNote : ''
+            }
+            : null,
+        partialLeaves: Array.isArray(normalized.partialLeaves)
+            ? normalized.partialLeaves.map((leave) => normalizeLeaveRecord(leave, true))
+            : []
+    };
+}
+
+/**
+ * 规范化离舰记录，兼容旧结构并补齐流程来源字段。
+ * @param {object|null} leave
+ * @param {boolean} forPartialOnly
+ * @returns {object}
+ */
+function normalizeLeaveRecord(leave, forPartialOnly = false) {
+    const normalized = leave && typeof leave === 'object' ? leave : {};
+    const nowIso = new Date().toISOString();
+
+    return {
+        id: typeof normalized.id === 'string' ? normalized.id : `leave_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        date: typeof normalized.date === 'string' ? normalized.date : getTodayString(),
+        reason: typeof normalized.reason === 'string' ? normalized.reason : '',
+        type: normalized.type === 'partial' ? 'partial' : 'full',
+        startTime: typeof normalized.startTime === 'string' ? normalized.startTime : null,
+        endTime: typeof normalized.endTime === 'string' ? normalized.endTime : null,
+        requestMode: normalized.requestMode || 'normal',
+        createdAt: typeof normalized.createdAt === 'string' ? normalized.createdAt : nowIso,
+        correctionNote: typeof normalized.correctionNote === 'string' ? normalized.correctionNote : '',
+        ...(forPartialOnly ? {} : {})
+    };
+}
+
+/**
+ * 规范化全局环境偏好，缺省时回退到轻量默认值。
+ * @param {object|null} preferences
+ * @returns {{ enabled: boolean, intensity: 'subtle', easterEggs: boolean }}
+ */
+function normalizeAmbientPreferences(preferences) {
+    const normalized = preferences && typeof preferences === 'object' ? preferences : {};
+    return {
+        enabled: normalized.enabled !== false,
+        intensity: 'subtle',
+        easterEggs: normalized.easterEggs !== false
+    };
 }
 
 /**
@@ -184,9 +316,16 @@ function saveData(preventAutoSync = false) {
     localStorage.setItem('achievements', JSON.stringify(achievements));
     localStorage.setItem('quickNotesData', JSON.stringify(quickNotesData));
     localStorage.setItem('tavernData', JSON.stringify(tavernData));
+    localStorage.setItem(AMBIENT_PREFS_STORAGE_KEY, JSON.stringify(normalizeAmbientPreferences(ambientPreferences)));
 
-    if (typeof updateSummaryStatistics === 'function') {
+    if (typeof refreshStatisticsView === 'function') {
+        refreshStatisticsView();
+    } else if (typeof updateSummaryStatistics === 'function') {
         updateSummaryStatistics();
+    }
+
+    if (typeof updateVoyageAmbientPresentation === 'function') {
+        updateVoyageAmbientPresentation();
     }
 
     if (!preventAutoSync && typeof triggerAutoSync === 'function') {
@@ -250,6 +389,9 @@ function updateDateTime() {
     const options = { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' };
     document.getElementById('current-date-time').textContent = now.toLocaleDateString('zh-CN', options);
     updateCheckinButtons();
+    if (typeof updateVoyageAmbientPresentation === 'function') {
+        updateVoyageAmbientPresentation();
+    }
 }
 
 /**
@@ -264,11 +406,48 @@ function formatLocalDate(date) {
 }
 
 /**
+ * 把 YYYY-MM-DD 解析成本地 Date 对象，避免直接 new Date 产生时区歧义。
+ * @param {string} dateStr
+ * @returns {Date}
+ */
+function parseLocalDate(dateStr) {
+    const [year, month, day] = String(dateStr).split('-').map(Number);
+    return new Date(year, (month || 1) - 1, day || 1);
+}
+
+/**
  * 获取今天的本地日期字符串。
  * @returns {string}
  */
 function getTodayString() {
     return formatLocalDate(new Date());
+}
+
+/**
+ * 计算两个日期键之间相差的自然日数。
+ * 正数表示 targetDate 在 compareDate 之前。
+ * @param {string} targetDate
+ * @param {string} compareDate
+ * @returns {number}
+ */
+function getDateDiffInDays(targetDate, compareDate = getTodayString()) {
+    const target = parseLocalDate(targetDate);
+    const compare = parseLocalDate(compareDate);
+    return Math.round((compare.getTime() - target.getTime()) / 86400000);
+}
+
+/**
+ * 将 YYYY-MM-DD 格式化为更易读的本地展示文案。
+ * @param {string} dateStr
+ * @returns {string}
+ */
+function formatDisplayDate(dateStr) {
+    return parseLocalDate(dateStr).toLocaleDateString('zh-CN', {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        weekday: 'short'
+    });
 }
 
 /**
@@ -286,6 +465,133 @@ function getCurrentTimeString() {
 function getCurrentTime() {
     const now = new Date();
     return { hour: now.getHours(), minute: now.getMinutes() };
+}
+
+/**
+ * 获取指定日期中是否已有任何班次记录。
+ * @param {object|null} dayData
+ * @returns {boolean}
+ */
+function hasAnyCheckinRecord(dayData) {
+    if (!dayData) return false;
+    return ['morning', 'afternoon', 'evening'].some((period) => dayData[period]?.checkIn || dayData[period]?.checkOut);
+}
+
+/**
+ * 汇总补打卡配额使用情况。
+ * @param {string} targetDate
+ * @returns {{ weekUsed: number, monthUsed: number, weekDates: Set<string>, monthDates: Set<string> }}
+ */
+function getRetroCheckinUsage(targetDate = getTodayString()) {
+    const weekDates = new Set();
+    const monthDates = new Set();
+    const targetMonth = String(targetDate).slice(0, 7);
+
+    Object.entries(checkinData).forEach(([date, day]) => {
+        const hasRetro = ['morning', 'afternoon', 'evening'].some((period) => day?.[period]?.entrySource === 'retro');
+        if (!hasRetro) return;
+
+        const diff = getDateDiffInDays(date);
+        if (diff >= 1 && diff <= 7) weekDates.add(date);
+        if (String(date).slice(0, 7) === targetMonth) monthDates.add(date);
+    });
+
+    return {
+        weekUsed: weekDates.size,
+        monthUsed: monthDates.size,
+        weekDates,
+        monthDates
+    };
+}
+
+/**
+ * 判断某个日期是否允许补打卡，并返回失败原因与当前配额占用。
+ * @param {string} targetDate
+ * @returns {{ allowed: boolean, reason: string, usage: { weekUsed: number, monthUsed: number, weekDates: Set<string>, monthDates: Set<string> } }}
+ */
+function getRetroCheckinAvailability(targetDate) {
+    const usage = getRetroCheckinUsage(targetDate || getTodayString());
+    const today = getTodayString();
+    const date = String(targetDate || '');
+
+    if (!date) {
+        return { allowed: false, reason: '先选择要补录的日期。', usage };
+    }
+
+    const diff = getDateDiffInDays(date, today);
+    if (diff <= 0) {
+        return { allowed: false, reason: '补打卡只允许处理过去日期，今天和未来日期不能走补录流程。', usage };
+    }
+
+    if (diff > CONFIG.retro.maxDaysPast) {
+        return { allowed: false, reason: `补打卡仅支持回补最近 ${CONFIG.retro.maxDaysPast} 天内的记录。`, usage };
+    }
+
+    const sameDayAlreadyCounted = usage.weekDates.has(date) || usage.monthDates.has(date);
+    if (diff <= 7 && !sameDayAlreadyCounted && usage.weekUsed >= CONFIG.retro.last7DayQuota) {
+        return { allowed: false, reason: `最近 7 天的补录额度已用满（${CONFIG.retro.last7DayQuota} / ${CONFIG.retro.last7DayQuota}）。`, usage };
+    }
+
+    if (!sameDayAlreadyCounted && usage.monthUsed >= CONFIG.retro.monthlyQuota) {
+        return { allowed: false, reason: `本月补录额度已用满（${CONFIG.retro.monthlyQuota} / ${CONFIG.retro.monthlyQuota}）。`, usage };
+    }
+
+    return { allowed: true, reason: '', usage };
+}
+
+/**
+ * 提取当前可用的情绪倾向信号，优先使用酒馆当前结果，其次回退到最近一杯历史。
+ * @returns {{ valence: number, intensity: number }}
+ */
+function getCurrentTavernSignal() {
+    if (currentDrinkInfo && typeof currentDrinkInfo.valence === 'number') {
+        return {
+            valence: currentDrinkInfo.valence,
+            intensity: typeof currentDrinkInfo.intensity === 'number' ? currentDrinkInfo.intensity : 0.25
+        };
+    }
+
+    const latestDrink = Array.isArray(tavernData) ? tavernData[0] : null;
+    return {
+        valence: typeof latestDrink?.valence === 'number' ? latestDrink.valence : 0,
+        intensity: typeof latestDrink?.intensity === 'number' ? latestDrink.intensity : 0
+    };
+}
+
+/**
+ * 基于当前时间、值班状态、任务推进和情绪倾向派生航行环境态。
+ * @returns {{ state: 'steady'|'alert'|'recovery'|'nightwatch', warnings: boolean, issues: boolean }}
+ */
+function getVoyageAmbientState() {
+    const now = new Date();
+    const hour = now.getHours();
+    const today = getTodayString();
+    const dayData = checkinData[today] ? ensureDayRecord(checkinData[today]) : createEmptyDayRecord();
+    const tavernSignal = getCurrentTavernSignal();
+    const todayTasks = taskData[today] || [];
+
+    let issues = false;
+    let warnings = false;
+    ['morning', 'afternoon', 'evening'].forEach((period) => {
+        const inStatus = getNormalizedCheckInStatus(dayData[period].status.checkIn);
+        const outStatus = dayData[period].status.checkOut;
+        if (inStatus === 'danger' || outStatus === 'danger' || outStatus === false) issues = true;
+        if (inStatus === 'warning' || outStatus === 'warning') warnings = true;
+    });
+
+    if (hour >= 22 || hour < 6) {
+        return { state: 'nightwatch', warnings, issues };
+    }
+
+    if (issues || warnings || (tavernSignal.valence < -0.2 && tavernSignal.intensity > 0.4)) {
+        return { state: 'alert', warnings, issues };
+    }
+
+    if (currentTask || todayTasks.length > 0 || dayData.leave || tavernSignal.valence > 0.18) {
+        return { state: 'recovery', warnings, issues };
+    }
+
+    return { state: 'steady', warnings, issues };
 }
 
 /**

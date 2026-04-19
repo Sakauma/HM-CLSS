@@ -675,6 +675,9 @@ function switchTavernState(targetId) {
  */
 function renderResult(record, fromHistory = false) {
     currentDrinkInfo = { ...record, saved: !!fromHistory || record.saved };
+    if (typeof updateVoyageAmbientPresentation === 'function') {
+        updateVoyageAmbientPresentation();
+    }
     applyPaletteToTavern(currentDrinkInfo);
 
     document.getElementById('res-title').textContent = currentDrinkInfo.name;
@@ -993,6 +996,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-remix')?.addEventListener('click', () => {
         const remixText = currentDrinkInfo?.text || inputEl.value;
         currentDrinkInfo = null;
+        if (typeof updateVoyageAmbientPresentation === 'function') {
+            updateVoyageAmbientPresentation();
+        }
         inputEl.value = remixText;
         countEl.textContent = String(remixText.length);
         analyzeBtn.disabled = remixText.trim().length === 0;
@@ -1043,6 +1049,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btn-history-create')?.addEventListener('click', () => {
         currentDrinkInfo = null;
+        if (typeof updateVoyageAmbientPresentation === 'function') {
+            updateVoyageAmbientPresentation();
+        }
         switchTavernState('state-input');
         updateInputPreview(inputEl.value);
     });

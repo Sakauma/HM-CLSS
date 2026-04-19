@@ -35,6 +35,70 @@ function getPeriodLabel(period) {
 }
 
 /**
+ * 将航行情绪层状态映射成对应的视觉与文案资源。
+ * @param {{ state: 'steady'|'alert'|'recovery'|'nightwatch', warnings: boolean, issues: boolean }} ambient
+ * @returns {{ pillText: string, chipLevel: 'success'|'warning'|'danger'|'info', copy: string }}
+ */
+function getVoyageAmbientPresentation(ambient) {
+    const map = {
+        steady: {
+            pillText: '稳态巡航',
+            chipLevel: 'success',
+            copy: '环境平稳，先做主动作。'
+        },
+        alert: {
+            pillText: '异常预警',
+            chipLevel: ambient.issues ? 'danger' : 'warning',
+            copy: ambient.issues
+                ? '关键状态偏离，先收口异常。'
+                : '检测到波动，先处理修正动作。'
+        },
+        recovery: {
+            pillText: '恢复推进',
+            chipLevel: 'info',
+            copy: currentTask
+                ? '恢复窗口已开，继续推当前任务。'
+                : '系统回稳中，适合推进一到两个确定动作。'
+        },
+        nightwatch: {
+            pillText: '夜航值守',
+            chipLevel: 'info',
+            copy: '夜航时段，优先收尾和值守。'
+        }
+    };
+
+    return map[ambient.state] || map.steady;
+}
+
+/**
+ * 根据当前派生状态刷新全站航行情绪层展示。
+ */
+function updateVoyageAmbientPresentation() {
+    const preferences = normalizeAmbientPreferences(ambientPreferences);
+    const root = document.documentElement;
+    const pillEl = document.getElementById('voyage-ambient-pill');
+    const copyEl = document.getElementById('voyage-ambient-copy');
+    const shellEl = document.getElementById('voyage-ambient-shell');
+
+    if (!preferences.enabled) {
+        delete root.dataset.ambient;
+        if (shellEl) shellEl.classList.add('hidden');
+        return;
+    }
+
+    const ambient = getVoyageAmbientState();
+    const presentation = getVoyageAmbientPresentation(ambient);
+    root.dataset.ambient = ambient.state;
+
+    if (shellEl) shellEl.classList.remove('hidden');
+    if (pillEl) {
+        pillEl.textContent = presentation.pillText;
+        pillEl.className = `${getStatusChipClass(presentation.chipLevel)} shrink-0`;
+    }
+    if (copyEl) copyEl.textContent = presentation.copy;
+}
+
+/**
  * 根据今天的值班、任务和离舰状态，生成首页概览卡需要的文案。
  * @param {object} dayData
  * @returns {object}
@@ -65,11 +129,16 @@ function getTodayOverview(dayData) {
     }
 
     if (dayData.leave) {
+        const leaveMode = dayData.leaveMeta?.requestMode;
+        const leaveStatus = leaveMode === 'planned' ? '今天按预请假执行' : '今天已离舰';
+        const leaveHint = leaveMode === 'planned'
+            ? '这一天的状态来自之前归档的预请假记录。'
+            : '系统会将相关班次按离舰逻辑处理。';
         return {
             chipLevel: 'warning',
             chipText: '离舰中',
-            overallStatus: '今天已离舰',
-            overallHint: '系统会将相关班次按离舰逻辑处理。',
+            overallStatus: leaveStatus,
+            overallHint: leaveHint,
             nextAction: '如已返舰，请先去审批模块修正记录。',
             nextActionHint: '先修正离舰状态，再回值班日志确认今天的班次结果。',
             commandTitle: '今天以离舰记录为准',
@@ -174,7 +243,7 @@ function getTodayOverview(dayData) {
  */
 function updateTodayStatus() {
     const today = getTodayString();
-    const dayData = checkinData[today];
+    const dayData = ensureCheckinDay(today);
 
     ['morning', 'afternoon', 'evening'].forEach((period) => {
         const el = document.getElementById(`today-${period}-status`);
@@ -278,6 +347,8 @@ function updateTodayStatus() {
 
         commandIndicatorEl.className = indicatorClassMap[overview.chipLevel] || indicatorClassMap.info;
     }
+
+    updateVoyageAmbientPresentation();
 }
 
 /**

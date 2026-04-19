@@ -55,9 +55,9 @@ function initNavigation() {
             sectionId: 'leave-section',
             badge: 'LEAVE CONTROL',
             title: '离舰活动审批',
-            desc: '登记表单与最近记录并排展开，首屏先完成离舰登记，再决定要不要回看历史。',
-            tip: '提交按钮固定在表单区，长历史列表改为局部滚动，不需要整页往下翻。',
-            primaryAction: { href: '#leave-date', icon: 'calendar-off', label: '登记离舰' },
+            desc: '今天、预请假和补请假已经拆成三条流程，默认入口只处理当天，历史修正不会再混进来。',
+            tip: '先选对流程，再提交记录。今天走今日离舰，未来走预请假，过去修正走补请假。',
+            primaryAction: { href: '#leave-form-shell', icon: 'calendar-off', label: '打开离舰流程' },
             secondaryAction: { href: '#leave-records-table', icon: 'list', label: '查看历史记录' }
         },
         {
