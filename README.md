@@ -59,6 +59,9 @@ node --check assets/js/workspace/data.js
 node --check assets/js/ui/navigation.js
 node --check assets/js/features/tavern/catalog.js
 node --check assets/js/features/tavern/logic.js
+node --check assets/js/features/tavern/stage.js
+node --check assets/js/features/tavern/result.js
+node --check assets/js/features/tavern/history.js
 node --check assets/js/features/tavern/ui.js
 node --check assets/js/features/tavern/index.js
 node --check assets/js/features/checkin/rules.js
@@ -173,8 +176,14 @@ bash scripts/browser-smoke.sh
   情绪词典、家族元数据与酒谱目录。
 - `assets/js/features/tavern/logic.js`
   情绪解析、配方选择、结果记录生成与旧酒单归一化。
+- `assets/js/features/tavern/stage.js`
+  酒馆舞台、液面波动、状态切换与输入态预览。
+- `assets/js/features/tavern/result.js`
+  结果卡渲染、分享文案与当前特调展示。
+- `assets/js/features/tavern/history.js`
+  酒柜列表渲染、历史查看与删除交互。
 - `assets/js/features/tavern/ui.js`
-  酒馆舞台动画、结果卡、历史酒柜与事件绑定。
+  酒馆事件绑定层，负责把舞台、结果卡和历史酒柜组装成完整交互。
 - `assets/js/features/tavern/index.js`
   深空酒馆入口，负责在 DOM 就绪后挂载酒馆交互。
 - `assets/js/features/checkin/rules.js`
@@ -378,31 +387,34 @@ const CONFIG = {
 9. `ui/navigation.js`
 10. `features/tavern/catalog.js`
 11. `features/tavern/logic.js`
-12. `features/tavern/ui.js`
-13. `features/tavern/index.js`
-14. `features/checkin/rules.js`
-15. `features/checkin/ui.js`
-16. `features/checkin/index.js`
-17. `features/focus/achievements.js`
-18. `workspace/entries.js`
-19. `features/tasks/index.js`
-20. `features/notes/index.js`
-21. `features/leave/rules.js`
-22. `features/leave/ui.js`
-23. `features/leave/index.js`
-24. `features/stats/data.js`
-25. `features/stats/charts.js`
-26. `features/stats/index.js`
-27. `features/dashboard/copy.js`
-28. `features/dashboard/ui.js`
-29. `features/sync/state.js`
-30. `features/sync/api.js`
-31. `features/sync/index.js`
-32. `features/export/data.js`
-33. `features/export/formats.js`
-34. `features/export/ui.js`
-35. `features/export/index.js`
-36. `ui/shortcuts.js`
+12. `features/tavern/stage.js`
+13. `features/tavern/result.js`
+14. `features/tavern/history.js`
+15. `features/tavern/ui.js`
+16. `features/tavern/index.js`
+17. `features/checkin/rules.js`
+18. `features/checkin/ui.js`
+19. `features/checkin/index.js`
+20. `features/focus/achievements.js`
+21. `workspace/entries.js`
+22. `features/tasks/index.js`
+23. `features/notes/index.js`
+24. `features/leave/rules.js`
+25. `features/leave/ui.js`
+26. `features/leave/index.js`
+27. `features/stats/data.js`
+28. `features/stats/charts.js`
+29. `features/stats/index.js`
+30. `features/dashboard/copy.js`
+31. `features/dashboard/ui.js`
+32. `features/sync/state.js`
+33. `features/sync/api.js`
+34. `features/sync/index.js`
+35. `features/export/data.js`
+36. `features/export/formats.js`
+37. `features/export/ui.js`
+38. `features/export/index.js`
+39. `ui/shortcuts.js`
 
 现在目录按 `runtime / workspace / ui / features` 分层：`runtime` 负责启动、共享运行时和可变状态容器，`workspace` 负责跨模块共享的数据与口径，`ui` 负责导航和快捷键这类外层交互，`features` 按值班、酒馆、离舰、统计、同步、导出等功能继续拆分。顺序错乱会导致飞船在启动时失压。
 

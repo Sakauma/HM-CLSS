@@ -15,6 +15,9 @@ js_files=(
   assets/js/ui/navigation.js
   assets/js/features/tavern/catalog.js
   assets/js/features/tavern/logic.js
+  assets/js/features/tavern/stage.js
+  assets/js/features/tavern/result.js
+  assets/js/features/tavern/history.js
   assets/js/features/tavern/ui.js
   assets/js/features/tavern/index.js
   assets/js/features/checkin/rules.js
@@ -59,6 +62,9 @@ required_scripts=(
   "assets/js/workspace/data.js"
   "assets/js/features/tavern/catalog.js"
   "assets/js/features/tavern/logic.js"
+  "assets/js/features/tavern/stage.js"
+  "assets/js/features/tavern/result.js"
+  "assets/js/features/tavern/history.js"
   "assets/js/features/tavern/ui.js"
   "assets/js/features/checkin/rules.js"
   "assets/js/features/checkin/ui.js"
@@ -103,6 +109,9 @@ workspace_data_line="$(rg -n 'assets/js/workspace/data.js' index.html | cut -d: 
 app_init_line="$(rg -n 'assets/js/runtime/app-init.js' index.html | cut -d: -f1)"
 tavern_catalog_line="$(rg -n 'assets/js/features/tavern/catalog.js' index.html | cut -d: -f1)"
 tavern_logic_line="$(rg -n 'assets/js/features/tavern/logic.js' index.html | cut -d: -f1)"
+tavern_stage_line="$(rg -n 'assets/js/features/tavern/stage.js' index.html | cut -d: -f1)"
+tavern_result_line="$(rg -n 'assets/js/features/tavern/result.js' index.html | cut -d: -f1)"
+tavern_history_line="$(rg -n 'assets/js/features/tavern/history.js' index.html | cut -d: -f1)"
 tavern_ui_line="$(rg -n 'assets/js/features/tavern/ui.js' index.html | cut -d: -f1)"
 tavern_line="$(rg -n 'assets/js/features/tavern/index.js' index.html | cut -d: -f1)"
 checkin_rules_line="$(rg -n 'assets/js/features/checkin/rules.js' index.html | cut -d: -f1)"
@@ -162,8 +171,23 @@ if (( tavern_catalog_line >= tavern_logic_line )); then
   exit 1
 fi
 
-if (( tavern_logic_line >= tavern_ui_line )); then
-  printf 'tavern-logic.js must load before tavern-ui.js\n' >&2
+if (( tavern_logic_line >= tavern_stage_line )); then
+  printf 'tavern-logic.js must load before tavern-stage.js\n' >&2
+  exit 1
+fi
+
+if (( tavern_stage_line >= tavern_result_line )); then
+  printf 'tavern-stage.js must load before tavern-result.js\n' >&2
+  exit 1
+fi
+
+if (( tavern_result_line >= tavern_history_line )); then
+  printf 'tavern-result.js must load before tavern-history.js\n' >&2
+  exit 1
+fi
+
+if (( tavern_history_line >= tavern_ui_line )); then
+  printf 'tavern-history.js must load before tavern-ui.js\n' >&2
   exit 1
 fi
 
