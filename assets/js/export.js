@@ -66,10 +66,6 @@ function formatMonthLabel(monthKey) {
     return `${year}年${month}月`;
 }
 
-function cloneExportData(value) {
-    return JSON.parse(JSON.stringify(value));
-}
-
 function getDownloadTimestamp() {
     const now = new Date();
     return [
@@ -117,31 +113,14 @@ function buildWorkspaceExportSnapshot() {
             exportedAt: new Date().toISOString(),
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'local'
         },
-        state: {
-            currentTask: currentTask ? cloneExportData(currentTask) : null,
-            ambientPreferences: cloneExportData(normalizeAmbientPreferences(ambientPreferences)),
-            lastSyncTime: localLastSyncTime || null
-        },
-        datasets: {
-            checkinData: cloneExportData(checkinData),
-            phoneResistData: cloneExportData(phoneResistData),
-            taskData: cloneExportData(taskData),
-            leaveData: cloneExportData(leaveData),
-            achievements: cloneExportData(achievements),
-            quickNotesData: cloneExportData(quickNotesData),
-            tavernData: cloneExportData(tavernData)
-        }
+        state: buildWorkspaceStateSnapshot(),
+        datasets: buildWorkspaceDatasetSnapshot()
     };
 }
 
 function buildWorkspaceExportOverview() {
-    const checkinDays = Object.values(checkinData).filter((day) => {
-        if (!day || typeof day !== 'object' || day.leave) return false;
-        const normalizedDay = ensureDayRecord(day);
-        return ['morning', 'afternoon', 'evening'].some((period) => normalizedDay[period].checkIn || normalizedDay[period].checkOut);
-    }).length;
-
-    const noteCount = Object.values(quickNotesData).reduce((sum, notes) => sum + ((Array.isArray(notes) && notes.length) ? notes.length : 0), 0);
+    const checkinDays = countCheckinDays();
+    const noteCount = countQuickNoteEntries();
     const monthKey = getCurrentMonthKey();
 
     return {
@@ -167,11 +146,11 @@ function buildMonthlyExportSnapshot(monthKey) {
     const leaveEntries = leaveData
         .filter((leave) => String(leave.date || '').startsWith(monthKey))
         .sort((a, b) => new Date(`${b.date}T${b.startTime || '00:00'}`) - new Date(`${a.date}T${a.startTime || '00:00'}`))
-        .map((leave) => cloneExportData(leave));
+        .map((leave) => cloneWorkspaceValue(leave));
     const drinkEntries = tavernData
         .map((drink) => normalizeDrinkRecord(drink))
         .filter((drink) => String(drink.date || '').startsWith(monthKey))
-        .map((drink) => cloneExportData(drink));
+        .map((drink) => cloneWorkspaceValue(drink));
 
     const taskTagMinutes = { paper: 0, code: 0, experiment: 0, write: 0, other: 0 };
     const tavernFamilyCounts = {};
@@ -272,7 +251,7 @@ function buildMonthlyExportSnapshot(monthKey) {
                 date: dateKey,
                 displayDate: formatDisplayDate(dateKey),
                 count,
-                times: cloneExportData(resistRecord.times || [])
+                times: cloneWorkspaceValue(resistRecord.times || [])
             });
         }
     }

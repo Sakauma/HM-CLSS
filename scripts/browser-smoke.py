@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
 import sys
 import time
@@ -224,8 +225,84 @@ def test_statistics_panel(driver: webdriver.Firefox) -> None:
     log("   statistics panel ok")
 
 
+def test_settings_and_exports(driver: webdriver.Firefox) -> None:
+    log("5. Checking sync settings and exports")
+    send_shortcut(driver, Keys.ALT, "8")
+    wait_visible(driver, "settings-section")
+    wait_text_contains(driver, "panel-meta-title", "深空通讯设置")
+
+    token = "ghp_browser_smoke_token"
+    gist_id = "browser-smoke-gist-id"
+    set_field_value(driver, "github-token-input", token)
+    set_field_value(driver, "gist-id-input", gist_id)
+    click(driver, "save-config-btn")
+    wait_for(
+        driver,
+        lambda d: d.execute_script("return localStorage.getItem('githubToken');") == token,
+        "githubToken was not saved to localStorage",
+    )
+    wait_for(
+        driver,
+        lambda d: d.execute_script("return localStorage.getItem('gistId');") == gist_id,
+        "gistId was not saved to localStorage",
+    )
+
+    driver.execute_script("document.getElementById('export-trigger-btn').scrollIntoView({ block: 'center' });")
+    set_field_value(driver, "export-month-input", date.today().strftime("%Y-%m"))
+    driver.execute_script(
+        """
+        window.__downloads = [];
+        window.triggerFileDownload = (filename, content, mimeType) => {
+          window.__downloads.push({ filename, content, mimeType });
+        };
+        """
+    )
+
+    export_cases = [
+        ("month_json", ".json"),
+        ("month_markdown", ".md"),
+        ("month_csv", ".csv"),
+        ("workspace_json", ".json"),
+    ]
+
+    for index, (profile_id, extension) in enumerate(export_cases, start=1):
+        set_field_value(driver, "export-profile-select", profile_id)
+        click(driver, "export-trigger-btn")
+        wait_for(
+            driver,
+            lambda d, expected=index: len(d.execute_script("return window.__downloads || [];")) == expected,
+            f"{profile_id} export did not trigger",
+        )
+        disabled = find(driver, "export-month-input").get_attribute("disabled") is not None
+        if profile_id == "workspace_json":
+            require(disabled, "Month input should be disabled for workspace_json")
+        else:
+            require(not disabled, f"Month input should stay enabled for {profile_id}")
+
+        download = driver.execute_script("return window.__downloads[arguments[0]];", index - 1)
+        require(download["filename"].endswith(extension), f"{profile_id} filename mismatch")
+
+        if profile_id == "month_json":
+            payload = json.loads(download["content"])
+            require(payload["meta"]["scope"] == "month", "month_json payload scope mismatch")
+        elif profile_id == "workspace_json":
+            payload = json.loads(download["content"])
+            require(payload["meta"]["scope"] == "workspace", "workspace_json payload scope mismatch")
+            require("githubToken" not in download["content"], "workspace export leaked githubToken")
+            require("gistId" not in download["content"], "workspace export leaked gistId")
+        elif profile_id == "month_markdown":
+            require(download["content"].startswith("# HM-CLSS 月度复盘｜"), "month_markdown payload mismatch")
+        elif profile_id == "month_csv":
+            header = download["content"].splitlines()[0]
+            require(
+                header == "category,date,display_date,time_start,time_end,label,status,metric,source,notes",
+                "month_csv header mismatch",
+            )
+    log("   sync settings and exports ok")
+
+
 def test_quick_capture_flow(driver: webdriver.Firefox) -> None:
-    log("5. Checking quick capture flow")
+    log("6. Checking quick capture flow")
     send_shortcut(driver, Keys.ALT, "3")
     wait_visible(driver, "tasks-section")
 
@@ -255,7 +332,7 @@ def test_quick_capture_flow(driver: webdriver.Firefox) -> None:
 
 
 def test_leave_workflows(driver: webdriver.Firefox) -> None:
-    log("6. Checking leave workflow split")
+    log("7. Checking leave workflow split")
     send_shortcut(driver, Keys.ALT, "5")
     wait_visible(driver, "leave-section")
     wait_text_contains(driver, "leave-form-title", "今日离舰")
@@ -278,7 +355,7 @@ def test_leave_workflows(driver: webdriver.Firefox) -> None:
 
 
 def test_retro_checkin_flow(driver: webdriver.Firefox) -> None:
-    log("7. Checking retro checkin workflow")
+    log("8. Checking retro checkin workflow")
     send_shortcut(driver, Keys.ALT, "1")
     wait_visible(driver, "checkin-section")
 
@@ -310,7 +387,7 @@ def test_retro_checkin_flow(driver: webdriver.Firefox) -> None:
 
 
 def test_tavern_flow(driver: webdriver.Firefox) -> None:
-    log("8. Checking tavern analysis flow")
+    log("9. Checking tavern analysis flow")
     send_shortcut(driver, Keys.ALT, "6")
     wait_visible(driver, "tavern-section")
     require(find(driver, "btn-start-analyze").get_attribute("disabled") is not None, "Analyze button should start disabled")
@@ -379,6 +456,7 @@ def main() -> int:
         test_theme_toggle(driver)
         test_navigation_shortcuts(driver)
         test_statistics_panel(driver)
+        test_settings_and_exports(driver)
         test_quick_capture_flow(driver)
         test_leave_workflows(driver)
         test_retro_checkin_flow(driver)

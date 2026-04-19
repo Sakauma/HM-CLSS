@@ -296,13 +296,6 @@ function prepareTagData(start, end) {
         .map((minutes) => Number((minutes / 60).toFixed(2)));
 }
 
-function countTotalCheckinDays() {
-    return Object.values(checkinData).filter((day) => {
-        if (!day || day.leave) return false;
-        return day.morning.checkIn || day.afternoon.checkIn || day.evening.checkIn;
-    }).length;
-}
-
 /**
  * 生成顶部摘要所需的聚合快照。
  * @returns {{ checkinDays: number, taskHours: number, sols: string, phoneResistCount: number, achievementCount: number }}
@@ -310,7 +303,7 @@ function countTotalCheckinDays() {
 function buildSummaryStatisticsSnapshot() {
     const totalHours = calculateTotalTaskHours();
     return {
-        checkinDays: countTotalCheckinDays(),
+        checkinDays: countCheckinDays(),
         taskHours: totalHours,
         sols: (totalHours * 1.5).toFixed(1),
         phoneResistCount: phoneResistData.totalCount,

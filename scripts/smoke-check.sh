@@ -9,7 +9,12 @@ js_files=(
   assets/js/runtime-state.js
   assets/js/runtime-storage.js
   assets/js/core.js
+  assets/js/workspace-metrics.js
+  assets/js/workspace-data.js
   assets/js/navigation.js
+  assets/js/tavern-catalog.js
+  assets/js/tavern-logic.js
+  assets/js/tavern-ui.js
   assets/js/tavern.js
   assets/js/checkin.js
   assets/js/phone-achievements.js
@@ -20,6 +25,8 @@ js_files=(
   assets/js/stats-charts.js
   assets/js/stats.js
   assets/js/status-ui.js
+  assets/js/sync-state.js
+  assets/js/sync-api.js
   assets/js/sync.js
   assets/js/export.js
   assets/js/shortcuts.js
@@ -37,6 +44,13 @@ bash -n scripts/setup-browser-test.sh
 required_scripts=(
   "assets/js/runtime-state.js"
   "assets/js/runtime-storage.js"
+  "assets/js/workspace-metrics.js"
+  "assets/js/workspace-data.js"
+  "assets/js/tavern-catalog.js"
+  "assets/js/tavern-logic.js"
+  "assets/js/tavern-ui.js"
+  "assets/js/sync-state.js"
+  "assets/js/sync-api.js"
   "assets/js/shortcuts.js"
   "assets/js/app-init.js"
   "assets/js/stats-data.js"
@@ -62,11 +76,18 @@ done
 runtime_state_line="$(rg -n 'assets/js/runtime-state.js' index.html | cut -d: -f1)"
 runtime_storage_line="$(rg -n 'assets/js/runtime-storage.js' index.html | cut -d: -f1)"
 core_line="$(rg -n 'assets/js/core.js' index.html | cut -d: -f1)"
+metrics_line="$(rg -n 'assets/js/workspace-metrics.js' index.html | cut -d: -f1)"
+workspace_data_line="$(rg -n 'assets/js/workspace-data.js' index.html | cut -d: -f1)"
 app_init_line="$(rg -n 'assets/js/app-init.js' index.html | cut -d: -f1)"
+tavern_catalog_line="$(rg -n 'assets/js/tavern-catalog.js' index.html | cut -d: -f1)"
+tavern_logic_line="$(rg -n 'assets/js/tavern-logic.js' index.html | cut -d: -f1)"
+tavern_ui_line="$(rg -n 'assets/js/tavern-ui.js' index.html | cut -d: -f1)"
 tavern_line="$(rg -n 'assets/js/tavern.js' index.html | cut -d: -f1)"
 stats_data_line="$(rg -n 'assets/js/stats-data.js' index.html | cut -d: -f1)"
 stats_charts_line="$(rg -n 'assets/js/stats-charts.js' index.html | cut -d: -f1)"
 stats_line="$(rg -n 'assets/js/stats.js' index.html | cut -d: -f1)"
+sync_state_line="$(rg -n 'assets/js/sync-state.js' index.html | cut -d: -f1)"
+sync_api_line="$(rg -n 'assets/js/sync-api.js' index.html | cut -d: -f1)"
 sync_line="$(rg -n 'assets/js/sync.js' index.html | cut -d: -f1)"
 export_line="$(rg -n 'assets/js/export.js' index.html | cut -d: -f1)"
 
@@ -80,8 +101,33 @@ if (( runtime_storage_line >= core_line )); then
   exit 1
 fi
 
+if (( core_line >= metrics_line )); then
+  printf 'core.js must load before workspace-metrics.js\n' >&2
+  exit 1
+fi
+
+if (( metrics_line >= workspace_data_line )); then
+  printf 'workspace-metrics.js must load before workspace-data.js\n' >&2
+  exit 1
+fi
+
 if (( app_init_line >= tavern_line )); then
   printf 'app-init.js must register before tavern.js\n' >&2
+  exit 1
+fi
+
+if (( tavern_catalog_line >= tavern_logic_line )); then
+  printf 'tavern-catalog.js must load before tavern-logic.js\n' >&2
+  exit 1
+fi
+
+if (( tavern_logic_line >= tavern_ui_line )); then
+  printf 'tavern-logic.js must load before tavern-ui.js\n' >&2
+  exit 1
+fi
+
+if (( tavern_ui_line >= tavern_line )); then
+  printf 'tavern-ui.js must load before tavern.js\n' >&2
   exit 1
 fi
 
@@ -92,6 +138,16 @@ fi
 
 if (( stats_charts_line >= stats_line )); then
   printf 'stats-charts.js must load before stats.js\n' >&2
+  exit 1
+fi
+
+if (( sync_state_line >= sync_api_line )); then
+  printf 'sync-state.js must load before sync-api.js\n' >&2
+  exit 1
+fi
+
+if (( sync_api_line >= sync_line )); then
+  printf 'sync-api.js must load before sync.js\n' >&2
   exit 1
 fi
 

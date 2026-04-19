@@ -99,15 +99,15 @@ function checkAchievements() {
         if (achievement.type === 'phone' || !achievement.type) {
             achieved = phoneResistData.totalCount >= achievement.requirement;
         } else if (achievement.type === 'checkin') {
-            achieved = Object.values(checkinData).filter((day) => day.morning.checkIn || day.afternoon.checkIn || day.evening.checkIn).length >= achievement.requirement;
+            achieved = countCheckinDays() >= achievement.requirement;
         } else if (achievement.type === 'streak') {
             achieved = calculateCheckinStreak() >= achievement.requirement;
         } else if (achievement.type === 'task') {
-            achieved = Object.values(taskData).reduce((total, day) => total + day.length, 0) >= achievement.requirement;
+            achieved = countTotalTaskEntries() >= achievement.requirement;
         } else if (achievement.type === 'task_hour') {
             achieved = calculateTotalTaskHours() >= achievement.requirement;
         } else if (achievement.type === 'notes') {
-            achieved = Object.values(quickNotesData).reduce((sum, notes) => sum + notes.length, 0) >= achievement.requirement;
+            achieved = countQuickNoteEntries() >= achievement.requirement;
         }
 
         if (achieved) {
@@ -122,63 +122,4 @@ function checkAchievements() {
         updateAchievementsList();
         updateTodayStatus();
     }
-}
-
-/**
- * 计算当前连续打卡天数。
- * 规则以“昨天开始向前连续”回溯，避免把未来或缺失日期算入 streak。
- * @returns {number}
- */
-function calculateCheckinStreak() {
-    const todayStr = getTodayString();
-    const dates = Object.keys(checkinData)
-        .filter((date) => date <= todayStr)
-        .sort()
-        .reverse();
-
-    if (!dates.length) return 0;
-
-    let streak = 0;
-    const expectedDate = new Date();
-    const todayData = checkinData[todayStr];
-    const checkedInToday = todayData && (todayData.morning.checkIn || todayData.afternoon.checkIn || todayData.evening.checkIn);
-
-    if (checkedInToday) {
-        streak = 1;
-        expectedDate.setDate(expectedDate.getDate() - 1);
-    } else {
-        expectedDate.setDate(expectedDate.getDate() - 1);
-    }
-
-    for (let i = 0; i < dates.length; i++) {
-        const dateStr = dates[i];
-        if (dateStr >= todayStr) continue;
-
-        const expectedStr = formatLocalDate(expectedDate);
-        if (dateStr === expectedStr) {
-            const day = checkinData[dateStr];
-            if (day.morning.checkIn || day.afternoon.checkIn || day.evening.checkIn) {
-                streak++;
-                expectedDate.setDate(expectedDate.getDate() - 1);
-            } else {
-                break;
-            }
-        } else {
-            break;
-        }
-    }
-
-    return streak;
-}
-
-/**
- * 汇总所有已完成任务的累计小时数。
- * @returns {number}
- */
-function calculateTotalTaskHours() {
-    let mins = 0;
-    Object.values(taskData).forEach((day) => day.forEach((task) => {
-        if (task.duration) mins += task.duration;
-    }));
-    return Math.floor(mins / 60);
 }
