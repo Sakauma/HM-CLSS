@@ -1,0 +1,8 @@
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.11
+  - selenium=4.43
+  - firefox=149
+  - geckodriver=0.36

@@ -50,6 +50,8 @@ http://localhost:8000
 
 ```bash
 node --check assets/js/theme.js
+node --check assets/js/runtime-state.js
+node --check assets/js/runtime-storage.js
 node --check assets/js/core.js
 node --check assets/js/navigation.js
 node --check assets/js/tavern.js
@@ -61,7 +63,44 @@ node --check assets/js/leave.js
 node --check assets/js/stats.js
 node --check assets/js/status-ui.js
 node --check assets/js/sync.js
+node --check assets/js/shortcuts.js
+node --check assets/js/app-init.js
+python3 -m py_compile scripts/browser-smoke.py
+bash -n scripts/browser-smoke.sh
 ```
+
+### 快速回归脚本
+
+```bash
+bash scripts/smoke-check.sh
+```
+
+### 真实浏览器冒烟
+
+首次使用前，先创建项目内的 `conda` 浏览器测试环境：
+
+```bash
+bash scripts/setup-browser-test.sh
+```
+
+默认会把环境建到 `./.conda/browser-test`，并从 [environment.browser-test.yml](./environment.browser-test.yml) 安装浏览器测试依赖。
+
+环境就绪后，再执行：
+
+```bash
+bash scripts/browser-smoke.sh
+```
+
+可选环境变量：
+
+- `HM_CLSS_BROWSER_ENV`
+  覆盖默认的 `conda` 环境路径。
+- `HM_CLSS_BROWSER_ENV_FILE`
+  覆盖默认的浏览器测试环境文件路径。
+- `HM_CLSS_CONDA_SOLVER`
+  覆盖默认求解器；脚本默认使用 `classic` 以兼容缺少 `libmamba` 的 `conda` 安装。
+- `HM_CLSS_SMOKE_URL`
+  指向自定义预览地址；未提供时默认使用 `http://127.0.0.1:8000`。
 
 
 ## 🗂️ 舰体结构
@@ -72,8 +111,12 @@ node --check assets/js/sync.js
   飞船主舱。负责页面骨架、Tailwind 配置、自定义样式，以及脚本加载顺序。
 - `assets/js/theme.js`
   主题切换与深浅色图标同步。
+- `assets/js/runtime-state.js`
+  全局共享状态、配置常量、标签映射与情绪/成就静态清单。
+- `assets/js/runtime-storage.js`
+  本地存储初始化、结构归一化、持久化与当前任务恢复。
 - `assets/js/core.js`
-  全局状态、基础配置、存储初始化、通用工具函数、启动引导。
+  时间工具、环境态派生、任务首屏状态与通用转义函数。
 - `assets/js/navigation.js`
   左侧导航与舱段切换。
 - `assets/js/tavern.js`
@@ -94,6 +137,22 @@ node --check assets/js/sync.js
   今日状态面板与通用 Toast 提示。
 - `assets/js/sync.js`
   GitHub Gist 配置、手动推送/拉取、自动同步与云端数据合并。
+- `assets/js/shortcuts.js`
+  全局快捷键层，负责舱段切换、循环浏览与快捷值班。
+- `assets/js/app-init.js`
+  DOM 就绪后的统一启动编排。
+- `scripts/smoke-check.sh`
+  常见回归场景的本地冒烟脚本。
+- `scripts/setup-browser-test.sh`
+  根据环境文件创建或更新浏览器测试所需的 `conda` 环境。
+- `scripts/browser-smoke.sh`
+  真实 Firefox + Selenium 的浏览器冒烟入口。
+- `scripts/browser-smoke.py`
+  浏览器级功能检查的具体执行脚本。
+- `environment.browser-test.yml`
+  浏览器测试环境的可复现依赖定义。
+- `docs/functional-self-check.md`
+  面向发版前人工验收的功能级自测清单。
 
 
 ## 📡 深空通讯链路（云端同步）配置指南
@@ -203,20 +262,20 @@ const CONFIG = {
 
 ### 4. 自定义“系统主题色”
 
-在 `index.html` 顶部的 `tailwind.config` 中找到 `colors`：
+当前主题色通过 `index.html` 顶部的 `:root` 颜色令牌驱动，`tailwind.config` 只是消费这些变量。
 
-```javascript
-colors: {
-    primary: '#4da3ff',
-    primaryHover: '#2d86e3',
-    accent: '#f3b35b',
-    success: '#34d399',
-    warning: '#f6c56d',
-    danger: '#fb7185'
+```css
+:root {
+    --color-primary: 77 163 255;
+    --color-primary-hover: 45 134 227;
+    --color-accent: 243 179 91;
+    --color-success: 52 211 153;
+    --color-warning: 246 197 109;
+    --color-danger: 251 113 133;
 }
 ```
 
-直接替换为你想要的 HEX 色值即可。
+直接替换这些 RGB 数值即可；如果你同时改了背景或卡面气氛色，也记得同步调整同一区域里的 `--color-bg-*` 与 `--color-card-*`。
 
 ### 5. 自定义“脚本加载顺序”
 
@@ -225,24 +284,37 @@ colors: {
 当前顺序遵循依赖关系：
 
 1. `theme.js`
-2. `core.js`
-3. `navigation.js`
-4. `tavern.js`
-5. `checkin.js`
-6. `phone-achievements.js`
-7. `tasks.js`
-8. `notes.js`
-9. `leave.js`
-10. `stats.js`
-11. `status-ui.js`
-12. `sync.js`
+2. `runtime-state.js`
+3. `runtime-storage.js`
+4. `core.js`
+5. `app-init.js`
+6. `navigation.js`
+7. `tavern.js`
+8. `checkin.js`
+9. `phone-achievements.js`
+10. `tasks.js`
+11. `notes.js`
+12. `leave.js`
+13. `stats.js`
+14. `status-ui.js`
+15. `sync.js`
+16. `shortcuts.js`
 
-前面的文件负责提供状态与函数，后面的文件负责调用它们。顺序错乱会导致飞船在启动时失压。
+其中 `runtime-state.js`、`runtime-storage.js` 与 `core.js` 负责提供共享运行时；`app-init.js` 提前注册启动编排，确保它比其他 `DOMContentLoaded` 监听更早挂上；后面的业务脚本再补齐具体功能。顺序错乱会导致飞船在启动时失压。
 
 
 ## 🧪 手动巡检建议
 
-当前仓库没有正式的自动化测试套件，因此每次改动后建议至少人工巡检以下舱段：
+当前仓库已经有两层基础回归：
+
+- `bash scripts/smoke-check.sh`
+  做脚本语法、关键 DOM id 和脚本顺序巡检。
+- `bash scripts/setup-browser-test.sh`
+  创建或更新真实浏览器测试所需的 `conda` 环境。
+- `bash scripts/browser-smoke.sh`
+  在 Firefox + Selenium 中做关键交互冒烟。
+
+自动化之外，发版前仍建议按 [docs/functional-self-check.md](./docs/functional-self-check.md) 做一轮功能级人工巡检，尤其是下面这些高风险舱段：
 
 - 左侧导航切换是否正常
 - 早/中/晚打卡与今日状态是否同步刷新
@@ -267,10 +339,10 @@ colors: {
 
 ### 下一阶段
 
-- [ ] 继续抽离 `core.js` 中的共享状态、存储与启动流程
-- [ ] 将主题色进一步变量化，降低样式硬编码密度
-- [ ] 为常见回归场景补充更稳定的自动化测试脚本
-- [ ] 增强键盘操作流，例如快捷切换舱段与快捷打卡
+- [x] 继续抽离 `core.js` 中的共享状态、存储与启动流程
+- [x] 将主题色进一步变量化，降低样式硬编码密度
+- [x] 为常见回归场景补充更稳定的自动化测试脚本
+- [x] 增强键盘操作流，例如快捷切换舱段与快捷打卡
 - [ ] 加入更完整的数据导出能力，例如月度报告或结构化导出
 
 

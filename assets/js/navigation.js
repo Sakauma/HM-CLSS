@@ -13,6 +13,7 @@ function initNavigation() {
         {
             btnId: 'nav-checkin',
             sectionId: 'checkin-section',
+            hotkey: 'Alt+1',
             badge: 'TODAY OPS',
             title: '舰桥值班与今日状态',
             desc: '主动作在首屏。',
@@ -23,6 +24,7 @@ function initNavigation() {
         {
             btnId: 'nav-phone',
             sectionId: 'phone-section',
+            hotkey: 'Alt+2',
             badge: 'FOCUS SHIELD',
             title: '认知干扰拦截',
             desc: '挡下一次，记一笔。',
@@ -33,6 +35,7 @@ function initNavigation() {
         {
             btnId: 'nav-tasks',
             sectionId: 'tasks-section',
+            hotkey: 'Alt+3',
             badge: 'DEEP WORK',
             title: '全舰任务管理',
             desc: '主线与捕捉都在首屏。',
@@ -43,6 +46,7 @@ function initNavigation() {
         {
             btnId: 'nav-archive',
             sectionId: 'archive-section',
+            hotkey: 'Alt+4',
             badge: 'LOG ARCHIVE',
             title: '全舰日志归档',
             desc: '所有历史，都从这里回看。',
@@ -53,6 +57,7 @@ function initNavigation() {
         {
             btnId: 'nav-leave',
             sectionId: 'leave-section',
+            hotkey: 'Alt+5',
             badge: 'LEAVE CONTROL',
             title: '离舰活动审批',
             desc: '今天、未来、补录，分线处理。',
@@ -63,6 +68,7 @@ function initNavigation() {
         {
             btnId: 'nav-tavern',
             sectionId: 'tavern-section',
+            hotkey: 'Alt+6',
             badge: 'MOOD LAB',
             title: '深空特调吧台',
             desc: '一句情绪，换一杯配方。',
@@ -73,6 +79,7 @@ function initNavigation() {
         {
             btnId: 'nav-stats',
             sectionId: 'stats-section',
+            hotkey: 'Alt+7',
             badge: 'SYSTEM INTEL',
             title: '维生统计分析',
             desc: '看周期，也看趋势。',
@@ -83,6 +90,7 @@ function initNavigation() {
         {
             btnId: 'nav-settings',
             sectionId: 'settings-section',
+            hotkey: 'Alt+8',
             badge: 'SYNC LINK',
             title: '深空通讯设置',
             desc: '同步入口集中在这里。',
@@ -144,6 +152,10 @@ function initNavigation() {
         const button = document.getElementById(item.btnId);
         const section = document.getElementById(item.sectionId);
         if (!button || !section) return;
+
+        if (item.hotkey) {
+            button.setAttribute('title', `${item.title} · ${item.hotkey}`);
+        }
 
         button.addEventListener('click', function() {
             navigationItems.forEach((navItem) => {

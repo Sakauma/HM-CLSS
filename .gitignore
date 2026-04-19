@@ -1,2 +1,5 @@
 .codex/
+.conda/
+__pycache__/
+*.pyc
 plan.md
