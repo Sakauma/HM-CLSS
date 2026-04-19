@@ -122,9 +122,9 @@ function setLeaveWorkflow(workflow) {
     const mappings = {
         today: {
             title: '今日离舰',
-            copy: '默认入口，只处理今天。',
+            copy: '默认入口，只处理今天这条记录。',
             submitLabel: '提交今日离舰',
-            submitHint: '会立即接管今天的值班状态。',
+            submitHint: '提交后会同步今天的值班状态。',
             note: '适合临时离开或今天全天离舰。',
             lockDate: true
         },
@@ -140,7 +140,7 @@ function setLeaveWorkflow(workflow) {
             title: '补请假',
             copy: '单独处理历史修正。',
             submitLabel: '补录历史离舰',
-            submitHint: '必须填写补录说明。',
+            submitHint: '补录说明需要一起留下。',
             note: '只接受过去日期；有旧记录会要求确认。',
             lockDate: false
         }
@@ -211,7 +211,7 @@ function updateLeaveFormState() {
 
     if (workflow === 'retro' && (hasExistingLeave || hasExistingCheckins)) {
         alertEl.className = 'rounded-2xl border border-warning/20 bg-warning/10 px-4 py-3 text-sm leading-6 text-warning';
-        alertEl.textContent = '该日期已有旧记录，提交前会再次确认。';
+        alertEl.textContent = '该日期已有旧记录，提交时会再确认一次。';
         submitBtn.disabled = false;
         submitBtn.className = CHECKIN_ACTIVE_BUTTON_CLASS;
         return;
@@ -224,10 +224,10 @@ function updateLeaveFormState() {
             : '选择未来日期后显示生效日。';
     } else if (workflow === 'retro') {
         alertEl.className = 'rounded-2xl border border-slate-200/80 bg-white/60 px-4 py-3 text-sm leading-6 text-slate-500 dark:border-slate-700/70 dark:bg-slate-900/40 dark:text-slate-400';
-        alertEl.textContent = '会刷新历史统计，但不会改今天的实时状态。';
+        alertEl.textContent = '会刷新历史统计，不会改动今天的实时状态。';
     } else {
         alertEl.className = 'rounded-2xl border border-success/20 bg-success/10 px-4 py-3 text-sm leading-6 text-success';
-        alertEl.textContent = '会立即联动今天的值班按钮和首页状态。';
+        alertEl.textContent = '提交后会同步今天的值班按钮和首页状态。';
     }
 
     submitBtn.disabled = false;
@@ -242,17 +242,17 @@ function updateLeaveFormState() {
  */
 function validateLeaveTargetDate(workflow, date) {
     const today = getTodayString();
-    if (!date) return { valid: false, reason: '先选择离舰日期。' };
+    if (!date) return { valid: false, reason: '先选一个离舰日期。' };
 
     const diff = getDateDiffInDays(date, today);
     if (workflow === 'today' && date !== today) {
-        return { valid: false, reason: '今日离舰流程不能改成过去或未来日期。' };
+        return { valid: false, reason: '今日离舰这条流程只接受今天。' };
     }
     if (workflow === 'planned' && diff >= 0) {
-        return { valid: false, reason: '预请假只接受未来日期。' };
+        return { valid: false, reason: '预请假只收未来日期。' };
     }
     if (workflow === 'retro' && diff <= 0) {
-        return { valid: false, reason: '补请假只接受过去日期。' };
+        return { valid: false, reason: '补请假只收过去日期。' };
     }
 
     return { valid: true, reason: '' };
@@ -271,8 +271,8 @@ function addLeave() {
 
     const dateValidation = validateLeaveTargetDate(workflow, date);
     if (!dateValidation.valid) return showToast(dateValidation.reason, 'warning');
-    if (!reason) return showToast('请完整填写离舰缘由。', 'warning');
-    if (workflow === 'retro' && !correctionNote) return showToast('补请假必须填写补录说明。', 'warning');
+    if (!reason) return showToast('离舰缘由还没填完整。', 'warning');
+    if (workflow === 'retro' && !correctionNote) return showToast('补请假还缺补录说明。', 'warning');
 
     let startTime = null;
     let endTime = null;
@@ -280,7 +280,7 @@ function addLeave() {
         startTime = document.getElementById('leave-start-time').value;
         endTime = document.getElementById('leave-end-time').value;
         if (startTime >= endTime) {
-            return showToast('结束时间必须晚于开始时间，请调整。', 'warning');
+            return showToast('结束时间需要晚于开始时间。', 'warning');
         }
     }
 
@@ -288,7 +288,7 @@ function addLeave() {
     const hasExistingLeave = leaveData.some((leave) => leave.date === date);
     const hasExistingCheckins = hasAnyCheckinRecord(dayData);
     if (workflow === 'retro' && (hasExistingLeave || hasExistingCheckins)) {
-        const confirmed = confirm('该日期已有离舰或打卡记录，确认继续提交这条历史修正吗？');
+        const confirmed = confirm('该日期已有离舰或打卡记录，确认继续补录这条历史修正吗？');
         if (!confirmed) return;
     }
 
@@ -307,7 +307,7 @@ function addLeave() {
 
     if (type === 'full') {
         const existingFullLeave = leaveData.find((leave) => leave.date === date && leave.type === 'full');
-        if (existingFullLeave && !confirm('该日期已经有一条全天离舰记录，确认用新的内容覆盖它吗？')) {
+        if (existingFullLeave && !confirm('该日期已经有一条全天离舰记录，确认用这次内容覆盖吗？')) {
             return;
         }
 

@@ -44,26 +44,26 @@ function getVoyageAmbientPresentation(ambient) {
         steady: {
             pillText: '稳态巡航',
             chipLevel: 'success',
-            copy: '环境平稳，先做主动作。'
+            copy: '环境平稳，可直接推进。'
         },
         alert: {
             pillText: '异常预警',
             chipLevel: ambient.issues ? 'danger' : 'warning',
             copy: ambient.issues
-                ? '关键状态偏离，先收口异常。'
-                : '检测到波动，先处理修正动作。'
+                ? '有异常，先收口。'
+                : '有波动，先处理。'
         },
         recovery: {
             pillText: '恢复推进',
             chipLevel: 'info',
             copy: currentTask
-                ? '恢复窗口已开，继续推当前任务。'
-                : '系统回稳中，适合推进一到两个确定动作。'
+                ? '继续当前任务。'
+                : '适合推进主线。'
         },
         nightwatch: {
             pillText: '夜航值守',
             chipLevel: 'info',
-            copy: '夜航时段，优先收尾和值守。'
+            copy: '夜航时段，适合收尾。'
         }
     };
 
@@ -132,17 +132,17 @@ function getTodayOverview(dayData) {
         const leaveMode = dayData.leaveMeta?.requestMode;
         const leaveStatus = leaveMode === 'planned' ? '今天按预请假执行' : '今天已离舰';
         const leaveHint = leaveMode === 'planned'
-            ? '这一天的状态来自之前归档的预请假记录。'
-            : '系统会将相关班次按离舰逻辑处理。';
+            ? '今天沿用预请假记录。'
+            : '今天按离舰状态处理。';
         return {
             chipLevel: 'warning',
             chipText: '离舰中',
             overallStatus: leaveStatus,
             overallHint: leaveHint,
-            nextAction: '如已返舰，请先去审批模块修正记录。',
-            nextActionHint: '先修正离舰状态，再回值班日志确认今天的班次结果。',
-            commandTitle: '今天以离舰记录为准',
-            commandMessage: '如果安排变化，请先到离舰审批里更新状态，避免值班判定继续沿用旧记录。'
+            nextAction: '返舰后更新状态。',
+            nextActionHint: '状态改回，值班会一起恢复。',
+            commandTitle: '离舰优先',
+            commandMessage: '安排有变，就去离舰流程更新。'
         };
     }
 
@@ -154,11 +154,11 @@ function getTodayOverview(dayData) {
                 chipLevel: hasIssues ? 'danger' : 'info',
                 chipText: hasIssues ? '需收尾' : '值班中',
                 overallStatus: `${getPeriodLabel(period)}进行中`,
-                overallHint: '已经连线，但还没有完成登出记录。',
-                nextAction: `结束前记得完成${getPeriodLabel(period)}登出。`,
-                nextActionHint: '如果今天还有其他任务，可以继续推进，但别忘了在离开前回来收尾。',
-                commandTitle: '当前班次尚未结束',
-                commandMessage: `你已经进入 ${getPeriodLabel(period)}。结束这一段后，记得回到这里完成登出，避免只留下半程记录。`
+                overallHint: '登出还没落记录。',
+                nextAction: `离开前补上 ${getPeriodLabel(period)} 登出。`,
+                nextActionHint: '结束时回来收尾。',
+                commandTitle: '值班进行中',
+                commandMessage: '结束时回来补上登出。'
             };
         }
     }
@@ -173,13 +173,13 @@ function getTodayOverview(dayData) {
         if (!periodData.checkIn && currentMins >= startMins && currentMins < endMins) {
             return {
                 chipLevel: hasIssues ? 'warning' : 'info',
-                chipText: hasIssues ? '先修正' : '待连线',
+                chipText: hasIssues ? '待修正' : '待连线',
                 overallStatus: `${getPeriodLabel(period)}待启动`,
-                overallHint: '当前班次窗口已开启，但系统还没有记录到开始时间。',
-                nextAction: `优先完成 ${getPeriodLabel(period)} 连线。`,
-                nextActionHint: '先做今天最紧迫的一步，再返回处理次要事项。',
-                commandTitle: '当前班次最优先',
-                commandMessage: `现在优先处理 ${getPeriodLabel(period)}。先让系统记录开始时间，再决定是否切去做别的事情。`
+                overallHint: '开始时间还没落记录。',
+                nextAction: `把 ${getPeriodLabel(period)} 连线补上。`,
+                nextActionHint: '先记开始时间。',
+                commandTitle: '当前窗口已开启',
+                commandMessage: '先记开始时间。'
             };
         }
     }
@@ -188,12 +188,12 @@ function getTodayOverview(dayData) {
         return {
             chipLevel: 'danger',
             chipText: '需要复盘',
-            overallStatus: '今天存在异常记录',
-            overallHint: '至少有一个时段超时或判定异常。',
-            nextAction: '先查看今日值班记录表，确认问题落在哪个时段。',
-            nextActionHint: '比起继续堆新数据，先把异常定位清楚更重要。',
-            commandTitle: '先看异常时段',
-            commandMessage: '今天已经出现异常或超时记录。先在记录表里确认具体问题，再决定后续动作。'
+            overallStatus: '今天有异常记录',
+            overallHint: '至少有一个时段异常。',
+            nextAction: '打开今日记录表。',
+            nextActionHint: '先看落点。',
+            commandTitle: '异常待确认',
+            commandMessage: '先看今日记录表。'
         };
     }
 
@@ -201,12 +201,12 @@ function getTodayOverview(dayData) {
         return {
             chipLevel: 'warning',
             chipText: '存在警告',
-            overallStatus: '今天有可接受但需留意的记录',
-            overallHint: '至少有一个班次超出推荐时段，但仍保留为警告而非失败。',
-            nextAction: '先看今日值班记录表，确认警告出现在哪个时段。',
-            nextActionHint: '这类记录不用补救式恐慌，但值得在复盘时看一眼。',
-            commandTitle: '先确认警告来源',
-            commandMessage: '今天的值班链路没有坏掉，但至少有一个时段超出了推荐边界。先确认它发生在什么地方，再决定是否需要调整节奏。'
+            overallStatus: '今天有需要留意的记录',
+            overallHint: '有班次超出推荐时段。',
+            nextAction: '打开今日记录表。',
+            nextActionHint: '看一眼就够。',
+            commandTitle: '警告待确认',
+            commandMessage: '回看一下记录表。'
         };
     }
 
@@ -216,13 +216,13 @@ function getTodayOverview(dayData) {
             chipLevel: currentTask ? 'info' : 'success',
             chipText: currentTask ? '科研中' : '待命中',
             overallStatus: currentTask ? '科研推进中' : '等待下一班次',
-            overallHint: currentTask ? '当前有进行中的科研任务。' : `下一优先会转向 ${getPeriodLabel(unfinishedPeriod)}。`,
-            nextAction: currentTask ? '继续当前任务，切记在下一班次窗口开启后及时处理。' : `在下一班次开启前，可以先处理任务或速记。`,
-            nextActionHint: currentTask ? '当下没有更紧迫的值班动作，可以专注推进眼前任务。' : '利用空档做需要连续注意力的事情，比被动等待更划算。',
-            commandTitle: currentTask ? '先保持专注推进' : '现在是缓冲窗口',
+            overallHint: currentTask ? '当前有任务在推进。' : `${getPeriodLabel(unfinishedPeriod)} 是下一段重点。`,
+            nextAction: currentTask ? '继续当前任务。' : '这段空档适合任务或速记。',
+            nextActionHint: currentTask ? '注意力留给主线。' : '把空档用在主线上。',
+            commandTitle: currentTask ? '继续主线' : '缓冲窗口',
             commandMessage: currentTask
-                ? '当前没有正在流失的班次窗口。继续推进正在进行的科研任务，等下一班次开启后再回来处理。'
-                : `当前没有立刻要打的卡。可以先去任务管理或速记面板，把缓冲时间用在真正重要的事情上。`
+                ? '当前窗口平稳，继续推进。'
+                : '现在适合任务或捕捉。'
         };
     }
 
@@ -230,11 +230,11 @@ function getTodayOverview(dayData) {
         chipLevel: 'success',
         chipText: '今日闭环',
         overallStatus: '今天的班次已闭环',
-        overallHint: '三个班次都已完成，记录链路完整。',
-        nextAction: currentTask ? '继续推进当前任务，或去统计面板做复盘。' : '可继续做任务，或直接进入统计面板回看趋势。',
-        nextActionHint: '这时适合沉淀而不是补救。',
-        commandTitle: '今日值班已闭环',
-        commandMessage: '今天的值班记录已经完整落地。接下来更适合推进任务、记录心情，或者去统计面板做一次复盘。'
+        overallHint: '三个班次都已闭环。',
+        nextAction: currentTask ? '继续当前任务。' : '继续任务，或去统计面板。',
+        nextActionHint: '现在适合沉淀。',
+        commandTitle: '今日闭环',
+        commandMessage: '值班记录已完整落地。'
     };
 }
 

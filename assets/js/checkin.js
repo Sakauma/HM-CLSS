@@ -280,7 +280,7 @@ function evaluateShiftRecord(date, period, checkInTime, checkOutTime) {
     const inMins = timeStrToMins(checkInTime);
     const outMins = timeStrToMins(checkOutTime);
     if (outMins <= inMins) {
-        return { valid: false, reason: '结束时间必须晚于开始时间。' };
+        return { valid: false, reason: '结束时间需要晚于开始时间。' };
     }
 
     const dayData = getCheckinDaySnapshot(date);
@@ -566,8 +566,8 @@ function updateRetroCheckinPanel() {
 
     if (dayData?.leave) {
         chipEl.className = 'status-chip status-chip-danger';
-        chipEl.textContent = '先修正离舰';
-        copyEl.textContent = '该日为全天离舰。先修正离舰记录，再补打卡。';
+        chipEl.textContent = '离舰占用中';
+        copyEl.textContent = '该日当前按全天离舰处理，如需补打卡，先回离舰流程调整。';
         submitEl.disabled = true;
         submitEl.className = CHECKIN_DISABLED_BUTTON_CLASS;
         return;
@@ -586,7 +586,7 @@ function updateRetroCheckinPanel() {
     if (!hasReason) {
         chipEl.className = 'status-chip status-chip-info';
         chipEl.textContent = '等待说明';
-        copyEl.textContent = '补打卡必须填写说明。';
+        copyEl.textContent = '补录说明还没填。';
         submitEl.disabled = true;
         submitEl.className = CHECKIN_DISABLED_BUTTON_CLASS;
         return;
@@ -624,20 +624,20 @@ function submitRetroCheckin() {
     }
 
     if (!reason) {
-        showToast('补打卡需要填写补录说明。', 'warning');
+        showToast('补打卡还缺补录说明。', 'warning');
         return;
     }
 
     const dayData = ensureCheckinDay(date);
     if (dayData.leave) {
-        showToast('目标日期当前是全天离舰，请先修正离舰记录。', 'warning');
+        showToast('这一天当前按全天离舰处理，回离舰流程调整后再补打卡。', 'warning');
         updateRetroCheckinPanel();
         return;
     }
 
     const evaluation = evaluateShiftRecord(date, period, checkInTime, checkOutTime);
     if (!evaluation.valid) {
-        showToast(evaluation.reason || '补打卡预判失败，请检查输入。', 'warning');
+        showToast(evaluation.reason || '这次补录还没通过预判，检查一下时间。', 'warning');
         updateRetroCheckinPanel();
         return;
     }

@@ -360,7 +360,7 @@ function renderCurrentTaskState() {
         container.classList.add('hidden');
         readyPanel?.classList.remove('hidden');
         if (readyStatusEl) readyStatusEl.textContent = '待命';
-        if (readyHintEl) readyHintEl.textContent = '先定义任务，再开始计时，让今天的主线先稳定下来。';
+        if (readyHintEl) readyHintEl.textContent = '先给今天的主线起个名字，再开计时。';
         nameEl.textContent = '-';
         timeEl.textContent = '已进行: 00:00:00';
         progressBar.style.width = '0%';
@@ -377,7 +377,7 @@ function renderCurrentTaskState() {
     progressBar.style.width = `${Math.min((elapsed / 36000000) * 100, 100)}%`;
     readyPanel?.classList.add('hidden');
     if (readyStatusEl) readyStatusEl.textContent = '进行中';
-    if (readyHintEl) readyHintEl.textContent = '当前主任务已经启动，新的想法请直接丢进右侧捕捉池。';
+    if (readyHintEl) readyHintEl.textContent = '主线已经跑起来了，临时念头丢进右侧捕捉池就行。';
     container.classList.remove('hidden');
 }
 
@@ -515,25 +515,25 @@ function getRetroCheckinAvailability(targetDate) {
     const date = String(targetDate || '');
 
     if (!date) {
-        return { allowed: false, reason: '先选择要补录的日期。', usage };
+        return { allowed: false, reason: '先选一个要补录的日期。', usage };
     }
 
     const diff = getDateDiffInDays(date, today);
     if (diff <= 0) {
-        return { allowed: false, reason: '补打卡只允许处理过去日期，今天和未来日期不能走补录流程。', usage };
+        return { allowed: false, reason: '补打卡只处理过去日期，今天和未来日期不走这条流程。', usage };
     }
 
     if (diff > CONFIG.retro.maxDaysPast) {
-        return { allowed: false, reason: `补打卡仅支持回补最近 ${CONFIG.retro.maxDaysPast} 天内的记录。`, usage };
+        return { allowed: false, reason: `这里只保留最近 ${CONFIG.retro.maxDaysPast} 天的补录窗口。`, usage };
     }
 
     const sameDayAlreadyCounted = usage.weekDates.has(date) || usage.monthDates.has(date);
     if (diff <= 7 && !sameDayAlreadyCounted && usage.weekUsed >= CONFIG.retro.last7DayQuota) {
-        return { allowed: false, reason: `最近 7 天的补录额度已用满（${CONFIG.retro.last7DayQuota} / ${CONFIG.retro.last7DayQuota}）。`, usage };
+        return { allowed: false, reason: `最近 7 天的补录额度已经用满（${CONFIG.retro.last7DayQuota} / ${CONFIG.retro.last7DayQuota}）。`, usage };
     }
 
     if (!sameDayAlreadyCounted && usage.monthUsed >= CONFIG.retro.monthlyQuota) {
-        return { allowed: false, reason: `本月补录额度已用满（${CONFIG.retro.monthlyQuota} / ${CONFIG.retro.monthlyQuota}）。`, usage };
+        return { allowed: false, reason: `本月补录额度已经用满（${CONFIG.retro.monthlyQuota} / ${CONFIG.retro.monthlyQuota}）。`, usage };
     }
 
     return { allowed: true, reason: '', usage };

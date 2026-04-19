@@ -60,7 +60,7 @@ function saveQuickCapture() {
     const tag = quickTagSelect.value;
 
     if (!text) {
-        showToast('先写下一条要捕捉的内容', 'warning');
+        showToast('先留下一句，再继续。', 'warning');
         updateQuickCaptureCount();
         return;
     }
@@ -200,7 +200,7 @@ function renderArchive(filterText = '') {
         container.innerHTML = `
             <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-10 shadow-soft border border-slate-100 dark:border-slate-800 text-center flex flex-col items-center justify-center text-slate-400">
                 <i data-lucide="inbox" class="w-12 h-12 mb-3 opacity-50"></i>
-                <p>${filterText ? '没有找到包含该关键词的记录' : '你的噬星体捕捉池目前空空如也'}</p>
+                <p>${filterText ? '没有找到这条线索' : '归档区暂时还没有记录'}</p>
             </div>
         `;
     } else {
@@ -224,9 +224,9 @@ function updateQuickNotesList() {
         container.innerHTML = `
             <div class="rounded-[1.4rem] border border-dashed border-slate-200/80 bg-slate-50/70 px-6 py-8 text-center dark:border-slate-700/70 dark:bg-slate-900/40">
                 <div class="module-eyebrow mb-3">EMPTY CAPTURE POOL</div>
-                <h4 class="tavern-display text-2xl font-semibold text-slate-950 dark:text-slate-50">今天还没有任何火花</h4>
+                <h4 class="tavern-display text-2xl font-semibold text-slate-950 dark:text-slate-50">今天的捕捉池还很安静</h4>
                 <p class="mt-3 text-sm leading-7 text-slate-500 dark:text-slate-400">
-                    先丢下一条灵感、异常或待办，不必整理。捕捉台的职责是先替你记住。
+                    丢下一条灵感、异常或待办就够了，捕捉台会先替你记住。
                 </p>
                 <button class="open-quick-capture-btn quick-capture-ghost mt-5">
                     <i data-lucide="square-pen" class="w-4 h-4"></i> 现在记录一条
