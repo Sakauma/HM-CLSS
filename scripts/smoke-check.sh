@@ -19,6 +19,7 @@ js_files=(
   assets/js/stats.js
   assets/js/status-ui.js
   assets/js/sync.js
+  assets/js/export.js
   assets/js/shortcuts.js
   assets/js/app-init.js
 )
@@ -36,6 +37,7 @@ required_scripts=(
   "assets/js/runtime-storage.js"
   "assets/js/shortcuts.js"
   "assets/js/app-init.js"
+  "assets/js/export.js"
 )
 
 for script_path in "${required_scripts[@]}"; do
@@ -58,6 +60,8 @@ runtime_storage_line="$(rg -n 'assets/js/runtime-storage.js' index.html | cut -d
 core_line="$(rg -n 'assets/js/core.js' index.html | cut -d: -f1)"
 app_init_line="$(rg -n 'assets/js/app-init.js' index.html | cut -d: -f1)"
 tavern_line="$(rg -n 'assets/js/tavern.js' index.html | cut -d: -f1)"
+sync_line="$(rg -n 'assets/js/sync.js' index.html | cut -d: -f1)"
+export_line="$(rg -n 'assets/js/export.js' index.html | cut -d: -f1)"
 
 if (( runtime_state_line >= runtime_storage_line )); then
   printf 'runtime-state.js must load before runtime-storage.js\n' >&2
@@ -74,12 +78,20 @@ if (( app_init_line >= tavern_line )); then
   exit 1
 fi
 
+if (( sync_line >= export_line )); then
+  printf 'sync.js must load before export.js\n' >&2
+  exit 1
+fi
+
 required_ids=(
   "nav-checkin"
   "panel-meta-desc"
   "keyboard-shortcut-hint"
   "morning-checkin"
   "toast-container"
+  "export-month-input"
+  "export-profile-select"
+  "export-trigger-btn"
 )
 
 for element_id in "${required_ids[@]}"; do

@@ -32,6 +32,7 @@ function initApp() {
     initTaskManagement();
     initLeaveManagement();
     initStatistics();
+    if (typeof initExportTools === 'function') initExportTools();
     initKeyboardShortcuts();
     updateTodayStatus();
     updateQuickNotesList();

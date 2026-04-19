@@ -178,6 +178,10 @@ function saveData(preventAutoSync = false) {
         updateSummaryStatistics();
     }
 
+    if (typeof refreshExportPreview === 'function') {
+        refreshExportPreview();
+    }
+
     if (typeof updateVoyageAmbientPresentation === 'function') {
         updateVoyageAmbientPresentation();
     }
@@ -194,4 +198,3 @@ function persistCurrentTask() {
         localStorage.removeItem(CURRENT_TASK_STORAGE_KEY);
     }
 }
-

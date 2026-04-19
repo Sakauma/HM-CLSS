@@ -63,10 +63,12 @@ node --check assets/js/leave.js
 node --check assets/js/stats.js
 node --check assets/js/status-ui.js
 node --check assets/js/sync.js
+node --check assets/js/export.js
 node --check assets/js/shortcuts.js
 node --check assets/js/app-init.js
 python3 -m py_compile scripts/browser-smoke.py
 bash -n scripts/browser-smoke.sh
+bash -n scripts/setup-browser-test.sh
 ```
 
 ### 快速回归脚本
@@ -74,6 +76,27 @@ bash -n scripts/browser-smoke.sh
 ```bash
 bash scripts/smoke-check.sh
 ```
+
+### 本地数据导出
+
+导出入口位于 **云端同步中心** 页面下半段的 **本地数据导出** 卡片。
+
+先在导出卡里选择格式，再决定是否按月份打包。
+
+- `全量工作区 JSON`
+  生成完整本地快照，适合离线备份或手动迁移。
+- `本月结构化 JSON`
+  生成单月结构化数据，适合后续二次分析。
+- `本月复盘 Markdown`
+  生成可直接贴进复盘文档的月度摘要。
+- `本月明细 CSV`
+  生成适合表格软件继续筛选的流水明细。
+
+说明：
+
+- 导出内容不包含 `GitHub Token` 和 `Gist ID`
+- 月度导出会附带摘要统计，口径与页面中的值班、任务、速记、离舰和酒单数据保持一致
+- 切到 `全量工作区 JSON` 时，月份输入会自动停用
 
 ### 真实浏览器冒烟
 
@@ -137,6 +160,8 @@ bash scripts/browser-smoke.sh
   今日状态面板与通用 Toast 提示。
 - `assets/js/sync.js`
   GitHub Gist 配置、手动推送/拉取、自动同步与云端数据合并。
+- `assets/js/export.js`
+  本地全量快照、单月 JSON 和单月 Markdown 导出。
 - `assets/js/shortcuts.js`
   全局快捷键层，负责舱段切换、循环浏览与快捷值班。
 - `assets/js/app-init.js`
@@ -298,7 +323,8 @@ const CONFIG = {
 13. `stats.js`
 14. `status-ui.js`
 15. `sync.js`
-16. `shortcuts.js`
+16. `export.js`
+17. `shortcuts.js`
 
 其中 `runtime-state.js`、`runtime-storage.js` 与 `core.js` 负责提供共享运行时；`app-init.js` 提前注册启动编排，确保它比其他 `DOMContentLoaded` 监听更早挂上；后面的业务脚本再补齐具体功能。顺序错乱会导致飞船在启动时失压。
 
@@ -324,6 +350,7 @@ const CONFIG = {
 - 离舰报备与撤销是否影响今日状态
 - 统计图表在不同周期下是否正常刷新
 - GitHub Gist 推送/拉取是否符合预期
+- 全量导出、本月 JSON 与本月 Markdown 是否都能正常下载
 - 深色模式切换后图表与图标是否同步更新
 
 
@@ -343,7 +370,7 @@ const CONFIG = {
 - [x] 将主题色进一步变量化，降低样式硬编码密度
 - [x] 为常见回归场景补充更稳定的自动化测试脚本
 - [x] 增强键盘操作流，例如快捷切换舱段与快捷打卡
-- [ ] 加入更完整的数据导出能力，例如月度报告或结构化导出
+- [x] 加入更完整的数据导出能力，例如月度报告或结构化导出
 
 
 ## 📄 开源协议
