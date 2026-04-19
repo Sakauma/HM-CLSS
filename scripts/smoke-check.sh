@@ -6,6 +6,7 @@ cd "$ROOT_DIR"
 
 js_files=(
   assets/js/runtime/theme.js
+  assets/js/runtime/store.js
   assets/js/runtime/state.js
   assets/js/runtime/storage.js
   assets/js/runtime/core.js
@@ -51,6 +52,7 @@ bash -n scripts/browser-smoke.sh
 bash -n scripts/setup-browser-test.sh
 
 required_scripts=(
+  "assets/js/runtime/store.js"
   "assets/js/runtime/state.js"
   "assets/js/runtime/storage.js"
   "assets/js/workspace/metrics.js"
@@ -92,6 +94,7 @@ for file_path in "${required_files[@]}"; do
   test -f "$file_path"
 done
 
+runtime_store_line="$(rg -n 'assets/js/runtime/store.js' index.html | cut -d: -f1)"
 runtime_state_line="$(rg -n 'assets/js/runtime/state.js' index.html | cut -d: -f1)"
 runtime_storage_line="$(rg -n 'assets/js/runtime/storage.js' index.html | cut -d: -f1)"
 core_line="$(rg -n 'assets/js/runtime/core.js' index.html | cut -d: -f1)"
@@ -123,6 +126,11 @@ export_data_line="$(rg -n 'assets/js/features/export/data.js' index.html | cut -
 export_formats_line="$(rg -n 'assets/js/features/export/formats.js' index.html | cut -d: -f1)"
 export_ui_line="$(rg -n 'assets/js/features/export/ui.js' index.html | cut -d: -f1)"
 export_line="$(rg -n 'assets/js/features/export/index.js' index.html | cut -d: -f1)"
+
+if (( runtime_store_line >= runtime_state_line )); then
+  printf 'runtime/store.js must load before runtime/state.js\n' >&2
+  exit 1
+fi
 
 if (( runtime_state_line >= runtime_storage_line )); then
   printf 'runtime-state.js must load before runtime-storage.js\n' >&2

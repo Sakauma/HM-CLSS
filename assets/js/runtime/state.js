@@ -3,20 +3,6 @@
  * 负责承载跨模块共用的内存态、存储键名、任务标签与判定配置。
  */
 
-let checkinData = {};
-let phoneResistData = { totalCount: 0, records: {} };
-let taskData = {};
-let leaveData = [];
-let achievements = [];
-let currentTask = null;
-let taskTimer = null;
-let taskStartTime = null;
-let quickNotesData = {};
-let tavernData = [];
-let currentDrinkInfo = null;
-let ambientPreferences = null;
-let selectedEmotions = [];
-
 const CURRENT_TASK_STORAGE_KEY = 'currentTask';
 const AMBIENT_PREFS_STORAGE_KEY = 'hmclss_ambient_preferences';
 
