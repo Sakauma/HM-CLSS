@@ -32,6 +32,9 @@ js_files=(
   assets/js/sync-state.js
   assets/js/sync-api.js
   assets/js/sync.js
+  assets/js/export-data.js
+  assets/js/export-formats.js
+  assets/js/export-ui.js
   assets/js/export.js
   assets/js/shortcuts.js
   assets/js/app-init.js
@@ -59,6 +62,9 @@ required_scripts=(
   "assets/js/leave-ui.js"
   "assets/js/sync-state.js"
   "assets/js/sync-api.js"
+  "assets/js/export-data.js"
+  "assets/js/export-formats.js"
+  "assets/js/export-ui.js"
   "assets/js/shortcuts.js"
   "assets/js/app-init.js"
   "assets/js/stats-data.js"
@@ -103,6 +109,9 @@ stats_line="$(rg -n 'assets/js/stats.js' index.html | cut -d: -f1)"
 sync_state_line="$(rg -n 'assets/js/sync-state.js' index.html | cut -d: -f1)"
 sync_api_line="$(rg -n 'assets/js/sync-api.js' index.html | cut -d: -f1)"
 sync_line="$(rg -n 'assets/js/sync.js' index.html | cut -d: -f1)"
+export_data_line="$(rg -n 'assets/js/export-data.js' index.html | cut -d: -f1)"
+export_formats_line="$(rg -n 'assets/js/export-formats.js' index.html | cut -d: -f1)"
+export_ui_line="$(rg -n 'assets/js/export-ui.js' index.html | cut -d: -f1)"
 export_line="$(rg -n 'assets/js/export.js' index.html | cut -d: -f1)"
 
 if (( runtime_state_line >= runtime_storage_line )); then
@@ -195,8 +204,23 @@ if (( sync_api_line >= sync_line )); then
   exit 1
 fi
 
-if (( sync_line >= export_line )); then
-  printf 'sync.js must load before export.js\n' >&2
+if (( sync_line >= export_data_line )); then
+  printf 'sync.js must load before export-data.js\n' >&2
+  exit 1
+fi
+
+if (( export_data_line >= export_formats_line )); then
+  printf 'export-data.js must load before export-formats.js\n' >&2
+  exit 1
+fi
+
+if (( export_formats_line >= export_ui_line )); then
+  printf 'export-formats.js must load before export-ui.js\n' >&2
+  exit 1
+fi
+
+if (( export_ui_line >= export_line )); then
+  printf 'export-ui.js must load before export.js\n' >&2
   exit 1
 fi
 
