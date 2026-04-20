@@ -27,6 +27,8 @@ js_files=(
   assets/js/features/focus/achievements.js
   assets/js/workspace/entries.js
   assets/js/features/tasks/index.js
+  assets/js/features/notes/modal.js
+  assets/js/features/notes/render.js
   assets/js/features/notes/index.js
   assets/js/features/leave/rules.js
   assets/js/features/leave/ui.js
@@ -74,6 +76,8 @@ required_scripts=(
   "assets/js/features/leave/rules.js"
   "assets/js/features/leave/ui.js"
   "assets/js/workspace/entries.js"
+  "assets/js/features/notes/modal.js"
+  "assets/js/features/notes/render.js"
   "assets/js/features/sync/state.js"
   "assets/js/features/sync/api.js"
   "assets/js/features/export/data.js"
@@ -125,6 +129,8 @@ checkin_line="$(rg -n 'assets/js/features/checkin/index.js' index.html | cut -d:
 workspace_entries_line="$(rg -n 'assets/js/workspace/entries.js' index.html | cut -d: -f1)"
 tasks_line="$(rg -n 'assets/js/features/tasks/index.js' index.html | cut -d: -f1)"
 notes_line="$(rg -n 'assets/js/features/notes/index.js' index.html | cut -d: -f1)"
+notes_modal_line="$(rg -n 'assets/js/features/notes/modal.js' index.html | cut -d: -f1)"
+notes_render_line="$(rg -n 'assets/js/features/notes/render.js' index.html | cut -d: -f1)"
 leave_rules_line="$(rg -n 'assets/js/features/leave/rules.js' index.html | cut -d: -f1)"
 leave_ui_line="$(rg -n 'assets/js/features/leave/ui.js' index.html | cut -d: -f1)"
 leave_line="$(rg -n 'assets/js/features/leave/index.js' index.html | cut -d: -f1)"
@@ -236,8 +242,18 @@ if (( workspace_entries_line >= tasks_line )); then
   exit 1
 fi
 
-if (( tasks_line >= notes_line )); then
-  printf 'tasks.js must load before notes.js\n' >&2
+if (( tasks_line >= notes_modal_line )); then
+  printf 'tasks.js must load before notes-modal.js\n' >&2
+  exit 1
+fi
+
+if (( notes_modal_line >= notes_render_line )); then
+  printf 'notes-modal.js must load before notes-render.js\n' >&2
+  exit 1
+fi
+
+if (( notes_render_line >= notes_line )); then
+  printf 'notes-render.js must load before notes.js\n' >&2
   exit 1
 fi
 

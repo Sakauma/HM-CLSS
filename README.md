@@ -71,6 +71,8 @@ node --check assets/js/features/checkin/index.js
 node --check assets/js/features/focus/achievements.js
 node --check assets/js/workspace/entries.js
 node --check assets/js/features/tasks/index.js
+node --check assets/js/features/notes/modal.js
+node --check assets/js/features/notes/render.js
 node --check assets/js/features/notes/index.js
 node --check assets/js/features/leave/rules.js
 node --check assets/js/features/leave/ui.js
@@ -202,8 +204,12 @@ bash scripts/browser-smoke.sh
   任务与速记共用的按日期写入、删除和轻量回刷工具。
 - `assets/js/features/tasks/index.js`
   任务开始/结束、计时器、任务表格与时间轴。
+- `assets/js/features/notes/modal.js`
+  速记弹窗、快捷键、焦点约束与输入计数。
+- `assets/js/features/notes/render.js`
+  今日捕捉池、历史归档与删除交互渲染。
 - `assets/js/features/notes/index.js`
-  `Ctrl+K` 快速记录、归档面板、笔记检索与删除。
+  速记控制器，负责保存记录并挂载速记模块。
 - `assets/js/features/leave/rules.js`
   离舰工作流状态、目标日期校验与离舰状态重建。
 - `assets/js/features/leave/ui.js`
@@ -405,23 +411,25 @@ const CONFIG = {
 21. `features/focus/achievements.js`
 22. `workspace/entries.js`
 23. `features/tasks/index.js`
-24. `features/notes/index.js`
-25. `features/leave/rules.js`
-26. `features/leave/ui.js`
-27. `features/leave/index.js`
-28. `features/stats/data.js`
-29. `features/stats/charts.js`
-30. `features/stats/index.js`
-31. `features/dashboard/copy.js`
-32. `features/dashboard/ui.js`
-33. `features/sync/state.js`
-34. `features/sync/api.js`
-35. `features/sync/index.js`
-36. `features/export/data.js`
-37. `features/export/formats.js`
-38. `features/export/ui.js`
-39. `features/export/index.js`
-40. `ui/shortcuts.js`
+24. `features/notes/modal.js`
+25. `features/notes/render.js`
+26. `features/notes/index.js`
+27. `features/leave/rules.js`
+28. `features/leave/ui.js`
+29. `features/leave/index.js`
+30. `features/stats/data.js`
+31. `features/stats/charts.js`
+32. `features/stats/index.js`
+33. `features/dashboard/copy.js`
+34. `features/dashboard/ui.js`
+35. `features/sync/state.js`
+36. `features/sync/api.js`
+37. `features/sync/index.js`
+38. `features/export/data.js`
+39. `features/export/formats.js`
+40. `features/export/ui.js`
+41. `features/export/index.js`
+42. `ui/shortcuts.js`
 
 现在目录按 `runtime / workspace / ui / features` 分层：`runtime` 负责启动、模块注册、共享运行时和可变状态容器，`workspace` 负责跨模块共享的数据与口径，`ui` 负责导航和快捷键这类外层交互，`features` 按值班、酒馆、离舰、统计、同步、导出等功能继续拆分。`app-init.js` 现在只负责 `initData()` 和触发模块注册中心，具体功能模块各自向注册中心报到。顺序错乱会导致飞船在启动时失压。
 
