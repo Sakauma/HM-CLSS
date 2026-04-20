@@ -190,6 +190,7 @@ bash scripts/browser-smoke.sh
   指向自定义预览地址；未提供时默认使用 `http://127.0.0.1:8000`。
 - `HM_CLSS_BROWSER_ARTIFACT_DIR`
   覆盖默认的浏览器冒烟工件目录；默认输出到 `.artifacts/browser-smoke`。
+  目录内部会再细分成 `failures/` 和 `visual/` 两层。
 
 
 ## 🗂️ 舰体结构
@@ -364,6 +365,8 @@ bash scripts/browser-smoke.sh
   浏览器冒烟共享 helper、driver 封装与分场景回归脚本。
 - `scripts/smoke_manifest/`
   `smoke-check` 使用的清单目录，分别维护语法检查、脚本顺序、样式、文件和关键 DOM id。
+- `docs/testing-artifacts.md`
+  浏览器冒烟工件目录、失败快照和视觉快照的落盘约定。
 - `tests/fixtures/visual-layout-baselines.json`
   关键舱段的布局视觉基线，用于浏览器回归时对比主要面板是否漂移。
 - `environment.browser-test.yml`

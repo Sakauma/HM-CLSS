@@ -36,3 +36,4 @@ tests/unit/tavern-logic.test.js
 tests/unit/sync-and-registry.test.js
 tests/unit/statistics-and-export.test.js
 tests/fixtures/visual-layout-baselines.json
+docs/testing-artifacts.md

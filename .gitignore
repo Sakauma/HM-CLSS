@@ -1,13 +1,33 @@
 .codex/
+
+# Local environments
 .conda/
+.venv/
+.env
+.env.*
+
+# Python caches and coverage
 __pycache__/
 *.pyc
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 .coverage
+.coverage.*
 htmlcov/
-*.log
+
+# Browser smoke and local artifacts
 .artifacts/
+geckodriver.log
+*.log
+*.tmp
+*.bak
+*.orig
+
+# Editor and OS noise
+.vscode/
+.idea/
 .DS_Store
+
+# Local planning scratchpad
 plan.md

@@ -134,7 +134,9 @@ def capture_visual_case(driver, case, artifact_dir: Path | None):
     )
 
     if artifact_dir is not None:
-        driver.save_screenshot(str(artifact_dir / f"visual-{case['name']}.png"))
+        visual_dir = artifact_dir / "visual"
+        visual_dir.mkdir(parents=True, exist_ok=True)
+        driver.save_screenshot(str(visual_dir / f"{case['name']}.png"))
 
     return collect_layout_snapshot(driver, case["elements"])
 
@@ -148,7 +150,7 @@ def test_visual_layout_baselines(driver, baseline_path: str, artifact_dir: Path 
     for case in VISUAL_CASES:
         current_snapshots[case["name"]] = capture_visual_case(driver, case, artifact_dir)
 
-    write_json_artifact(artifact_dir, "visual-layout-current.json", current_snapshots)
+    write_json_artifact(artifact_dir, "visual/layout-current.json", current_snapshots)
 
     for case in VISUAL_CASES:
         compare_layout_snapshots(case, current_snapshots[case["name"]], baselines.get(case["name"]))

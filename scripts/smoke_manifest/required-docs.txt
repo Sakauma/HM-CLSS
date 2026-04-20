@@ -1,1 +1,2 @@
 docs/functional-self-check.md
+docs/testing-artifacts.md
