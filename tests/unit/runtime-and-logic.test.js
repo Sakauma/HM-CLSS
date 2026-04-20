@@ -193,6 +193,8 @@ test('checkin and dashboard status presentation map internal states to user copy
 
     loadScript(context, 'assets/js/features/checkin/rules.js');
     loadScript(context, 'assets/js/features/checkin/status.js');
+    loadScript(context, 'assets/js/features/dashboard/labels.js');
+    loadScript(context, 'assets/js/features/dashboard/overview.js');
     loadScript(context, 'assets/js/features/dashboard/status.js');
 
     const checkinWarning = context.getCheckinStatusPresentation('warning', true);

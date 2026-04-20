@@ -18,6 +18,8 @@ js_files=(
   assets/js/runtime/module-registry.js
   assets/js/workspace/metrics.js
   assets/js/workspace/data.js
+  assets/js/ui/navigation-data.js
+  assets/js/ui/navigation-ui.js
   assets/js/ui/navigation.js
   assets/js/features/tavern/catalog.js
   assets/js/features/tavern/analyze.js
@@ -37,8 +39,11 @@ js_files=(
   assets/js/features/focus/achievements.js
   assets/js/workspace/entries.js
   assets/js/features/tasks/hero.js
+  assets/js/features/tasks/render.js
   assets/js/features/tasks/index.js
   assets/js/features/notes/modal.js
+  assets/js/features/notes/today.js
+  assets/js/features/notes/archive.js
   assets/js/features/notes/render.js
   assets/js/features/notes/index.js
   assets/js/features/leave/rules.js
@@ -49,7 +54,8 @@ js_files=(
   assets/js/features/stats/data.js
   assets/js/features/stats/charts.js
   assets/js/features/stats/index.js
-  assets/js/features/dashboard/copy.js
+  assets/js/features/dashboard/labels.js
+  assets/js/features/dashboard/overview.js
   assets/js/features/dashboard/confirm.js
   assets/js/features/dashboard/toast.js
   assets/js/features/dashboard/status.js
@@ -91,6 +97,8 @@ required_scripts=(
   "assets/js/runtime/date-utils.js"
   "assets/js/runtime/dom-utils.js"
   "assets/js/runtime/ambient.js"
+  "assets/js/ui/navigation-data.js"
+  "assets/js/ui/navigation-ui.js"
   "assets/js/workspace/metrics.js"
   "assets/js/runtime/module-registry.js"
   "assets/js/workspace/data.js"
@@ -113,7 +121,10 @@ required_scripts=(
   "assets/js/features/stats/aggregates.js"
   "assets/js/workspace/entries.js"
   "assets/js/features/tasks/hero.js"
+  "assets/js/features/tasks/render.js"
   "assets/js/features/notes/modal.js"
+  "assets/js/features/notes/today.js"
+  "assets/js/features/notes/archive.js"
   "assets/js/features/notes/render.js"
   "assets/js/features/sync/state.js"
   "assets/js/features/sync/api.js"
@@ -128,7 +139,8 @@ required_scripts=(
   "assets/js/runtime/app-init.js"
   "assets/js/features/stats/data.js"
   "assets/js/features/stats/charts.js"
-  "assets/js/features/dashboard/copy.js"
+  "assets/js/features/dashboard/labels.js"
+  "assets/js/features/dashboard/overview.js"
   "assets/js/features/dashboard/confirm.js"
   "assets/js/features/dashboard/toast.js"
   "assets/js/features/dashboard/status.js"
@@ -201,6 +213,9 @@ module_registry_line="$(rg -n 'assets/js/runtime/module-registry.js' index.html 
 metrics_line="$(rg -n 'assets/js/workspace/metrics.js' index.html | cut -d: -f1)"
 workspace_data_line="$(rg -n 'assets/js/workspace/data.js' index.html | cut -d: -f1)"
 app_init_line="$(rg -n 'assets/js/runtime/app-init.js' index.html | cut -d: -f1)"
+navigation_data_line="$(rg -n 'assets/js/ui/navigation-data.js' index.html | cut -d: -f1)"
+navigation_ui_line="$(rg -n 'assets/js/ui/navigation-ui.js' index.html | cut -d: -f1)"
+navigation_line="$(rg -n 'assets/js/ui/navigation.js' index.html | cut -d: -f1)"
 tavern_catalog_line="$(rg -n 'assets/js/features/tavern/catalog.js' index.html | cut -d: -f1)"
 tavern_analyze_line="$(rg -n 'assets/js/features/tavern/analyze.js' index.html | cut -d: -f1)"
 tavern_records_line="$(rg -n 'assets/js/features/tavern/records.js' index.html | cut -d: -f1)"
@@ -218,9 +233,12 @@ checkin_ui_line="$(rg -n 'assets/js/features/checkin/ui.js' index.html | cut -d:
 checkin_line="$(rg -n 'assets/js/features/checkin/index.js' index.html | cut -d: -f1)"
 workspace_entries_line="$(rg -n 'assets/js/workspace/entries.js' index.html | cut -d: -f1)"
 task_hero_line="$(rg -n 'assets/js/features/tasks/hero.js' index.html | cut -d: -f1)"
+task_render_line="$(rg -n 'assets/js/features/tasks/render.js' index.html | cut -d: -f1)"
 tasks_line="$(rg -n 'assets/js/features/tasks/index.js' index.html | cut -d: -f1)"
 notes_line="$(rg -n 'assets/js/features/notes/index.js' index.html | cut -d: -f1)"
 notes_modal_line="$(rg -n 'assets/js/features/notes/modal.js' index.html | cut -d: -f1)"
+notes_today_line="$(rg -n 'assets/js/features/notes/today.js' index.html | cut -d: -f1)"
+notes_archive_line="$(rg -n 'assets/js/features/notes/archive.js' index.html | cut -d: -f1)"
 notes_render_line="$(rg -n 'assets/js/features/notes/render.js' index.html | cut -d: -f1)"
 leave_rules_line="$(rg -n 'assets/js/features/leave/rules.js' index.html | cut -d: -f1)"
 leave_ui_line="$(rg -n 'assets/js/features/leave/ui.js' index.html | cut -d: -f1)"
@@ -230,7 +248,8 @@ stats_aggregates_line="$(rg -n 'assets/js/features/stats/aggregates.js' index.ht
 stats_data_line="$(rg -n 'assets/js/features/stats/data.js' index.html | cut -d: -f1)"
 stats_charts_line="$(rg -n 'assets/js/features/stats/charts.js' index.html | cut -d: -f1)"
 stats_line="$(rg -n 'assets/js/features/stats/index.js' index.html | cut -d: -f1)"
-status_copy_line="$(rg -n 'assets/js/features/dashboard/copy.js' index.html | cut -d: -f1)"
+status_labels_line="$(rg -n 'assets/js/features/dashboard/labels.js' index.html | cut -d: -f1)"
+status_overview_line="$(rg -n 'assets/js/features/dashboard/overview.js' index.html | cut -d: -f1)"
 status_confirm_line="$(rg -n 'assets/js/features/dashboard/confirm.js' index.html | cut -d: -f1)"
 status_toast_line="$(rg -n 'assets/js/features/dashboard/toast.js' index.html | cut -d: -f1)"
 status_status_line="$(rg -n 'assets/js/features/dashboard/status.js' index.html | cut -d: -f1)"
@@ -307,8 +326,23 @@ if (( workspace_data_line >= app_init_line )); then
   exit 1
 fi
 
-if (( app_init_line >= tavern_catalog_line )); then
-  printf 'app-init.js must load before tavern-catalog.js\n' >&2
+if (( app_init_line >= navigation_data_line )); then
+  printf 'app-init.js must load before navigation-data.js\n' >&2
+  exit 1
+fi
+
+if (( navigation_data_line >= navigation_ui_line )); then
+  printf 'navigation-data.js must load before navigation-ui.js\n' >&2
+  exit 1
+fi
+
+if (( navigation_ui_line >= navigation_line )); then
+  printf 'navigation-ui.js must load before navigation.js\n' >&2
+  exit 1
+fi
+
+if (( navigation_line >= tavern_catalog_line )); then
+  printf 'navigation.js must load before tavern-catalog.js\n' >&2
   exit 1
 fi
 
@@ -392,8 +426,13 @@ if (( workspace_entries_line >= task_hero_line )); then
   exit 1
 fi
 
-if (( task_hero_line >= tasks_line )); then
-  printf 'task-hero.js must load before tasks.js\n' >&2
+if (( task_hero_line >= task_render_line )); then
+  printf 'task-hero.js must load before tasks-render.js\n' >&2
+  exit 1
+fi
+
+if (( task_render_line >= tasks_line )); then
+  printf 'tasks-render.js must load before tasks.js\n' >&2
   exit 1
 fi
 
@@ -402,8 +441,18 @@ if (( tasks_line >= notes_modal_line )); then
   exit 1
 fi
 
-if (( notes_modal_line >= notes_render_line )); then
-  printf 'notes-modal.js must load before notes-render.js\n' >&2
+if (( notes_modal_line >= notes_today_line )); then
+  printf 'notes-modal.js must load before notes-today.js\n' >&2
+  exit 1
+fi
+
+if (( notes_today_line >= notes_archive_line )); then
+  printf 'notes-today.js must load before notes-archive.js\n' >&2
+  exit 1
+fi
+
+if (( notes_archive_line >= notes_render_line )); then
+  printf 'notes-archive.js must load before notes-render.js\n' >&2
   exit 1
 fi
 
@@ -452,13 +501,18 @@ if (( stats_charts_line >= stats_line )); then
   exit 1
 fi
 
-if (( stats_line >= status_copy_line )); then
-  printf 'stats.js must load before status-copy.js\n' >&2
+if (( stats_line >= status_labels_line )); then
+  printf 'stats.js must load before dashboard-labels.js\n' >&2
   exit 1
 fi
 
-if (( status_copy_line >= status_confirm_line )); then
-  printf 'status-copy.js must load before status-confirm.js\n' >&2
+if (( status_labels_line >= status_overview_line )); then
+  printf 'dashboard-labels.js must load before dashboard-overview.js\n' >&2
+  exit 1
+fi
+
+if (( status_overview_line >= status_confirm_line )); then
+  printf 'dashboard-overview.js must load before status-confirm.js\n' >&2
   exit 1
 fi
 

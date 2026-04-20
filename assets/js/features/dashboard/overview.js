@@ -1,81 +1,8 @@
 /**
- * 状态概览文案层。
- * 负责状态徽章样式、班次标签和首页概览文案派生。
+ * 首页总览文案层。
+ * 负责根据今天的值班、任务和离舰状态派生首页总览文案。
  */
 
-/**
- * 将抽象状态级别映射为统一的徽章样式类。
- * @param {'success'|'warning'|'danger'|'info'} level
- * @returns {string}
- */
-function getStatusChipClass(level) {
-    const levelMap = {
-        success: 'status-chip status-chip-success',
-        warning: 'status-chip status-chip-warning',
-        danger: 'status-chip status-chip-danger',
-        info: 'status-chip status-chip-info'
-    };
-
-    return levelMap[level] || levelMap.info;
-}
-
-/**
- * 将内部班次键转换为对用户展示的班次名称。
- * @param {'morning'|'afternoon'|'evening'} period
- * @returns {string}
- */
-function getPeriodLabel(period) {
-    const labelMap = {
-        morning: 'Alpha 班次',
-        afternoon: 'Beta 班次',
-        evening: 'Gamma 班次'
-    };
-
-    return labelMap[period] || period;
-}
-
-/**
- * 将航行情绪层状态映射成对应的视觉与文案资源。
- * @param {{ state: 'steady'|'alert'|'recovery'|'nightwatch', warnings: boolean, issues: boolean }} ambient
- * @returns {{ pillText: string, chipLevel: 'success'|'warning'|'danger'|'info', copy: string }}
- */
-function getVoyageAmbientPresentation(ambient) {
-    const activeTask = runtimeSelectors.currentTask();
-    const map = {
-        steady: {
-            pillText: '稳态巡航',
-            chipLevel: 'success',
-            copy: '环境平稳，可直接推进。'
-        },
-        alert: {
-            pillText: '异常预警',
-            chipLevel: ambient.issues ? 'danger' : 'warning',
-            copy: ambient.issues
-                ? '有异常，先收口。'
-                : '有波动，先处理。'
-        },
-        recovery: {
-            pillText: '恢复推进',
-            chipLevel: 'info',
-            copy: activeTask
-                ? '继续当前任务。'
-                : '适合推进主线。'
-        },
-        nightwatch: {
-            pillText: '夜航值守',
-            chipLevel: 'info',
-            copy: '夜航时段，适合收尾。'
-        }
-    };
-
-    return map[ambient.state] || map.steady;
-}
-
-/**
- * 根据今天的值班、任务和离舰状态，生成首页概览卡需要的文案。
- * @param {object} dayData
- * @returns {object}
- */
 function getTodayOverview(dayData) {
     const now = getCurrentTime();
     const currentMins = now.hour * 60 + now.minute;
