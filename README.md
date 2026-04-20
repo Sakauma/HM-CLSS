@@ -89,6 +89,7 @@ node --check assets/js/features/export/ui.js
 node --check assets/js/features/export/index.js
 node --check assets/js/ui/shortcuts.js
 node --check assets/js/runtime/app-init.js
+node --test tests/unit/runtime-and-logic.test.js
 python3 -m py_compile scripts/browser-smoke.py
 bash -n scripts/browser-smoke.sh
 bash -n scripts/setup-browser-test.sh
@@ -247,6 +248,8 @@ bash scripts/browser-smoke.sh
   浏览器级功能检查的具体执行脚本。
 - `environment.browser-test.yml`
   浏览器测试环境的可复现依赖定义。
+- `tests/unit/runtime-and-logic.test.js`
+  纯逻辑单元测试，覆盖值班规则、导出构建和本地存储迁移。
 - `docs/functional-self-check.md`
   面向发版前人工验收的功能级自测清单。
 

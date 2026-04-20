@@ -51,6 +51,7 @@ for file in "${js_files[@]}"; do
   node --check "$file"
 done
 
+node --test tests/unit/runtime-and-logic.test.js
 python3 -m py_compile scripts/browser-smoke.py
 bash -n scripts/browser-smoke.sh
 bash -n scripts/setup-browser-test.sh
@@ -96,6 +97,7 @@ required_files=(
   "scripts/browser-smoke.sh"
   "scripts/browser-smoke.py"
   "scripts/setup-browser-test.sh"
+  "tests/unit/runtime-and-logic.test.js"
 )
 
 for file_path in "${required_files[@]}"; do
