@@ -9,6 +9,8 @@ js_files=(
   assets/js/runtime/store.js
   assets/js/runtime/state.js
   assets/js/runtime/storage-migrations.js
+  assets/js/runtime/storage-payload.js
+  assets/js/runtime/storage-shapes.js
   assets/js/runtime/storage.js
   assets/js/runtime/date-utils.js
   assets/js/runtime/dom-utils.js
@@ -18,6 +20,8 @@ js_files=(
   assets/js/workspace/data.js
   assets/js/ui/navigation.js
   assets/js/features/tavern/catalog.js
+  assets/js/features/tavern/analyze.js
+  assets/js/features/tavern/records.js
   assets/js/features/tavern/logic.js
   assets/js/features/tavern/stage.js
   assets/js/features/tavern/result.js
@@ -40,6 +44,8 @@ js_files=(
   assets/js/features/leave/rules.js
   assets/js/features/leave/ui.js
   assets/js/features/leave/index.js
+  assets/js/features/stats/ranges.js
+  assets/js/features/stats/aggregates.js
   assets/js/features/stats/data.js
   assets/js/features/stats/charts.js
   assets/js/features/stats/index.js
@@ -50,7 +56,11 @@ js_files=(
   assets/js/features/dashboard/ui.js
   assets/js/features/sync/state.js
   assets/js/features/sync/api.js
+  assets/js/features/sync/ui.js
+  assets/js/features/sync/logic.js
   assets/js/features/sync/index.js
+  assets/js/features/export/profiles.js
+  assets/js/features/export/monthly.js
   assets/js/features/export/data.js
   assets/js/features/export/formats.js
   assets/js/features/export/ui.js
@@ -75,6 +85,8 @@ required_scripts=(
   "assets/js/runtime/store.js"
   "assets/js/runtime/state.js"
   "assets/js/runtime/storage-migrations.js"
+  "assets/js/runtime/storage-payload.js"
+  "assets/js/runtime/storage-shapes.js"
   "assets/js/runtime/storage.js"
   "assets/js/runtime/date-utils.js"
   "assets/js/runtime/dom-utils.js"
@@ -83,6 +95,8 @@ required_scripts=(
   "assets/js/runtime/module-registry.js"
   "assets/js/workspace/data.js"
   "assets/js/features/tavern/catalog.js"
+  "assets/js/features/tavern/analyze.js"
+  "assets/js/features/tavern/records.js"
   "assets/js/features/tavern/logic.js"
   "assets/js/features/tavern/stage.js"
   "assets/js/features/tavern/result.js"
@@ -95,12 +109,18 @@ required_scripts=(
   "assets/js/features/checkin/ui.js"
   "assets/js/features/leave/rules.js"
   "assets/js/features/leave/ui.js"
+  "assets/js/features/stats/ranges.js"
+  "assets/js/features/stats/aggregates.js"
   "assets/js/workspace/entries.js"
   "assets/js/features/tasks/hero.js"
   "assets/js/features/notes/modal.js"
   "assets/js/features/notes/render.js"
   "assets/js/features/sync/state.js"
   "assets/js/features/sync/api.js"
+  "assets/js/features/sync/ui.js"
+  "assets/js/features/sync/logic.js"
+  "assets/js/features/export/profiles.js"
+  "assets/js/features/export/monthly.js"
   "assets/js/features/export/data.js"
   "assets/js/features/export/formats.js"
   "assets/js/features/export/ui.js"
@@ -124,6 +144,7 @@ required_stylesheets=(
   "assets/css/shell.css"
   "assets/css/components.css"
   "assets/css/features.css"
+  "assets/css/features-notes.css"
   "assets/css/motion.css"
 )
 
@@ -136,7 +157,9 @@ required_files=(
   "assets/css/shell.css"
   "assets/css/components.css"
   "assets/css/features.css"
+  "assets/css/features-notes.css"
   "assets/css/motion.css"
+  ".github/workflows/ci.yml"
   "environment.browser-test.yml"
   "scripts/browser-smoke.sh"
   "scripts/browser-smoke.py"
@@ -144,11 +167,13 @@ required_files=(
   "scripts/browser_smoke/driver.py"
   "scripts/browser_smoke/scenarios/bootstrap.py"
   "scripts/browser_smoke/scenarios/insights.py"
+  "scripts/browser_smoke/scenarios/sync.py"
   "scripts/browser_smoke/scenarios/workspace.py"
   "scripts/browser_smoke/scenarios/accessibility.py"
   "scripts/browser_smoke/scenarios/tavern.py"
   "scripts/setup-browser-test.sh"
   "tests/unit/runtime-and-logic.test.js"
+  "tests/unit/tavern-logic.test.js"
   "tests/unit/sync-and-registry.test.js"
   "tests/unit/statistics-and-export.test.js"
 )
@@ -160,6 +185,8 @@ done
 runtime_store_line="$(rg -n 'assets/js/runtime/store.js' index.html | cut -d: -f1)"
 runtime_state_line="$(rg -n 'assets/js/runtime/state.js' index.html | cut -d: -f1)"
 runtime_storage_migrations_line="$(rg -n 'assets/js/runtime/storage-migrations.js' index.html | cut -d: -f1)"
+runtime_storage_payload_line="$(rg -n 'assets/js/runtime/storage-payload.js' index.html | cut -d: -f1)"
+runtime_storage_shapes_line="$(rg -n 'assets/js/runtime/storage-shapes.js' index.html | cut -d: -f1)"
 runtime_storage_line="$(rg -n 'assets/js/runtime/storage.js' index.html | cut -d: -f1)"
 date_utils_line="$(rg -n 'assets/js/runtime/date-utils.js' index.html | cut -d: -f1)"
 dom_utils_line="$(rg -n 'assets/js/runtime/dom-utils.js' index.html | cut -d: -f1)"
@@ -169,6 +196,8 @@ metrics_line="$(rg -n 'assets/js/workspace/metrics.js' index.html | cut -d: -f1)
 workspace_data_line="$(rg -n 'assets/js/workspace/data.js' index.html | cut -d: -f1)"
 app_init_line="$(rg -n 'assets/js/runtime/app-init.js' index.html | cut -d: -f1)"
 tavern_catalog_line="$(rg -n 'assets/js/features/tavern/catalog.js' index.html | cut -d: -f1)"
+tavern_analyze_line="$(rg -n 'assets/js/features/tavern/analyze.js' index.html | cut -d: -f1)"
+tavern_records_line="$(rg -n 'assets/js/features/tavern/records.js' index.html | cut -d: -f1)"
 tavern_logic_line="$(rg -n 'assets/js/features/tavern/logic.js' index.html | cut -d: -f1)"
 tavern_stage_line="$(rg -n 'assets/js/features/tavern/stage.js' index.html | cut -d: -f1)"
 tavern_result_line="$(rg -n 'assets/js/features/tavern/result.js' index.html | cut -d: -f1)"
@@ -190,6 +219,8 @@ notes_render_line="$(rg -n 'assets/js/features/notes/render.js' index.html | cut
 leave_rules_line="$(rg -n 'assets/js/features/leave/rules.js' index.html | cut -d: -f1)"
 leave_ui_line="$(rg -n 'assets/js/features/leave/ui.js' index.html | cut -d: -f1)"
 leave_line="$(rg -n 'assets/js/features/leave/index.js' index.html | cut -d: -f1)"
+stats_ranges_line="$(rg -n 'assets/js/features/stats/ranges.js' index.html | cut -d: -f1)"
+stats_aggregates_line="$(rg -n 'assets/js/features/stats/aggregates.js' index.html | cut -d: -f1)"
 stats_data_line="$(rg -n 'assets/js/features/stats/data.js' index.html | cut -d: -f1)"
 stats_charts_line="$(rg -n 'assets/js/features/stats/charts.js' index.html | cut -d: -f1)"
 stats_line="$(rg -n 'assets/js/features/stats/index.js' index.html | cut -d: -f1)"
@@ -200,7 +231,11 @@ status_status_line="$(rg -n 'assets/js/features/dashboard/status.js' index.html 
 status_ui_line="$(rg -n 'assets/js/features/dashboard/ui.js' index.html | cut -d: -f1)"
 sync_state_line="$(rg -n 'assets/js/features/sync/state.js' index.html | cut -d: -f1)"
 sync_api_line="$(rg -n 'assets/js/features/sync/api.js' index.html | cut -d: -f1)"
+sync_ui_line="$(rg -n 'assets/js/features/sync/ui.js' index.html | cut -d: -f1)"
+sync_logic_line="$(rg -n 'assets/js/features/sync/logic.js' index.html | cut -d: -f1)"
 sync_line="$(rg -n 'assets/js/features/sync/index.js' index.html | cut -d: -f1)"
+export_profiles_line="$(rg -n 'assets/js/features/export/profiles.js' index.html | cut -d: -f1)"
+export_monthly_line="$(rg -n 'assets/js/features/export/monthly.js' index.html | cut -d: -f1)"
 export_data_line="$(rg -n 'assets/js/features/export/data.js' index.html | cut -d: -f1)"
 export_formats_line="$(rg -n 'assets/js/features/export/formats.js' index.html | cut -d: -f1)"
 export_ui_line="$(rg -n 'assets/js/features/export/ui.js' index.html | cut -d: -f1)"
@@ -211,18 +246,23 @@ if (( runtime_store_line >= runtime_state_line )); then
   exit 1
 fi
 
-if (( runtime_state_line >= runtime_storage_line )); then
-  printf 'runtime-state.js must load before runtime-storage.js\n' >&2
-  exit 1
-fi
-
 if (( runtime_state_line >= runtime_storage_migrations_line )); then
   printf 'runtime-state.js must load before runtime-storage-migrations.js\n' >&2
   exit 1
 fi
 
-if (( runtime_storage_migrations_line >= runtime_storage_line )); then
-  printf 'runtime-storage-migrations.js must load before runtime-storage.js\n' >&2
+if (( runtime_storage_migrations_line >= runtime_storage_payload_line )); then
+  printf 'runtime-storage-migrations.js must load before runtime-storage-payload.js\n' >&2
+  exit 1
+fi
+
+if (( runtime_storage_payload_line >= runtime_storage_shapes_line )); then
+  printf 'runtime-storage-payload.js must load before runtime-storage-shapes.js\n' >&2
+  exit 1
+fi
+
+if (( runtime_storage_shapes_line >= runtime_storage_line )); then
+  printf 'runtime-storage-shapes.js must load before runtime-storage.js\n' >&2
   exit 1
 fi
 
@@ -266,8 +306,18 @@ if (( app_init_line >= tavern_catalog_line )); then
   exit 1
 fi
 
-if (( tavern_catalog_line >= tavern_logic_line )); then
-  printf 'tavern-catalog.js must load before tavern-logic.js\n' >&2
+if (( tavern_catalog_line >= tavern_analyze_line )); then
+  printf 'tavern-catalog.js must load before tavern-analyze.js\n' >&2
+  exit 1
+fi
+
+if (( tavern_analyze_line >= tavern_records_line )); then
+  printf 'tavern-analyze.js must load before tavern-records.js\n' >&2
+  exit 1
+fi
+
+if (( tavern_records_line >= tavern_logic_line )); then
+  printf 'tavern-records.js must load before tavern-logic.js\n' >&2
   exit 1
 fi
 
@@ -371,6 +421,21 @@ if (( leave_ui_line >= leave_line )); then
   exit 1
 fi
 
+if (( leave_line >= stats_ranges_line )); then
+  printf 'leave.js must load before stats-ranges.js\n' >&2
+  exit 1
+fi
+
+if (( stats_ranges_line >= stats_aggregates_line )); then
+  printf 'stats-ranges.js must load before stats-aggregates.js\n' >&2
+  exit 1
+fi
+
+if (( stats_aggregates_line >= stats_data_line )); then
+  printf 'stats-aggregates.js must load before stats-data.js\n' >&2
+  exit 1
+fi
+
 if (( stats_data_line >= stats_charts_line )); then
   printf 'stats-data.js must load before stats-charts.js\n' >&2
   exit 1
@@ -416,13 +481,33 @@ if (( sync_state_line >= sync_api_line )); then
   exit 1
 fi
 
-if (( sync_api_line >= sync_line )); then
-  printf 'sync-api.js must load before sync.js\n' >&2
+if (( sync_api_line >= sync_ui_line )); then
+  printf 'sync-api.js must load before sync-ui.js\n' >&2
   exit 1
 fi
 
-if (( sync_line >= export_data_line )); then
-  printf 'sync.js must load before export-data.js\n' >&2
+if (( sync_ui_line >= sync_logic_line )); then
+  printf 'sync-ui.js must load before sync-logic.js\n' >&2
+  exit 1
+fi
+
+if (( sync_logic_line >= sync_line )); then
+  printf 'sync-logic.js must load before sync.js\n' >&2
+  exit 1
+fi
+
+if (( sync_line >= export_profiles_line )); then
+  printf 'sync.js must load before export-profiles.js\n' >&2
+  exit 1
+fi
+
+if (( export_profiles_line >= export_monthly_line )); then
+  printf 'export-profiles.js must load before export-monthly.js\n' >&2
+  exit 1
+fi
+
+if (( export_monthly_line >= export_data_line )); then
+  printf 'export-monthly.js must load before export-data.js\n' >&2
   exit 1
 fi
 

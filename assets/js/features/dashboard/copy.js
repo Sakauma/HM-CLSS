@@ -40,6 +40,7 @@ function getPeriodLabel(period) {
  * @returns {{ pillText: string, chipLevel: 'success'|'warning'|'danger'|'info', copy: string }}
  */
 function getVoyageAmbientPresentation(ambient) {
+    const activeTask = runtimeSelectors.currentTask();
     const map = {
         steady: {
             pillText: '稳态巡航',
@@ -56,7 +57,7 @@ function getVoyageAmbientPresentation(ambient) {
         recovery: {
             pillText: '恢复推进',
             chipLevel: 'info',
-            copy: currentTask
+            copy: activeTask
                 ? '继续当前任务。'
                 : '适合推进主线。'
         },
@@ -79,6 +80,7 @@ function getTodayOverview(dayData) {
     const now = getCurrentTime();
     const currentMins = now.hour * 60 + now.minute;
     const periods = ['morning', 'afternoon', 'evening'];
+    const activeTask = runtimeSelectors.currentTask();
     let hasIssues = false;
     let hasWarnings = false;
 
@@ -182,14 +184,14 @@ function getTodayOverview(dayData) {
     const unfinishedPeriod = periods.find((period) => !dayData[period].checkIn || !dayData[period].checkOut);
     if (unfinishedPeriod) {
         return {
-            chipLevel: currentTask ? 'info' : 'success',
-            chipText: currentTask ? '科研中' : '待命中',
-            overallStatus: currentTask ? '科研推进中' : '等待下一班次',
-            overallHint: currentTask ? '当前有任务在推进。' : `${getPeriodLabel(unfinishedPeriod)} 是下一段重点。`,
-            nextAction: currentTask ? '继续当前任务。' : '这段空档适合任务或速记。',
-            nextActionHint: currentTask ? '注意力留给主线。' : '把空档用在主线上。',
-            commandTitle: currentTask ? '继续主线' : '缓冲窗口',
-            commandMessage: currentTask
+            chipLevel: activeTask ? 'info' : 'success',
+            chipText: activeTask ? '科研中' : '待命中',
+            overallStatus: activeTask ? '科研推进中' : '等待下一班次',
+            overallHint: activeTask ? '当前有任务在推进。' : `${getPeriodLabel(unfinishedPeriod)} 是下一段重点。`,
+            nextAction: activeTask ? '继续当前任务。' : '这段空档适合任务或速记。',
+            nextActionHint: activeTask ? '注意力留给主线。' : '把空档用在主线上。',
+            commandTitle: activeTask ? '继续主线' : '缓冲窗口',
+            commandMessage: activeTask
                 ? '当前窗口平稳，继续推进。'
                 : '现在适合任务或捕捉。'
         };
@@ -200,7 +202,7 @@ function getTodayOverview(dayData) {
         chipText: '今日闭环',
         overallStatus: '今天的班次已闭环',
         overallHint: '三个班次都已闭环。',
-        nextAction: currentTask ? '继续当前任务。' : '继续任务，或去统计面板。',
+        nextAction: activeTask ? '继续当前任务。' : '继续任务，或去统计面板。',
         nextActionHint: '现在适合沉淀。',
         commandTitle: '今日闭环',
         commandMessage: '值班记录已完整落地。'

@@ -282,6 +282,8 @@ test('export data builds stable monthly snapshot summaries', () => {
         achievements: ['a1', 'a2']
     });
 
+    loadScript(context, 'assets/js/features/export/profiles.js');
+    loadScript(context, 'assets/js/features/export/monthly.js');
     loadScript(context, 'assets/js/features/export/data.js');
 
     assert.equal(context.getExportProfile('missing').id, 'month_json');
@@ -481,7 +483,10 @@ test('storage migration normalizes legacy payloads and saveData persists schema 
         return context[key];
     };
 
+    loadScript(context, 'assets/js/runtime/store.js');
     loadScript(context, 'assets/js/runtime/storage-migrations.js');
+    loadScript(context, 'assets/js/runtime/storage-payload.js');
+    loadScript(context, 'assets/js/runtime/storage-shapes.js');
     loadScript(context, 'assets/js/runtime/storage.js');
 
     assert.deepEqual(context.safeParseStoredJson('{"ok":true}', {}), { ok: true });

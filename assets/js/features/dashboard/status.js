@@ -4,7 +4,7 @@
  */
 
 function updateVoyageAmbientPresentation() {
-    const preferences = normalizeAmbientPreferences(ambientPreferences);
+    const preferences = normalizeAmbientPreferences(runtimeSelectors.ambientPreferences());
     const root = document.documentElement;
     const pillEl = document.getElementById('voyage-ambient-pill');
     const copyEl = document.getElementById('voyage-ambient-copy');
@@ -60,6 +60,7 @@ function getTodayPeriodStatusPresentation(dayData, period) {
 function updateTodayStatus() {
     const today = getTodayString();
     const dayData = ensureCheckinDay(today);
+    const activeTask = runtimeSelectors.currentTask();
 
     ['morning', 'afternoon', 'evening'].forEach((period) => {
         const el = document.getElementById(`today-${period}-status`);
@@ -77,8 +78,8 @@ function updateTodayStatus() {
     }
 
     const activeTaskEl = document.getElementById('today-active-task');
-    if (currentTask) {
-        activeTaskEl.textContent = currentTask.name;
+    if (activeTask) {
+        activeTaskEl.textContent = activeTask.name;
         activeTaskEl.className = 'font-medium text-primary truncate max-w-[10rem]';
     } else {
         activeTaskEl.textContent = '空闲';
@@ -115,12 +116,12 @@ function updateTodayStatus() {
     }
 
     if (heroActiveTaskDisplayEl) {
-        heroActiveTaskDisplayEl.textContent = currentTask ? currentTask.name : '空闲';
+        heroActiveTaskDisplayEl.textContent = activeTask ? activeTask.name : '空闲';
     }
 
     if (heroActiveTaskHintEl) {
-        heroActiveTaskHintEl.textContent = currentTask
-            ? `${tagMap[currentTask.tag] || tagMap.other} · ${currentTask.startTime} 开始`
+        heroActiveTaskHintEl.textContent = activeTask
+            ? `${tagMap[activeTask.tag] || tagMap.other} · ${activeTask.startTime} 开始`
             : '当前没有进行中的科研任务。';
     }
 

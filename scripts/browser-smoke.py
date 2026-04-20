@@ -18,6 +18,7 @@ from browser_smoke.scenarios.insights import (
     test_settings_and_exports,
     test_statistics_panel,
 )
+from browser_smoke.scenarios.sync import test_sync_error_states
 from browser_smoke.scenarios.tavern import test_tavern_flow
 from browser_smoke.scenarios.workspace import (
     test_leave_workflows,
@@ -51,6 +52,7 @@ def main() -> int:
         test_navigation_shortcuts(driver)
         test_statistics_panel(driver)
         test_settings_and_exports(driver)
+        test_sync_error_states(driver)
         test_quick_capture_flow(driver)
         test_task_hero_flow(driver)
         test_leave_workflows(driver)

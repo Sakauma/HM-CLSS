@@ -80,10 +80,11 @@ function getRetroCheckinAvailability(targetDate) {
  * @returns {{ valence: number, intensity: number }}
  */
 function getCurrentTavernSignal() {
-    if (currentDrinkInfo && typeof currentDrinkInfo.valence === 'number') {
+    const currentDrink = runtimeSelectors.currentDrinkInfo();
+    if (currentDrink && typeof currentDrink.valence === 'number') {
         return {
-            valence: currentDrinkInfo.valence,
-            intensity: typeof currentDrinkInfo.intensity === 'number' ? currentDrinkInfo.intensity : 0.25
+            valence: currentDrink.valence,
+            intensity: typeof currentDrink.intensity === 'number' ? currentDrink.intensity : 0.25
         };
     }
 
@@ -105,6 +106,7 @@ function getVoyageAmbientState() {
     const dayData = checkinData[today] ? ensureDayRecord(checkinData[today]) : createEmptyDayRecord();
     const tavernSignal = getCurrentTavernSignal();
     const todayTasks = taskData[today] || [];
+    const activeTask = runtimeSelectors.currentTask();
 
     let issues = false;
     let warnings = false;
@@ -123,7 +125,7 @@ function getVoyageAmbientState() {
         return { state: 'alert', warnings, issues };
     }
 
-    if (currentTask || todayTasks.length > 0 || dayData.leave || tavernSignal.valence > 0.18) {
+    if (activeTask || todayTasks.length > 0 || dayData.leave || tavernSignal.valence > 0.18) {
         return { state: 'recovery', warnings, issues };
     }
 

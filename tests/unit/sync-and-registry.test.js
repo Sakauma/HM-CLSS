@@ -184,6 +184,8 @@ test('sync controller covers conflict confirmation and failure branches', async 
     });
 
     loadScript(context, 'assets/js/features/sync/state.js');
+    loadScript(context, 'assets/js/features/sync/ui.js');
+    loadScript(context, 'assets/js/features/sync/logic.js');
     loadScript(context, 'assets/js/features/sync/index.js');
 
     context.fetchCloudWorkspaceData = async () => ({ lastSyncTime: '2026-04-21T10:00:00.000Z' });

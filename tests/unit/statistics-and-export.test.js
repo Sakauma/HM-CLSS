@@ -117,6 +117,8 @@ test('statistics data prepares stable fixture aggregates', () => {
         calculateTotalTaskHours: () => 3.5
     });
 
+    loadScript(context, 'assets/js/features/stats/ranges.js');
+    loadScript(context, 'assets/js/features/stats/aggregates.js');
     loadScript(context, 'assets/js/features/stats/data.js');
 
     const { startDate, endDate, labels } = context.getDateRange('week');
@@ -178,6 +180,8 @@ test('export data keeps empty monthly fixtures stable', () => {
         achievements: []
     });
 
+    loadScript(context, 'assets/js/features/export/profiles.js');
+    loadScript(context, 'assets/js/features/export/monthly.js');
     loadScript(context, 'assets/js/features/export/data.js');
 
     const overview = context.buildWorkspaceExportOverview();

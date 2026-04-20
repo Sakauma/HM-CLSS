@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from browser_smoke.helpers import (
@@ -55,7 +56,18 @@ def test_accessibility_regressions(driver) -> None:
     wait_visible(driver, "confirm-dialog-modal")
     wait_active_element_id(driver, "confirm-dialog-confirm")
     require(find(driver, "confirm-dialog-modal").get_attribute("aria-hidden") == "false", "confirm dialog should expose aria-hidden=false")
+    require(find(driver, "confirm-dialog-modal").get_attribute("aria-modal") == "true", "confirm dialog should expose aria-modal=true")
     click(driver, "confirm-dialog-cancel")
     wait_hidden(driver, "confirm-dialog-modal")
     wait_active_element_id(driver, "retro-checkin-submit")
+
+    driver.execute_script("showToast('a11y smoke toast', 'success');")
+    wait_for(
+        driver,
+        lambda d: any(
+            element.get_attribute("aria-live") in ("polite", "assertive")
+            for element in d.find_elements(By.CSS_SELECTOR, "#toast-container > *")
+        ),
+        "toast items did not expose aria-live",
+    )
     log("   accessibility regressions ok")

@@ -53,6 +53,8 @@ node --check assets/js/runtime/theme.js
 node --check assets/js/runtime/store.js
 node --check assets/js/runtime/state.js
 node --check assets/js/runtime/storage-migrations.js
+node --check assets/js/runtime/storage-payload.js
+node --check assets/js/runtime/storage-shapes.js
 node --check assets/js/runtime/storage.js
 node --check assets/js/runtime/date-utils.js
 node --check assets/js/runtime/dom-utils.js
@@ -62,6 +64,8 @@ node --check assets/js/workspace/metrics.js
 node --check assets/js/workspace/data.js
 node --check assets/js/ui/navigation.js
 node --check assets/js/features/tavern/catalog.js
+node --check assets/js/features/tavern/analyze.js
+node --check assets/js/features/tavern/records.js
 node --check assets/js/features/tavern/logic.js
 node --check assets/js/features/tavern/stage.js
 node --check assets/js/features/tavern/result.js
@@ -84,6 +88,8 @@ node --check assets/js/features/notes/index.js
 node --check assets/js/features/leave/rules.js
 node --check assets/js/features/leave/ui.js
 node --check assets/js/features/leave/index.js
+node --check assets/js/features/stats/ranges.js
+node --check assets/js/features/stats/aggregates.js
 node --check assets/js/features/stats/data.js
 node --check assets/js/features/stats/charts.js
 node --check assets/js/features/stats/index.js
@@ -94,7 +100,11 @@ node --check assets/js/features/dashboard/status.js
 node --check assets/js/features/dashboard/ui.js
 node --check assets/js/features/sync/state.js
 node --check assets/js/features/sync/api.js
+node --check assets/js/features/sync/ui.js
+node --check assets/js/features/sync/logic.js
 node --check assets/js/features/sync/index.js
+node --check assets/js/features/export/profiles.js
+node --check assets/js/features/export/monthly.js
 node --check assets/js/features/export/data.js
 node --check assets/js/features/export/formats.js
 node --check assets/js/features/export/ui.js
@@ -153,6 +163,14 @@ bash scripts/setup-browser-test.sh
 bash scripts/browser-smoke.sh
 ```
 
+### 持续集成
+
+仓库内置了 [`.github/workflows/ci.yml`](./.github/workflows/ci.yml)：
+
+- `push` / `pull_request` 自动运行 `bash scripts/smoke-check.sh`
+- 浏览器环境可用时继续运行 `bash scripts/browser-smoke.sh`
+- 本地脚本和 CI 使用同一套 `conda` 浏览器环境定义，不走两套口径
+
 可选环境变量：
 
 - `HM_CLSS_BROWSER_ENV`
@@ -178,7 +196,9 @@ bash scripts/browser-smoke.sh
 - `assets/css/components.css`
   状态徽章、主按钮、流程切换和通用操作卡片。
 - `assets/css/features.css`
-  深空酒馆、速记弹窗和富文本内容等业务外观。
+  深空酒馆业务外观。
+- `assets/css/features-notes.css`
+  速记弹窗、归档列表和快速捕捉相关外观。
 - `assets/css/motion.css`
   弹窗、toast、酒馆液面和减弱动效规则。
 - `assets/js/runtime/theme.js`
@@ -189,6 +209,10 @@ bash scripts/browser-smoke.sh
   全局共享状态、配置常量、标签映射与情绪/成就静态清单。
 - `assets/js/runtime/storage-migrations.js`
   按 schema 版本登记迁移函数，避免把历史兼容逻辑继续堆进 `storage.js`。
+- `assets/js/runtime/storage-payload.js`
+  本地 JSON 安全读取、schema 版本识别与启动载荷组装。
+- `assets/js/runtime/storage-shapes.js`
+  值班日记录、离舰记录与环境偏好的结构归一化。
 - `assets/js/runtime/storage.js`
   本地存储初始化、schema 迁移、结构归一化、持久化与当前任务恢复。
 - `assets/js/runtime/date-utils.js`
@@ -207,8 +231,12 @@ bash scripts/browser-smoke.sh
   左侧导航与舱段切换。
 - `assets/js/features/tavern/catalog.js`
   情绪词典、家族元数据与酒谱目录。
+- `assets/js/features/tavern/analyze.js`
+  文本哈希、情绪压缩和家族倾向判定。
+- `assets/js/features/tavern/records.js`
+  结果卡记录生成、ABV 推导和旧酒单归一化。
 - `assets/js/features/tavern/logic.js`
-  情绪解析、配方选择、结果记录生成与旧酒单归一化。
+  配方选择层，负责把分析结果映射到酒谱目录。
 - `assets/js/features/tavern/stage.js`
   酒馆舞台、液面波动、状态切换与输入态预览。
 - `assets/js/features/tavern/result.js`
@@ -252,7 +280,11 @@ bash scripts/browser-smoke.sh
 - `assets/js/features/leave/index.js`
   离舰控制器，负责时间下拉、提交与撤销监听。
 - `assets/js/features/stats/data.js`
-  统计区间、时间范围、聚合口径与图表数据准备。
+  顶部摘要所需的统计快照构建。
+- `assets/js/features/stats/ranges.js`
+  统计区间、月范围和图表桶日期工具。
+- `assets/js/features/stats/aggregates.js`
+  统计聚合、值班口径和图表数据准备。
 - `assets/js/features/stats/charts.js`
   Chart.js 图表渲染与实例更新。
 - `assets/js/features/stats/index.js`
@@ -271,10 +303,18 @@ bash scripts/browser-smoke.sh
   云同步凭据、本地同步时间与自动同步计时器状态。
 - `assets/js/features/sync/api.js`
   GitHub Gist 请求与响应解析。
+- `assets/js/features/sync/ui.js`
+  同步按钮态、配置表单读写和本地提示。
+- `assets/js/features/sync/logic.js`
+  冲突判断、拉取/推送流程和自动同步调度。
 - `assets/js/features/sync/index.js`
-  云同步控制器，负责按钮交互、冲突确认、自动同步与云端数据应用。
+  云同步入口，只负责挂载按钮事件并注册模块。
+- `assets/js/features/export/profiles.js`
+  导出档位定义、月份范围和文件名辅助函数。
+- `assets/js/features/export/monthly.js`
+  单月值班、任务、速记、离舰和酒单快照构建。
 - `assets/js/features/export/data.js`
-  导出配置、工作区快照、月度快照和预览摘要口径。
+  全量工作区快照与全量导出摘要。
 - `assets/js/features/export/formats.js`
   Markdown / CSV 序列化与导出文件描述生成。
 - `assets/js/features/export/ui.js`
@@ -439,54 +479,64 @@ const CONFIG = {
 2. `runtime/store.js`
 3. `runtime/state.js`
 4. `runtime/storage-migrations.js`
-5. `runtime/storage.js`
-6. `runtime/date-utils.js`
-7. `runtime/dom-utils.js`
-8. `runtime/ambient.js`
-9. `runtime/module-registry.js`
-10. `workspace/metrics.js`
-11. `workspace/data.js`
-12. `runtime/app-init.js`
-13. `ui/navigation.js`
-14. `features/tavern/catalog.js`
-15. `features/tavern/logic.js`
-16. `features/tavern/stage.js`
-17. `features/tavern/result.js`
-18. `features/tavern/history.js`
-19. `features/tavern/ui.js`
-20. `features/tavern/index.js`
-21. `features/checkin/rules.js`
-22. `features/checkin/status.js`
-23. `features/checkin/retro.js`
-24. `features/checkin/summary.js`
-25. `features/checkin/ui.js`
-26. `features/checkin/index.js`
-27. `features/focus/achievements.js`
-28. `workspace/entries.js`
-29. `features/tasks/hero.js`
-30. `features/tasks/index.js`
-31. `features/notes/modal.js`
-32. `features/notes/render.js`
-33. `features/notes/index.js`
-34. `features/leave/rules.js`
-35. `features/leave/ui.js`
-36. `features/leave/index.js`
-37. `features/stats/data.js`
-38. `features/stats/charts.js`
-39. `features/stats/index.js`
-40. `features/dashboard/copy.js`
-41. `features/dashboard/confirm.js`
-42. `features/dashboard/toast.js`
-43. `features/dashboard/status.js`
-44. `features/dashboard/ui.js`
-45. `features/sync/state.js`
-46. `features/sync/api.js`
-47. `features/sync/index.js`
-48. `features/export/data.js`
-49. `features/export/formats.js`
-50. `features/export/ui.js`
-51. `features/export/index.js`
-52. `ui/shortcuts.js`
+5. `runtime/storage-payload.js`
+6. `runtime/storage-shapes.js`
+7. `runtime/storage.js`
+8. `runtime/date-utils.js`
+9. `runtime/dom-utils.js`
+10. `runtime/ambient.js`
+11. `runtime/module-registry.js`
+12. `workspace/metrics.js`
+13. `workspace/data.js`
+14. `runtime/app-init.js`
+15. `ui/navigation.js`
+16. `features/tavern/catalog.js`
+17. `features/tavern/analyze.js`
+18. `features/tavern/records.js`
+19. `features/tavern/logic.js`
+20. `features/tavern/stage.js`
+21. `features/tavern/result.js`
+22. `features/tavern/history.js`
+23. `features/tavern/ui.js`
+24. `features/tavern/index.js`
+25. `features/checkin/rules.js`
+26. `features/checkin/status.js`
+27. `features/checkin/retro.js`
+28. `features/checkin/summary.js`
+29. `features/checkin/ui.js`
+30. `features/checkin/index.js`
+31. `features/focus/achievements.js`
+32. `workspace/entries.js`
+33. `features/tasks/hero.js`
+34. `features/tasks/index.js`
+35. `features/notes/modal.js`
+36. `features/notes/render.js`
+37. `features/notes/index.js`
+38. `features/leave/rules.js`
+39. `features/leave/ui.js`
+40. `features/leave/index.js`
+41. `features/stats/ranges.js`
+42. `features/stats/aggregates.js`
+43. `features/stats/data.js`
+44. `features/stats/charts.js`
+45. `features/stats/index.js`
+46. `features/dashboard/copy.js`
+47. `features/dashboard/confirm.js`
+48. `features/dashboard/toast.js`
+49. `features/dashboard/status.js`
+50. `features/dashboard/ui.js`
+51. `features/sync/state.js`
+52. `features/sync/api.js`
+53. `features/sync/ui.js`
+54. `features/sync/logic.js`
+55. `features/sync/index.js`
+56. `features/export/profiles.js`
+57. `features/export/monthly.js`
+58. `features/export/data.js`
+59. `features/export/formats.js`
+60. `features/export/ui.js`
+61. `features/export/index.js`
+62. `ui/shortcuts.js`
 
 现在目录按 `runtime / workspace / ui / features` 分层：`runtime` 负责启动、模块注册、共享运行时和可变状态容器，`workspace` 负责跨模块共享的数据与口径，`ui` 负责导航和快捷键这类外层交互，`features` 按值班、酒馆、离舰、统计、同步、导出等功能继续拆分。`app-init.js` 现在只负责 `initData()` 和触发模块注册中心，具体功能模块各自向注册中心报到。顺序错乱会导致飞船在启动时失压。
 

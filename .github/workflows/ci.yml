@@ -1,0 +1,49 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  smoke-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run smoke check
+        run: bash scripts/smoke-check.sh
+
+  browser-smoke:
+    runs-on: ubuntu-latest
+    needs: smoke-check
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          miniconda-version: "latest"
+          activate-environment: ""
+
+      - name: Setup browser test environment
+        shell: bash -el {0}
+        run: HM_CLSS_CONDA_SOLVER=classic bash scripts/setup-browser-test.sh
+
+      - name: Run browser smoke
+        shell: bash -el {0}
+        run: bash scripts/browser-smoke.sh
