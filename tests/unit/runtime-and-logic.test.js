@@ -26,6 +26,7 @@ function createBaseContext(overrides = {}) {
         Object,
         Date,
         Intl,
+        structuredClone: global.structuredClone,
         ...overrides
     });
 
@@ -224,6 +225,26 @@ test('export data builds stable monthly snapshot summaries', () => {
     assert.equal(snapshot.summary.topTaskTag.label, '代码');
     assert.equal(snapshot.summary.topDrinkFamily.family, 'Calm');
     assert.equal(snapshot.details.quickNotes[0].text, 'Signal locked');
+});
+
+test('workspace cloning prefers structuredClone and falls back safely', () => {
+    const cloneContext = createBaseContext({
+        structuredClone: (value) => ({ copied: true, value })
+    });
+    loadScript(cloneContext, 'assets/js/workspace/data.js');
+    const structuredResult = cloneContext.cloneWorkspaceValue({ nested: { a: 1 } });
+    assert.equal(structuredResult.copied, true);
+    assert.equal(structuredResult.value.nested.a, 1);
+
+    const fallbackContext = createBaseContext({
+        structuredClone: undefined
+    });
+    loadScript(fallbackContext, 'assets/js/workspace/data.js');
+    const original = { nested: { a: 1 } };
+    const fallbackClone = fallbackContext.cloneWorkspaceValue(original);
+    fallbackClone.nested.a = 2;
+    assert.equal(original.nested.a, 1);
+    assert.equal(fallbackContext.cloneWorkspaceValue(undefined), undefined);
 });
 
 test('export formats serialize markdown, csv and file descriptors', () => {

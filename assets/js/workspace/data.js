@@ -4,6 +4,18 @@
  */
 
 function cloneWorkspaceValue(value) {
+    if (typeof structuredClone === 'function') {
+        try {
+            return structuredClone(value);
+        } catch (error) {
+            // 回退到 JSON 序列化，以兼容不可克隆值混入的旧数据。
+        }
+    }
+
+    if (typeof value === 'undefined') {
+        return undefined;
+    }
+
     return JSON.parse(JSON.stringify(value));
 }
 
