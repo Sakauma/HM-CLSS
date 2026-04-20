@@ -80,7 +80,7 @@ function checkOut(period) {
 /**
  * 提交补打卡流程，并在必要时做覆盖确认。
  */
-function submitRetroCheckin() {
+async function submitRetroCheckin() {
     const date = document.getElementById('retro-checkin-date')?.value || '';
     const period = document.getElementById('retro-checkin-period')?.value || 'morning';
     const checkInTime = document.getElementById('retro-checkin-start')?.value || '';
@@ -114,8 +114,16 @@ function submitRetroCheckin() {
     }
 
     const existing = dayData[period];
-    if ((existing.checkIn || existing.checkOut) && !confirm(`该班次已存在记录（${existing.checkIn || '--:--'} / ${existing.checkOut || '--:--'}），确认覆盖为补录内容吗？`)) {
-        return;
+    if (existing.checkIn || existing.checkOut) {
+        const confirmed = await showConfirmDialog({
+            title: '覆盖这条班次记录？',
+            message: `当前已有 ${existing.checkIn || '--:--'} / ${existing.checkOut || '--:--'}，确认后会改成这次补录内容。`,
+            badge: 'RETRO OVERRIDE',
+            confirmLabel: '确认覆盖',
+            cancelLabel: '返回检查',
+            tone: 'warning'
+        });
+        if (!confirmed) return;
     }
 
     applyShiftRecord(date, period, {

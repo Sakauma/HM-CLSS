@@ -46,7 +46,7 @@ function updateTodayPhoneResistTimes() {
  */
 function updateAchievementsList() {
     const list = document.getElementById('achievements-list');
-    list.innerHTML = '';
+    const fragment = document.createDocumentFragment();
 
     achievementList.forEach((achievement) => {
         if (achievement.type && achievement.type !== 'phone') return;
@@ -58,19 +58,28 @@ function updateAchievementsList() {
         const icon = isAchieved ? 'check' : 'lock';
         const textClass = isAchieved ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500';
 
-        list.innerHTML += `
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl ${bgClass} flex items-center justify-center shrink-0">
-                    <i data-lucide="${icon}" class="w-5 h-5"></i>
-                </div>
-                <div>
-                    <div class="font-bold text-sm ${textClass}">${achievement.name}</div>
-                    <div class="text-xs text-slate-500">${achievement.description}</div>
-                </div>
-            </div>
-        `;
+        fragment.appendChild(appendDomChildren(createDomElement('div', {
+            className: 'flex items-center gap-3'
+        }), [
+            appendDomChildren(createDomElement('div', {
+                className: `w-10 h-10 rounded-xl ${bgClass} flex items-center justify-center shrink-0`
+            }), [
+                createLucideIconElement(icon, 'w-5 h-5')
+            ]),
+            appendDomChildren(createDomElement('div'), [
+                createDomElement('div', {
+                    className: `font-bold text-sm ${textClass}`,
+                    text: achievement.name
+                }),
+                createDomElement('div', {
+                    className: 'text-xs text-slate-500',
+                    text: achievement.description
+                })
+            ])
+        ]));
     });
 
+    list.replaceChildren(fragment);
     lucide.createIcons();
 }
 

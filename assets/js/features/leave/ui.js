@@ -136,7 +136,13 @@ function updateLeaveFormState() {
 function updateLeaveRecordsList() {
     const tbody = document.getElementById('leave-records-table');
     if (!leaveData.length) {
-        tbody.innerHTML = '<tr><td colspan="3" class="py-4 px-4 text-center text-slate-400">暂无历史归档</td></tr>';
+        const emptyRow = document.createElement('tr');
+        emptyRow.appendChild(createDomElement('td', {
+            className: 'py-4 px-4 text-center text-slate-400',
+            text: '暂无历史归档',
+            attrs: { colspan: '3' }
+        }));
+        tbody.replaceChildren(emptyRow);
         return;
     }
 
@@ -146,38 +152,59 @@ function updateLeaveRecordsList() {
         retro: { text: '补请假', style: 'bg-warning/10 text-warning border-warning/20' }
     };
 
-    tbody.innerHTML = '';
+    const fragment = document.createDocumentFragment();
 
     [...leaveData].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach((leave) => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors align-top';
-        const safeDate = escapeHtml(leave.date);
         const modeMeta = modeLabelMap[leave.requestMode] || modeLabelMap.normal;
+        const dateCell = createDomElement('td', {
+            className: 'py-3 px-4 font-mono text-slate-600 dark:text-slate-400'
+        });
+        const dateWrap = createDomElement('div', {
+            className: 'flex flex-wrap items-center gap-2'
+        });
+        dateWrap.appendChild(createDomElement('span', {
+            text: formatDisplayDate(leave.date)
+        }));
+        dateWrap.appendChild(createDomElement('span', {
+            className: `inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${modeMeta.style}`,
+            text: modeMeta.text
+        }));
+        dateWrap.appendChild(createDomElement('span', {
+            className: leave.type === 'full'
+                ? 'text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded ml-2 border border-primary/20'
+                : 'text-[10px] bg-warning/10 text-warning px-2 py-0.5 rounded ml-2 border border-warning/20',
+            text: leave.type === 'full' ? '全天' : `${leave.startTime} - ${leave.endTime}`
+        }));
+        dateCell.appendChild(dateWrap);
 
-        const timeDisplay = leave.type === 'full'
-            ? '<span class="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded ml-2 border border-primary/20">全天</span>'
-            : `<span class="text-[10px] bg-warning/10 text-warning px-2 py-0.5 rounded ml-2 border border-warning/20">${escapeHtml(leave.startTime)} - ${escapeHtml(leave.endTime)}</span>`;
+        const reasonCell = createDomElement('td', {
+            className: 'py-3 px-4'
+        });
+        reasonCell.appendChild(createDomElement('div', {
+            className: 'font-medium',
+            text: leave.reason
+        }));
+        if (leave.correctionNote) {
+            reasonCell.appendChild(createDomElement('div', {
+                className: 'mt-1 text-[11px] leading-5 text-slate-400',
+                text: `补录说明：${leave.correctionNote}`
+            }));
+        }
 
-        const correctionLine = leave.correctionNote
-            ? `<div class="mt-1 text-[11px] leading-5 text-slate-400">补录说明：${escapeHtml(leave.correctionNote)}</div>`
-            : '';
+        const actionCell = createDomElement('td', {
+            className: 'py-3 px-4'
+        });
+        actionCell.appendChild(createDomElement('button', {
+            className: 'delete-leave px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-lg text-xs font-bold transition-all',
+            text: '撤销',
+            attrs: { 'data-id': leave.id }
+        }));
 
-        tr.innerHTML = `
-            <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-400">
-                <div class="flex flex-wrap items-center gap-2">
-                    <span>${escapeHtml(formatDisplayDate(safeDate))}</span>
-                    <span class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${modeMeta.style}">${modeMeta.text}</span>
-                    ${timeDisplay}
-                </div>
-            </td>
-            <td class="py-3 px-4">
-                <div class="font-medium">${escapeHtml(leave.reason)}</div>
-                ${correctionLine}
-            </td>
-            <td class="py-3 px-4">
-                <button class="delete-leave px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-lg text-xs font-bold transition-all" data-id="${escapeHtml(leave.id)}">撤销</button>
-            </td>
-        `;
-        tbody.appendChild(tr);
+        tr.append(dateCell, reasonCell, actionCell);
+        fragment.appendChild(tr);
     });
+
+    tbody.replaceChildren(fragment);
 }

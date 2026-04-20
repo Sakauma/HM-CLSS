@@ -3,6 +3,126 @@
  * 负责刷新首页总览、航行情绪和全局 toast 提示。
  */
 
+let confirmDialogResolver = null;
+let confirmDialogLastTrigger = null;
+let confirmDialogBindingsReady = false;
+
+function getConfirmDialogElements() {
+    return {
+        modal: document.getElementById('confirm-dialog-modal'),
+        panel: document.getElementById('confirm-dialog-panel'),
+        badge: document.getElementById('confirm-dialog-badge'),
+        title: document.getElementById('confirm-dialog-title'),
+        message: document.getElementById('confirm-dialog-message'),
+        confirmBtn: document.getElementById('confirm-dialog-confirm'),
+        cancelBtn: document.getElementById('confirm-dialog-cancel')
+    };
+}
+
+function closeConfirmDialog(result) {
+    const elements = getConfirmDialogElements();
+    if (!elements.modal) return;
+
+    elements.modal.classList.add('hidden');
+    elements.modal.classList.remove('flex');
+    elements.modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('overflow-hidden');
+
+    if (confirmDialogLastTrigger && typeof confirmDialogLastTrigger.focus === 'function') {
+        confirmDialogLastTrigger.focus();
+    }
+
+    const resolver = confirmDialogResolver;
+    confirmDialogResolver = null;
+    confirmDialogLastTrigger = null;
+    if (resolver) {
+        resolver(Boolean(result));
+    }
+}
+
+function ensureConfirmDialogBindings() {
+    if (confirmDialogBindingsReady) return;
+
+    const { modal, panel, confirmBtn, cancelBtn } = getConfirmDialogElements();
+    if (!modal || !panel || !confirmBtn || !cancelBtn) return;
+
+    confirmDialogBindingsReady = true;
+    confirmBtn.addEventListener('click', () => closeConfirmDialog(true));
+    cancelBtn.addEventListener('click', () => closeConfirmDialog(false));
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            closeConfirmDialog(false);
+        }
+    });
+    panel.addEventListener('click', (event) => event.stopPropagation());
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && confirmDialogResolver) {
+            closeConfirmDialog(false);
+        }
+    });
+}
+
+function showConfirmDialog(options = {}) {
+    ensureConfirmDialogBindings();
+    const elements = getConfirmDialogElements();
+    if (!elements.modal || !elements.title || !elements.message || !elements.confirmBtn || !elements.cancelBtn || !elements.badge) {
+        return Promise.resolve(false);
+    }
+
+    if (confirmDialogResolver) {
+        closeConfirmDialog(false);
+    }
+
+    const {
+        title = '确认继续',
+        message = '确认执行当前操作吗？',
+        badge = 'CONFIRM',
+        confirmLabel = '确认',
+        cancelLabel = '取消',
+        tone = 'warning'
+    } = options;
+
+    const toneClassMap = {
+        danger: {
+            badge: 'status-chip status-chip-danger shrink-0',
+            confirm: 'w-full rounded-xl bg-danger px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-rose-600'
+        },
+        warning: {
+            badge: 'status-chip status-chip-warning shrink-0',
+            confirm: 'w-full rounded-xl bg-warning px-4 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-yellow-500'
+        },
+        info: {
+            badge: 'status-chip status-chip-info shrink-0',
+            confirm: 'w-full rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-primaryHover'
+        },
+        success: {
+            badge: 'status-chip status-chip-success shrink-0',
+            confirm: 'w-full rounded-xl bg-success px-4 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-emerald-400'
+        }
+    };
+    const toneClasses = toneClassMap[tone] || toneClassMap.warning;
+
+    confirmDialogLastTrigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    elements.badge.textContent = badge;
+    elements.badge.className = toneClasses.badge;
+    elements.title.textContent = title;
+    elements.message.textContent = message;
+    elements.confirmBtn.className = toneClasses.confirm;
+    elements.confirmBtn.textContent = confirmLabel;
+    elements.cancelBtn.textContent = cancelLabel;
+
+    elements.modal.classList.remove('hidden');
+    elements.modal.classList.add('flex');
+    elements.modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('overflow-hidden');
+
+    return new Promise((resolve) => {
+        confirmDialogResolver = resolve;
+        requestAnimationFrame(() => elements.confirmBtn.focus());
+    });
+}
+
 /**
  * 根据当前派生状态刷新全站航行情绪层展示。
  */
@@ -163,10 +283,10 @@ function showToast(message, type = 'success') {
     };
 
     const icons = {
-        success: '<i data-lucide="check-circle" class="w-5 h-5 text-success shrink-0"></i>',
-        error: '<i data-lucide="x-circle" class="w-5 h-5 text-danger shrink-0"></i>',
-        warning: '<i data-lucide="alert-triangle" class="w-5 h-5 text-warning shrink-0"></i>',
-        info: '<i data-lucide="info" class="w-5 h-5 text-primary shrink-0"></i>'
+        success: 'check-circle',
+        error: 'x-circle',
+        warning: 'alert-triangle',
+        info: 'info'
     };
 
     const tone = colors[type] ? type : 'success';
@@ -174,10 +294,13 @@ function showToast(message, type = 'success') {
     toast.setAttribute('role', tone === 'error' ? 'alert' : 'status');
     toast.setAttribute('aria-live', tone === 'error' ? 'assertive' : 'polite');
     toast.setAttribute('aria-atomic', 'true');
-    toast.innerHTML = `
-        ${icons[tone]}
-        <span class="text-sm font-medium">${escapeHtml(message)}</span>
-    `;
+    toast.replaceChildren(...appendDomChildren(document.createDocumentFragment(), [
+        createLucideIconElement(icons[tone], `w-5 h-5 ${tone === 'success' ? 'text-success' : tone === 'error' ? 'text-danger' : tone === 'warning' ? 'text-warning' : 'text-primary'} shrink-0`),
+        createDomElement('span', {
+            className: 'text-sm font-medium',
+            text: message
+        })
+    ]).childNodes);
 
     container.appendChild(toast);
     lucide.createIcons();

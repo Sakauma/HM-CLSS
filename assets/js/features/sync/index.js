@@ -65,7 +65,16 @@ function shouldAutoApplyCloudData(cloudData) {
 }
 
 function setSyncButtonLoading(button, markup) {
-    button.innerHTML = markup;
+    const iconMatch = String(markup).match(/data-lucide="([^"]+)"/);
+    const label = String(markup).replace(/<[^>]+>/g, '').trim();
+
+    if (iconMatch) {
+        setElementIconLabel(button, iconMatch[1], label, {
+            iconClass: 'w-4 h-4 animate-spin'
+        });
+    } else {
+        button.textContent = label;
+    }
     lucide.createIcons();
 }
 
@@ -96,7 +105,14 @@ async function maybeConfirmCloudOverwrite() {
     if (!cloudData?.lastSyncTime) return true;
 
     if (!localLastSyncTime || new Date(cloudData.lastSyncTime) > new Date(localLastSyncTime)) {
-        return confirm('⚠️ 严重警告：\n\n检测到云端存在比您本地更新的数据（可能来自您的另一台设备），或您的本地缺乏同步记录。\n如果您执意上传，云端的新数据将被彻底抹除！\n\n强烈建议点击"取消"，并先执行"拉取云端数据"。\n\n是否仍然要强制覆盖云端？');
+        return showConfirmDialog({
+            title: '云端版本更新于本地之后',
+            message: '如果继续上传，云端较新的数据会被本地版本覆盖。更稳妥的做法是先拉取云端数据再决定。',
+            badge: 'SYNC OVERRIDE',
+            confirmLabel: '仍然上传',
+            cancelLabel: '先去拉取',
+            tone: 'danger'
+        });
     }
 
     return true;
@@ -144,7 +160,15 @@ async function handlePullCloud() {
         showSyncMissingConfigToast();
         return;
     }
-    if (!confirm('⚠️ 拉取云端数据将覆盖你当前的本地数据！确定要继续吗？')) return;
+    const confirmed = await showConfirmDialog({
+        title: '拉取云端数据并覆盖本地？',
+        message: '确认后会用云端版本替换当前本地数据，未导出的本地改动会丢失。',
+        badge: 'SYNC PULL',
+        confirmLabel: '确认拉取',
+        cancelLabel: '暂不拉取',
+        tone: 'warning'
+    });
+    if (!confirmed) return;
 
     const btn = document.getElementById('pull-cloud-btn');
     const originalText = btn.innerHTML;

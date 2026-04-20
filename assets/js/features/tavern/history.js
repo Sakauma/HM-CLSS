@@ -66,8 +66,16 @@ function renderTavernHistory() {
     }).join('');
 
     container.querySelectorAll('.delete-drink-btn').forEach((button) => {
-        button.addEventListener('click', function() {
-            if (!confirm('确定要从酒柜里移除这杯特调吗？')) return;
+        button.addEventListener('click', async function() {
+            const confirmed = await showConfirmDialog({
+                title: '从酒柜移除这杯特调？',
+                message: '移除后这杯酒会离开当前酒柜历史，但不会影响其他记录。',
+                badge: 'REMOVE DRINK',
+                confirmLabel: '确认移除',
+                cancelLabel: '先保留',
+                tone: 'danger'
+            });
+            if (!confirmed) return;
             const id = this.getAttribute('data-id');
             tavernData = tavernData.filter((drink) => drink.id !== id);
             saveData();

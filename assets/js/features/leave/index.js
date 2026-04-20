@@ -6,25 +6,39 @@
 function populateLeaveTimeDropdowns() {
     const startSelect = document.getElementById('leave-start-time');
     const endSelect = document.getElementById('leave-end-time');
-    let optionsHtml = '';
+    const fragment = document.createDocumentFragment();
 
     for (let h = 0; h < 24; h++) {
         const hour = h.toString().padStart(2, '0');
-        optionsHtml += `<option value="${hour}:00">${hour}:00</option>`;
-        optionsHtml += `<option value="${hour}:30">${hour}:30</option>`;
+        fragment.appendChild(createDomElement('option', {
+            text: `${hour}:00`,
+            attrs: { value: `${hour}:00` }
+        }));
+        fragment.appendChild(createDomElement('option', {
+            text: `${hour}:30`,
+            attrs: { value: `${hour}:30` }
+        }));
     }
 
     if (startSelect && endSelect) {
-        startSelect.innerHTML = optionsHtml;
-        endSelect.innerHTML = optionsHtml;
+        startSelect.replaceChildren(fragment.cloneNode(true));
+        endSelect.replaceChildren(fragment);
     }
 }
 
-function handleLeaveRecordDeletion(event) {
+async function handleLeaveRecordDeletion(event) {
     const btn = event.target.closest('.delete-leave');
     if (!btn) return;
 
-    if (!confirm('确定撤销该记录吗？')) return;
+    const confirmed = await showConfirmDialog({
+        title: '撤销这条离舰记录？',
+        message: '撤销后会同步刷新该日期的离舰状态和相关值班口径。',
+        badge: 'LEAVE DELETE',
+        confirmLabel: '确认撤销',
+        cancelLabel: '先保留',
+        tone: 'danger'
+    });
+    if (!confirmed) return;
 
     const id = btn.getAttribute('data-id');
     const leaveObj = leaveData.find((leave) => leave.id === id);
@@ -87,7 +101,7 @@ function initLeaveManagement() {
 /**
  * 新增一条离舰记录，并把结果同步到目标日期的打卡结构中。
  */
-function addLeave() {
+async function addLeave() {
     const workflow = activeLeaveWorkflow;
     const date = workflow === 'today' ? getTodayString() : document.getElementById('leave-date').value;
     const reason = document.getElementById('leave-reason').value.trim();
@@ -114,7 +128,14 @@ function addLeave() {
     const hasExistingLeave = leaveData.some((leave) => leave.date === date);
     const hasExistingCheckins = hasAnyCheckinRecord(dayData);
     if (workflow === 'retro' && (hasExistingLeave || hasExistingCheckins)) {
-        const confirmed = confirm('该日期已有离舰或打卡记录，确认继续补录这条历史修正吗？');
+        const confirmed = await showConfirmDialog({
+            title: '继续补录这条历史修正？',
+            message: '该日期已经有离舰或值班记录，确认后会以这次补录为准刷新历史结果。',
+            badge: 'RETRO LEAVE',
+            confirmLabel: '继续补录',
+            cancelLabel: '返回检查',
+            tone: 'warning'
+        });
         if (!confirmed) return;
     }
 
@@ -133,8 +154,16 @@ function addLeave() {
 
     if (type === 'full') {
         const existingFullLeave = leaveData.find((leave) => leave.date === date && leave.type === 'full');
-        if (existingFullLeave && !confirm('该日期已经有一条全天离舰记录，确认用这次内容覆盖吗？')) {
-            return;
+        if (existingFullLeave) {
+            const confirmed = await showConfirmDialog({
+                title: '覆盖这条全天离舰记录？',
+                message: '同一天已经存在一条全天离舰记录，确认后会改成这次内容。',
+                badge: 'FULL LEAVE',
+                confirmLabel: '确认覆盖',
+                cancelLabel: '先保留',
+                tone: 'warning'
+            });
+            if (!confirmed) return;
         }
 
         if (existingFullLeave) {

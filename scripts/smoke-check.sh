@@ -317,6 +317,7 @@ required_ids=(
   "keyboard-shortcut-hint"
   "morning-checkin"
   "toast-container"
+  "confirm-dialog-modal"
   "export-month-input"
   "export-profile-select"
   "export-trigger-btn"

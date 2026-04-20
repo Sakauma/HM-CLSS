@@ -299,6 +299,30 @@ function appendDomChildren(parent, children) {
     return parent;
 }
 
+function createLucideIconElement(icon, className = '') {
+    return createDomElement('i', {
+        className,
+        attrs: { 'data-lucide': icon }
+    });
+}
+
+function setElementIconLabel(element, icon, label, options = {}) {
+    if (!element) return;
+
+    const {
+        iconClass = 'w-4 h-4',
+        labelClass = ''
+    } = options;
+
+    const fragment = document.createDocumentFragment();
+    fragment.appendChild(createLucideIconElement(icon, iconClass));
+    fragment.appendChild(createDomElement('span', {
+        className: labelClass,
+        text: label
+    }));
+    element.replaceChildren(fragment);
+}
+
 /**
  * 兼容旧结构的速记记录，稳定地读取文本内容。
  * @param {object} note
