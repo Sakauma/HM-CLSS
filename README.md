@@ -84,6 +84,9 @@ node --check assets/js/features/stats/data.js
 node --check assets/js/features/stats/charts.js
 node --check assets/js/features/stats/index.js
 node --check assets/js/features/dashboard/copy.js
+node --check assets/js/features/dashboard/confirm.js
+node --check assets/js/features/dashboard/toast.js
+node --check assets/js/features/dashboard/status.js
 node --check assets/js/features/dashboard/ui.js
 node --check assets/js/features/sync/state.js
 node --check assets/js/features/sync/api.js
@@ -233,8 +236,14 @@ bash scripts/browser-smoke.sh
   统计控制器，负责周期按钮、顶部摘要与图表刷新入口。
 - `assets/js/features/dashboard/copy.js`
   状态徽章、班次标签和首页总览文案派生。
+- `assets/js/features/dashboard/confirm.js`
+  全局确认弹窗的展示、焦点恢复和键盘关闭。
+- `assets/js/features/dashboard/toast.js`
+  全局 toast 的创建、图标和退场动画。
+- `assets/js/features/dashboard/status.js`
+  首页总览、今日摘要和航行情绪提示。
 - `assets/js/features/dashboard/ui.js`
-  今日状态面板渲染、航行情绪刷新与通用 Toast 提示。
+  首页界面聚合层，负责把首页状态和速记列表刷新收口到统一入口。
 - `assets/js/features/sync/state.js`
   云同步凭据、本地同步时间与自动同步计时器状态。
 - `assets/js/features/sync/api.js`
@@ -433,7 +442,10 @@ const CONFIG = {
 31. `features/stats/charts.js`
 32. `features/stats/index.js`
 33. `features/dashboard/copy.js`
-34. `features/dashboard/ui.js`
+34. `features/dashboard/confirm.js`
+35. `features/dashboard/toast.js`
+36. `features/dashboard/status.js`
+37. `features/dashboard/ui.js`
 35. `features/sync/state.js`
 36. `features/sync/api.js`
 37. `features/sync/index.js`

@@ -35,7 +35,12 @@ function refreshWorkspaceUiAfterSync() {
     updateSchedule();
     updateLeaveRecordsList();
     renderCurrentTaskState();
-    if (typeof updateQuickNotesList === 'function') updateQuickNotesList();
+    if (typeof refreshDashboardHome === 'function') {
+        refreshDashboardHome();
+    } else if (typeof updateTodayStatus === 'function') {
+        updateTodayStatus();
+        if (typeof updateQuickNotesList === 'function') updateQuickNotesList();
+    }
     if (typeof renderTavernHistory === 'function') renderTavernHistory();
 }
 

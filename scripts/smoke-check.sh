@@ -40,6 +40,9 @@ js_files=(
   assets/js/features/stats/charts.js
   assets/js/features/stats/index.js
   assets/js/features/dashboard/copy.js
+  assets/js/features/dashboard/confirm.js
+  assets/js/features/dashboard/toast.js
+  assets/js/features/dashboard/status.js
   assets/js/features/dashboard/ui.js
   assets/js/features/sync/state.js
   assets/js/features/sync/api.js
@@ -94,6 +97,9 @@ required_scripts=(
   "assets/js/features/stats/data.js"
   "assets/js/features/stats/charts.js"
   "assets/js/features/dashboard/copy.js"
+  "assets/js/features/dashboard/confirm.js"
+  "assets/js/features/dashboard/toast.js"
+  "assets/js/features/dashboard/status.js"
   "assets/js/features/export/index.js"
 )
 
@@ -147,6 +153,9 @@ stats_data_line="$(rg -n 'assets/js/features/stats/data.js' index.html | cut -d:
 stats_charts_line="$(rg -n 'assets/js/features/stats/charts.js' index.html | cut -d: -f1)"
 stats_line="$(rg -n 'assets/js/features/stats/index.js' index.html | cut -d: -f1)"
 status_copy_line="$(rg -n 'assets/js/features/dashboard/copy.js' index.html | cut -d: -f1)"
+status_confirm_line="$(rg -n 'assets/js/features/dashboard/confirm.js' index.html | cut -d: -f1)"
+status_toast_line="$(rg -n 'assets/js/features/dashboard/toast.js' index.html | cut -d: -f1)"
+status_status_line="$(rg -n 'assets/js/features/dashboard/status.js' index.html | cut -d: -f1)"
 status_ui_line="$(rg -n 'assets/js/features/dashboard/ui.js' index.html | cut -d: -f1)"
 sync_state_line="$(rg -n 'assets/js/features/sync/state.js' index.html | cut -d: -f1)"
 sync_api_line="$(rg -n 'assets/js/features/sync/api.js' index.html | cut -d: -f1)"
@@ -311,8 +320,23 @@ if (( stats_line >= status_copy_line )); then
   exit 1
 fi
 
-if (( status_copy_line >= status_ui_line )); then
-  printf 'status-copy.js must load before status-ui.js\n' >&2
+if (( status_copy_line >= status_confirm_line )); then
+  printf 'status-copy.js must load before status-confirm.js\n' >&2
+  exit 1
+fi
+
+if (( status_confirm_line >= status_toast_line )); then
+  printf 'status-confirm.js must load before status-toast.js\n' >&2
+  exit 1
+fi
+
+if (( status_toast_line >= status_status_line )); then
+  printf 'status-toast.js must load before status-status.js\n' >&2
+  exit 1
+fi
+
+if (( status_status_line >= status_ui_line )); then
+  printf 'status-status.js must load before status-ui.js\n' >&2
   exit 1
 fi
 

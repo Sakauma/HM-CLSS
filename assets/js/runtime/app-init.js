@@ -35,8 +35,7 @@ registerAppModule({
     id: 'dashboard-home',
     order: 100,
     init() {
-        updateTodayStatus();
-        updateQuickNotesList();
+        refreshDashboardHome();
     }
 });
 
@@ -48,7 +47,16 @@ registerAppModule({
 
 function initApp() {
     initData();
-    initializeAppModules();
+    try {
+        initializeAppModules();
+        window.__hmClssInitError = null;
+    } catch (error) {
+        window.__hmClssInitError = {
+            name: error?.name || 'Error',
+            message: error?.message || String(error)
+        };
+        throw error;
+    }
 }
 
 document.addEventListener('DOMContentLoaded', initApp);

@@ -136,7 +136,8 @@ def test_bootstrap(driver: webdriver.Firefox) -> None:
     wait_text_not_empty(driver, "current-date-time")
     wait_text_contains(driver, "keyboard-shortcut-hint", "Alt+1-8")
     nav_title = find(driver, "nav-checkin").get_attribute("title") or ""
-    require("Alt+1" in nav_title, "nav-checkin title is missing Alt+1 hotkey")
+    init_error = driver.execute_script("return window.__hmClssInitError || null;")
+    require("Alt+1" in nav_title, f"nav-checkin title is missing Alt+1 hotkey; init error: {init_error}")
     require(not is_hidden(driver, "checkin-section"), "checkin-section should be the default visible section")
     log("   bootstrap ok")
 
