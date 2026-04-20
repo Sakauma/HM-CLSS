@@ -41,16 +41,8 @@ registerAppModule({
 });
 
 registerAppModule({
-    id: 'cloud-startup',
-    order: 110,
-    init() {
-        autoPullOnStartup();
-    }
-});
-
-registerAppModule({
     id: 'summary-modals',
-    order: 120,
+    order: 110,
     init: bindSummaryModalControls
 });
 
