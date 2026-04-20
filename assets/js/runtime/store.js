@@ -95,6 +95,33 @@ function filterRuntimeItems(key, predicate) {
     return setRuntimeValue(key, currentValue.filter(predicate));
 }
 
+function updateRuntimeObjectEntry(key, entryKey, updater, defaultValue = {}) {
+    return updateRuntimeValue(key, (currentValue) => {
+        const baseValue = currentValue && typeof currentValue === 'object' && !Array.isArray(currentValue)
+            ? currentValue
+            : {};
+        const nextValue = typeof updater === 'function'
+            ? updater(baseValue[entryKey] ?? defaultValue)
+            : updater;
+        return {
+            ...baseValue,
+            [entryKey]: nextValue
+        };
+    });
+}
+
+function removeRuntimeObjectEntry(key, entryKey) {
+    return updateRuntimeValue(key, (currentValue) => {
+        const baseValue = currentValue && typeof currentValue === 'object' && !Array.isArray(currentValue)
+            ? currentValue
+            : {};
+        if (!(entryKey in baseValue)) return baseValue;
+        const nextValue = { ...baseValue };
+        delete nextValue[entryKey];
+        return nextValue;
+    });
+}
+
 function subscribeRuntimeValue(key, listener, options = {}) {
     if (typeof listener !== 'function') {
         throw new Error(`subscribeRuntimeValue("${key}") requires a listener function.`);
@@ -122,6 +149,13 @@ const runtimeSelectors = Object.freeze({
     state: getRuntimeState,
     value: selectRuntimeValue,
     slice: selectRuntimeSlice,
+    checkinData: () => selectRuntimeValue('checkinData'),
+    phoneResistData: () => selectRuntimeValue('phoneResistData'),
+    taskData: () => selectRuntimeValue('taskData'),
+    leaveData: () => selectRuntimeValue('leaveData'),
+    achievements: () => selectRuntimeValue('achievements'),
+    quickNotesData: () => selectRuntimeValue('quickNotesData'),
+    tavernData: () => selectRuntimeValue('tavernData'),
     currentTask: () => selectRuntimeValue('currentTask'),
     taskTimer: () => selectRuntimeValue('taskTimer'),
     ambientPreferences: () => selectRuntimeValue('ambientPreferences'),
@@ -138,6 +172,61 @@ const runtimeActions = Object.freeze({
     prepend: prependRuntimeItem,
     map: mapRuntimeItems,
     filter: filterRuntimeItems,
+    updateObjectEntry: updateRuntimeObjectEntry,
+    removeObjectEntry: removeRuntimeObjectEntry,
+    setCheckinData(value) {
+        return setRuntimeValue('checkinData', value);
+    },
+    setPhoneResistData(value) {
+        return setRuntimeValue('phoneResistData', value);
+    },
+    setTaskData(value) {
+        return setRuntimeValue('taskData', value);
+    },
+    setLeaveData(value) {
+        return setRuntimeValue('leaveData', value);
+    },
+    setAchievements(value) {
+        return setRuntimeValue('achievements', value);
+    },
+    setQuickNotesData(value) {
+        return setRuntimeValue('quickNotesData', value);
+    },
+    setTavernData(value) {
+        return setRuntimeValue('tavernData', value);
+    },
+    updateCheckinDay(date, updater, defaultDayFactory = () => ({})) {
+        return updateRuntimeObjectEntry('checkinData', date, updater, defaultDayFactory());
+    },
+    removeCheckinDay(date) {
+        return removeRuntimeObjectEntry('checkinData', date);
+    },
+    updateTaskEntries(date, updater) {
+        return updateRuntimeObjectEntry('taskData', date, updater, []);
+    },
+    updateQuickNoteEntries(date, updater) {
+        return updateRuntimeObjectEntry('quickNotesData', date, updater, []);
+    },
+    updatePhoneResistRecord(date, updater) {
+        return updateRuntimeValue('phoneResistData', (currentValue) => {
+            const baseValue = currentValue && typeof currentValue === 'object'
+                ? currentValue
+                : { totalCount: 0, records: {} };
+            const records = baseValue.records && typeof baseValue.records === 'object'
+                ? baseValue.records
+                : {};
+            const nextRecord = typeof updater === 'function'
+                ? updater(records[date] ?? { count: 0, times: [] })
+                : updater;
+            return {
+                ...baseValue,
+                records: {
+                    ...records,
+                    [date]: nextRecord
+                }
+            };
+        });
+    },
     setCurrentTask(task) {
         return setRuntimeValue('currentTask', task);
     },

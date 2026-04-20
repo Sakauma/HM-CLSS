@@ -7,8 +7,9 @@
  * 初始化抗干扰计数区和成就展示区。
  */
 function initPhoneResist() {
-    document.getElementById('phone-resist-count').textContent = phoneResistData.totalCount;
-    document.getElementById('today-phone-resist-count').textContent = phoneResistData.records[getTodayString()].count;
+    const phoneResistState = runtimeSelectors.phoneResistData();
+    document.getElementById('phone-resist-count').textContent = phoneResistState.totalCount;
+    document.getElementById('today-phone-resist-count').textContent = phoneResistState.records[getTodayString()].count;
     updateTodayPhoneResistTimes();
     updateAchievementsList();
     document.getElementById('add-phone-resist').addEventListener('click', addPhoneResist);
@@ -19,14 +20,32 @@ function initPhoneResist() {
  */
 function addPhoneResist() {
     const today = getTodayString();
-    phoneResistData.totalCount++;
-    if (!phoneResistData.records[today]) phoneResistData.records[today] = { count: 0, times: [] };
-    phoneResistData.records[today].count++;
-    phoneResistData.records[today].times.push(getCurrentTimeString());
+    runtimeActions.update('phoneResistData', (currentValue) => {
+        const phoneResistState = currentValue && typeof currentValue === 'object'
+            ? currentValue
+            : { totalCount: 0, records: {} };
+        const records = phoneResistState.records && typeof phoneResistState.records === 'object'
+            ? phoneResistState.records
+            : {};
+        const todayRecord = records[today] || { count: 0, times: [] };
+
+        return {
+            ...phoneResistState,
+            totalCount: (phoneResistState.totalCount || 0) + 1,
+            records: {
+                ...records,
+                [today]: {
+                    count: (todayRecord.count || 0) + 1,
+                    times: [...(todayRecord.times || []), getCurrentTimeString()]
+                }
+            }
+        };
+    });
     saveData();
 
-    document.getElementById('phone-resist-count').textContent = phoneResistData.totalCount;
-    document.getElementById('today-phone-resist-count').textContent = phoneResistData.records[today].count;
+    const phoneResistState = runtimeSelectors.phoneResistData();
+    document.getElementById('phone-resist-count').textContent = phoneResistState.totalCount;
+    document.getElementById('today-phone-resist-count').textContent = phoneResistState.records[today].count;
     updateTodayPhoneResistTimes();
     updateAchievementsList();
     checkAchievements();
@@ -37,7 +56,7 @@ function addPhoneResist() {
  * 把今天的抗干扰时间戳串成可读文本。
  */
 function updateTodayPhoneResistTimes() {
-    const times = phoneResistData.records[getTodayString()].times;
+    const times = runtimeSelectors.phoneResistData().records[getTodayString()].times;
     document.getElementById('today-phone-resist-times').textContent = times.length === 0 ? '暂无记录' : '记录时间: ' + times.join(', ');
 }
 
@@ -106,7 +125,7 @@ function checkAchievements() {
 
         let achieved = false;
         if (achievement.type === 'phone' || !achievement.type) {
-            achieved = phoneResistData.totalCount >= achievement.requirement;
+            achieved = runtimeSelectors.phoneResistData().totalCount >= achievement.requirement;
         } else if (achievement.type === 'checkin') {
             achieved = countCheckinDays() >= achievement.requirement;
         } else if (achievement.type === 'streak') {

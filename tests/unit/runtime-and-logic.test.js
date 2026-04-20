@@ -101,6 +101,24 @@ test('runtime store subscriptions receive updates and can unsubscribe', () => {
     assert.equal(context.runtimeSelectors.slice((state) => state.currentTask.id), 'task_2');
 });
 
+test('runtime store object entry helpers update checkin days and daily records safely', () => {
+    const context = createBaseContext();
+    loadScript(context, 'assets/js/runtime/store.js');
+
+    context.runtimeActions.updateCheckinDay('2026-04-20', () => ({
+        morning: { checkIn: '08:30', checkOut: null, status: { checkIn: 'success', checkOut: null } }
+    }));
+    context.runtimeActions.updatePhoneResistRecord('2026-04-20', (record) => ({
+        ...record,
+        count: (record.count || 0) + 1,
+        times: [...(record.times || []), '09:00']
+    }));
+
+    assert.equal(context.runtimeSelectors.checkinData()['2026-04-20'].morning.checkIn, '08:30');
+    assert.equal(context.runtimeSelectors.phoneResistData().records['2026-04-20'].count, 1);
+    assert.deepEqual(context.runtimeSelectors.phoneResistData().records['2026-04-20'].times, ['09:00']);
+});
+
 test('checkin rules evaluate statuses and write retro records', () => {
     const context = createBaseContext({
         CONFIG: {
@@ -117,6 +135,7 @@ test('checkin rules evaluate statuses and write retro records', () => {
         formatLocalDate: (date) => date.toISOString().slice(0, 10)
     });
 
+    loadScript(context, 'assets/js/runtime/store.js');
     loadScript(context, 'assets/js/features/checkin/rules.js');
 
     assert.equal(context.getNormalizedCheckInStatus(true), 'success');

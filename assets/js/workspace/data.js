@@ -20,21 +20,24 @@ function cloneWorkspaceValue(value) {
 }
 
 function buildWorkspaceDatasetSnapshot() {
+    const state = runtimeSelectors.state();
     return {
-        checkinData: cloneWorkspaceValue(checkinData),
-        phoneResistData: cloneWorkspaceValue(phoneResistData),
-        taskData: cloneWorkspaceValue(taskData),
-        leaveData: cloneWorkspaceValue(leaveData),
-        achievements: cloneWorkspaceValue(achievements),
-        quickNotesData: cloneWorkspaceValue(quickNotesData),
-        tavernData: cloneWorkspaceValue(tavernData)
+        checkinData: cloneWorkspaceValue(state.checkinData),
+        phoneResistData: cloneWorkspaceValue(state.phoneResistData),
+        taskData: cloneWorkspaceValue(state.taskData),
+        leaveData: cloneWorkspaceValue(state.leaveData),
+        achievements: cloneWorkspaceValue(state.achievements),
+        quickNotesData: cloneWorkspaceValue(state.quickNotesData),
+        tavernData: cloneWorkspaceValue(state.tavernData)
     };
 }
 
 function buildWorkspaceStateSnapshot() {
+    const activeTask = runtimeSelectors.currentTask();
+    const preferences = runtimeSelectors.ambientPreferences();
     return {
-        currentTask: currentTask ? cloneWorkspaceValue(currentTask) : null,
-        ambientPreferences: cloneWorkspaceValue(normalizeAmbientPreferences(ambientPreferences)),
+        currentTask: activeTask ? cloneWorkspaceValue(activeTask) : null,
+        ambientPreferences: cloneWorkspaceValue(normalizeAmbientPreferences(preferences)),
         lastSyncTime: typeof localLastSyncTime === 'string' && localLastSyncTime ? localLastSyncTime : null
     };
 }
@@ -55,13 +58,13 @@ function ensureWorkspaceTodayDefaults() {
 
 function applyWorkspaceDatasetSnapshot(snapshot) {
     const source = extractWorkspaceDatasetSource(snapshot);
-    setRuntimeValue('checkinData', source.checkinData || {});
-    setRuntimeValue('phoneResistData', source.phoneResistData || { totalCount: 0, records: {} });
-    setRuntimeValue('taskData', source.taskData || {});
-    setRuntimeValue('leaveData', source.leaveData || []);
-    setRuntimeValue('achievements', source.achievements || []);
-    setRuntimeValue('quickNotesData', source.quickNotesData || {});
-    setRuntimeValue('tavernData', source.tavernData || []);
+    runtimeActions.setCheckinData(source.checkinData || {});
+    runtimeActions.setPhoneResistData(source.phoneResistData || { totalCount: 0, records: {} });
+    runtimeActions.setTaskData(source.taskData || {});
+    runtimeActions.setLeaveData(source.leaveData || []);
+    runtimeActions.setAchievements(source.achievements || []);
+    runtimeActions.setQuickNotesData(source.quickNotesData || {});
+    runtimeActions.setTavernData(source.tavernData || []);
     ensureWorkspaceTodayDefaults();
 }
 

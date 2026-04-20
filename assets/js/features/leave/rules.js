@@ -10,7 +10,6 @@ let activeLeaveWorkflow = 'today';
  * @param {string} date
  */
 function rebuildLeaveStateForDate(date) {
-    const dayData = ensureCheckinDay(date);
     const sameDayLeaves = leaveData
         .filter((leave) => leave.date === date)
         .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
@@ -20,20 +19,20 @@ function rebuildLeaveStateForDate(date) {
         .filter((leave) => leave.type === 'partial')
         .map((leave) => normalizeLeaveRecord(leave, true));
 
-    dayData.partialLeaves = partialLeaves;
-    if (fullLeave) {
-        dayData.leave = true;
-        dayData.leaveReason = fullLeave.reason;
-        dayData.leaveMeta = {
-            requestMode: fullLeave.requestMode || 'normal',
-            createdAt: fullLeave.createdAt || null,
-            correctionNote: fullLeave.correctionNote || ''
+    runtimeActions.updateCheckinDay(date, (existingDayData) => {
+        const dayData = ensureDayRecord(existingDayData);
+        return {
+            ...dayData,
+            partialLeaves,
+            leave: Boolean(fullLeave),
+            leaveReason: fullLeave ? fullLeave.reason : '',
+            leaveMeta: fullLeave ? {
+                requestMode: fullLeave.requestMode || 'normal',
+                createdAt: fullLeave.createdAt || null,
+                correctionNote: fullLeave.correctionNote || ''
+            } : null
         };
-    } else {
-        dayData.leave = false;
-        dayData.leaveReason = '';
-        dayData.leaveMeta = null;
-    }
+    }, createEmptyDayRecord);
 }
 
 /**

@@ -22,12 +22,13 @@ function getNormalizedCheckInStatus(status) {
  * @returns {object}
  */
 function ensureCheckinDay(date) {
-    if (!checkinData[date]) {
-        checkinData[date] = createEmptyDayRecord();
-    } else {
-        checkinData[date] = ensureDayRecord(checkinData[date]);
-    }
-    return checkinData[date];
+    runtimeActions.updateCheckinDay(date, (dayData) => {
+        if (!dayData || typeof dayData !== 'object') {
+            return createEmptyDayRecord();
+        }
+        return ensureDayRecord(dayData);
+    }, createEmptyDayRecord);
+    return runtimeSelectors.checkinData()[date];
 }
 
 /**
@@ -167,20 +168,30 @@ function summarizeShiftStatuses(inStatus, outStatus) {
  * @param {{ checkIn?: string|null, checkOut?: string|null, inStatus?: string|null, outStatus?: string|null, entrySource?: 'live'|'retro', correctionReason?: string }} payload
  */
 function applyShiftRecord(date, period, payload) {
-    const dayData = ensureCheckinDay(date);
-    const record = dayData[period];
     const nowIso = new Date().toISOString();
+    runtimeActions.updateCheckinDay(date, (existingDayData) => {
+        const dayData = ensureDayRecord(existingDayData);
+        const record = {
+            ...dayData[period],
+            status: { ...dayData[period].status }
+        };
 
-    if (typeof payload.checkIn === 'string') record.checkIn = payload.checkIn;
-    if (typeof payload.checkOut === 'string') record.checkOut = payload.checkOut;
-    if (typeof payload.inStatus === 'string') record.status.checkIn = payload.inStatus;
-    if (typeof payload.outStatus === 'string') record.status.checkOut = payload.outStatus;
+        if (typeof payload.checkIn === 'string') record.checkIn = payload.checkIn;
+        if (typeof payload.checkOut === 'string') record.checkOut = payload.checkOut;
+        if (typeof payload.inStatus === 'string') record.status.checkIn = payload.inStatus;
+        if (typeof payload.outStatus === 'string') record.status.checkOut = payload.outStatus;
 
-    record.entrySource = payload.entrySource || record.entrySource || 'live';
-    record.updatedAt = nowIso;
-    record.correctionReason = payload.entrySource === 'retro'
-        ? payload.correctionReason || ''
-        : '';
+        record.entrySource = payload.entrySource || record.entrySource || 'live';
+        record.updatedAt = nowIso;
+        record.correctionReason = payload.entrySource === 'retro'
+            ? payload.correctionReason || ''
+            : '';
+
+        return {
+            ...dayData,
+            [period]: record
+        };
+    }, createEmptyDayRecord);
 }
 
 /**
