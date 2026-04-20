@@ -168,7 +168,7 @@
         "visible": true,
         "width": 465,
         "x": 440,
-        "y": 1078
+        "y": 911
       },
       "export-trigger-btn": {
         "childCount": 2,
@@ -176,7 +176,7 @@
         "visible": true,
         "width": 465,
         "x": 440,
-        "y": 1285
+        "y": 1117
       },
       "github-token-input": {
         "childCount": 0,
@@ -184,18 +184,18 @@
         "visible": true,
         "width": 1102,
         "x": 419,
-        "y": 454
+        "y": 310
       },
       "settings-section": {
         "childCount": 3,
-        "height": 1275,
+        "height": 1251,
         "visible": true,
         "width": 1152,
         "x": 394,
-        "y": 144
+        "y": 0
       }
     },
-    "scrollTop": 384,
+    "scrollTop": 528,
     "viewport": {
       "height": 1114,
       "width": 1600

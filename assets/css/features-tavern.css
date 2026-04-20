@@ -69,8 +69,9 @@
         }
 
         .tavern-display {
-            font-family: "Noto Serif SC", serif;
-            letter-spacing: 0.01em;
+            font-family: var(--font-display);
+            letter-spacing: -0.035em;
+            line-height: 1.08;
         }
         .tavern-panel {
             position: relative;
@@ -94,7 +95,9 @@
             border-radius: 9999px;
             border: 1px solid rgba(148, 163, 184, 0.16);
             background: rgba(255, 255, 255, 0.6);
-            font-size: 0.78rem;
+            font-family: var(--font-label);
+            font-size: 0.76rem;
+            letter-spacing: 0.04em;
             color: #5f768d;
         }
         .dark .tavern-chip {
@@ -117,7 +120,9 @@
             border-radius: 9999px;
             border: 1px solid rgba(148, 163, 184, 0.16);
             background: rgba(255, 255, 255, 0.56);
-            font-size: 0.78rem;
+            font-family: var(--font-display);
+            font-size: 0.8rem;
+            letter-spacing: -0.01em;
             color: #4e657d;
             cursor: pointer;
             transition: transform 220ms ease, border-color 220ms ease, color 220ms ease, background 220ms ease, box-shadow 220ms ease;
@@ -145,7 +150,9 @@
             border-radius: 1.2rem;
             background: linear-gradient(135deg, color-mix(in srgb, var(--tavern-a) 92%, white), color-mix(in srgb, var(--tavern-b) 88%, white));
             color: white;
-            font-weight: 800;
+            font-family: var(--font-display);
+            font-weight: 700;
+            letter-spacing: -0.015em;
             box-shadow: 0 20px 40px color-mix(in srgb, var(--tavern-b) 28%, transparent);
             cursor: pointer;
             transition: transform 220ms ease, box-shadow 220ms ease, filter 220ms ease;
@@ -161,7 +168,9 @@
             border: 1px solid rgba(148, 163, 184, 0.16);
             background: rgba(255, 255, 255, 0.6);
             color: #22364d;
+            font-family: var(--font-display);
             font-weight: 700;
+            letter-spacing: -0.01em;
             cursor: pointer;
             transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease, background 220ms ease;
         }
@@ -390,7 +399,7 @@
             font-size: 0.7rem;
             letter-spacing: 0.18em;
             text-transform: uppercase;
-            font-family: "IBM Plex Mono", monospace;
+            font-family: var(--font-mono);
         }
         .tavern-result-vessel .tavern-vessel-label {
             top: 1.1rem;

@@ -11,14 +11,33 @@
             --color-bg-dark: 7 20 31;
             --color-card-light: 247 251 255;
             --color-card-dark: 15 33 49;
+            --font-body: "IBM Plex Sans", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+            --font-display: "IBM Plex Sans", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+            --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+            --font-ui: var(--font-body);
+            --font-mono: "IBM Plex Mono", "Noto Sans SC", ui-monospace, monospace;
         }
         .dark { color-scheme: dark; }
 
         body {
+            font-family: var(--font-body);
+            font-optical-sizing: auto;
+            font-feature-settings: "kern" 1, "liga" 1, "tnum" 1;
+            text-rendering: optimizeLegibility;
+            letter-spacing: 0.008em;
+            line-height: 1.58;
             background:
                 radial-gradient(circle at top right, rgb(var(--color-primary) / 0.18), transparent 28%),
                 radial-gradient(circle at bottom left, rgb(var(--color-accent) / 0.14), transparent 24%),
                 linear-gradient(180deg, rgb(238 244 248) 0%, rgb(232 239 245) 100%);
+        }
+        h1, h2 {
+            font-family: var(--font-display);
+            letter-spacing: -0.04em;
+        }
+        h3, h4 {
+            font-family: var(--font-display);
+            letter-spacing: -0.025em;
         }
         .dark body {
             background:
@@ -149,9 +168,10 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 0.22em;
+            font-family: var(--font-label);
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.18em;
             text-transform: uppercase;
             color: #7c93aa;
         }
@@ -163,4 +183,3 @@
             background: linear-gradient(135deg, rgb(var(--color-primary)), rgb(var(--color-accent)));
             box-shadow: 0 0 0 4px rgb(var(--color-primary) / 0.12);
         }
-
