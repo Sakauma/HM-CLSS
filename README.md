@@ -66,6 +66,9 @@ node --check assets/js/features/tavern/history.js
 node --check assets/js/features/tavern/ui.js
 node --check assets/js/features/tavern/index.js
 node --check assets/js/features/checkin/rules.js
+node --check assets/js/features/checkin/status.js
+node --check assets/js/features/checkin/retro.js
+node --check assets/js/features/checkin/summary.js
 node --check assets/js/features/checkin/ui.js
 node --check assets/js/features/checkin/index.js
 node --check assets/js/features/focus/achievements.js
@@ -194,8 +197,14 @@ bash scripts/browser-smoke.sh
   深空酒馆入口，负责在 DOM 就绪后挂载酒馆交互。
 - `assets/js/features/checkin/rules.js`
   值班状态归一化、时间判定、补录评估与记录写入。
+- `assets/js/features/checkin/status.js`
+  值班主按钮、时间文案与今日值班表的渲染层。
+- `assets/js/features/checkin/retro.js`
+  补打卡面板预判、额度展示与最近补录留痕渲染。
+- `assets/js/features/checkin/summary.js`
+  晚班收尾后的每日 / 每周总结弹窗。
 - `assets/js/features/checkin/ui.js`
-  值班按钮、今日记录表、补打卡面板和每日/每周彩蛋弹窗。
+  值班渲染聚合层，提供统一的值班页刷新入口。
 - `assets/js/features/checkin/index.js`
   值班控制器，负责实时打卡、补打卡提交与初始化监听。
 - `assets/js/features/focus/achievements.js`
@@ -406,14 +415,17 @@ const CONFIG = {
 16. `features/tavern/ui.js`
 17. `features/tavern/index.js`
 18. `features/checkin/rules.js`
-19. `features/checkin/ui.js`
-20. `features/checkin/index.js`
-21. `features/focus/achievements.js`
-22. `workspace/entries.js`
-23. `features/tasks/index.js`
-24. `features/notes/modal.js`
-25. `features/notes/render.js`
-26. `features/notes/index.js`
+19. `features/checkin/status.js`
+20. `features/checkin/retro.js`
+21. `features/checkin/summary.js`
+22. `features/checkin/ui.js`
+23. `features/checkin/index.js`
+24. `features/focus/achievements.js`
+25. `workspace/entries.js`
+26. `features/tasks/index.js`
+27. `features/notes/modal.js`
+28. `features/notes/render.js`
+29. `features/notes/index.js`
 27. `features/leave/rules.js`
 28. `features/leave/ui.js`
 29. `features/leave/index.js`

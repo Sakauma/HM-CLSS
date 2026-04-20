@@ -25,8 +25,7 @@ function hasMeaningfulLocalData() {
 
 function refreshWorkspaceUiAfterSync() {
     const today = getTodayString();
-    updateCheckinButtons();
-    updateTodayCheckinTable();
+    refreshCheckinViews();
 
     document.getElementById('phone-resist-count').textContent = phoneResistData.totalCount;
     document.getElementById('today-phone-resist-count').textContent = phoneResistData.records[today].count;
@@ -36,7 +35,6 @@ function refreshWorkspaceUiAfterSync() {
     updateSchedule();
     updateLeaveRecordsList();
     renderCurrentTaskState();
-    updateTodayStatus();
     if (typeof updateQuickNotesList === 'function') updateQuickNotesList();
     if (typeof renderTavernHistory === 'function') renderTavernHistory();
 }

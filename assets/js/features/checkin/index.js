@@ -19,9 +19,7 @@ function initCheckin() {
     document.getElementById('retro-checkin-reason')?.addEventListener('input', updateRetroCheckinPanel);
     document.getElementById('retro-checkin-submit')?.addEventListener('click', submitRetroCheckin);
 
-    updateCheckinButtons();
-    updateTodayCheckinTable();
-    updateRetroCheckinPanel();
+    refreshCheckinViews();
 }
 
 /**
@@ -42,9 +40,7 @@ function checkIn(period) {
     });
 
     saveData();
-    updateCheckinButtons();
-    updateTodayCheckinTable();
-    updateTodayStatus();
+    refreshCheckinViews({ includeRetro: false });
     checkAchievements();
 }
 
@@ -67,9 +63,7 @@ function checkOut(period) {
     });
 
     saveData();
-    updateCheckinButtons();
-    updateTodayCheckinTable();
-    updateTodayStatus();
+    refreshCheckinViews({ includeRetro: false });
     checkAchievements();
 
     if (period === 'evening') {
@@ -90,7 +84,7 @@ async function submitRetroCheckin() {
     const availability = getRetroCheckinAvailability(date);
     if (!availability.allowed) {
         showToast(availability.reason, 'warning');
-        updateRetroCheckinPanel();
+        refreshCheckinViews({ includeStatus: false });
         return;
     }
 
@@ -102,14 +96,14 @@ async function submitRetroCheckin() {
     const dayData = ensureCheckinDay(date);
     if (dayData.leave) {
         showToast('这一天当前按全天离舰处理，回离舰流程调整后再补打卡。', 'warning');
-        updateRetroCheckinPanel();
+        refreshCheckinViews({ includeStatus: false });
         return;
     }
 
     const evaluation = evaluateShiftRecord(date, period, checkInTime, checkOutTime);
     if (!evaluation.valid) {
         showToast(evaluation.reason || '这次补录还没通过预判，检查一下时间。', 'warning');
-        updateRetroCheckinPanel();
+        refreshCheckinViews({ includeStatus: false });
         return;
     }
 
@@ -137,9 +131,7 @@ async function submitRetroCheckin() {
 
     saveData();
     checkAchievements();
-    updateTodayCheckinTable();
-    updateTodayStatus();
-    updateRetroCheckinPanel();
+    refreshCheckinViews();
 
     showToast(`已补录 ${formatDisplayDate(date)} 的 ${getPeriodLabel(period)}`, 'success');
 }

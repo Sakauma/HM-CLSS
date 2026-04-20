@@ -22,6 +22,9 @@ js_files=(
   assets/js/features/tavern/ui.js
   assets/js/features/tavern/index.js
   assets/js/features/checkin/rules.js
+  assets/js/features/checkin/status.js
+  assets/js/features/checkin/retro.js
+  assets/js/features/checkin/summary.js
   assets/js/features/checkin/ui.js
   assets/js/features/checkin/index.js
   assets/js/features/focus/achievements.js
@@ -72,6 +75,9 @@ required_scripts=(
   "assets/js/features/tavern/history.js"
   "assets/js/features/tavern/ui.js"
   "assets/js/features/checkin/rules.js"
+  "assets/js/features/checkin/status.js"
+  "assets/js/features/checkin/retro.js"
+  "assets/js/features/checkin/summary.js"
   "assets/js/features/checkin/ui.js"
   "assets/js/features/leave/rules.js"
   "assets/js/features/leave/ui.js"
@@ -124,6 +130,9 @@ tavern_history_line="$(rg -n 'assets/js/features/tavern/history.js' index.html |
 tavern_ui_line="$(rg -n 'assets/js/features/tavern/ui.js' index.html | cut -d: -f1)"
 tavern_line="$(rg -n 'assets/js/features/tavern/index.js' index.html | cut -d: -f1)"
 checkin_rules_line="$(rg -n 'assets/js/features/checkin/rules.js' index.html | cut -d: -f1)"
+checkin_status_line="$(rg -n 'assets/js/features/checkin/status.js' index.html | cut -d: -f1)"
+checkin_retro_line="$(rg -n 'assets/js/features/checkin/retro.js' index.html | cut -d: -f1)"
+checkin_summary_line="$(rg -n 'assets/js/features/checkin/summary.js' index.html | cut -d: -f1)"
 checkin_ui_line="$(rg -n 'assets/js/features/checkin/ui.js' index.html | cut -d: -f1)"
 checkin_line="$(rg -n 'assets/js/features/checkin/index.js' index.html | cut -d: -f1)"
 workspace_entries_line="$(rg -n 'assets/js/workspace/entries.js' index.html | cut -d: -f1)"
@@ -222,8 +231,23 @@ if (( tavern_line >= checkin_rules_line )); then
   exit 1
 fi
 
-if (( checkin_rules_line >= checkin_ui_line )); then
-  printf 'checkin-rules.js must load before checkin-ui.js\n' >&2
+if (( checkin_rules_line >= checkin_status_line )); then
+  printf 'checkin-rules.js must load before checkin-status.js\n' >&2
+  exit 1
+fi
+
+if (( checkin_status_line >= checkin_retro_line )); then
+  printf 'checkin-status.js must load before checkin-retro.js\n' >&2
+  exit 1
+fi
+
+if (( checkin_retro_line >= checkin_summary_line )); then
+  printf 'checkin-retro.js must load before checkin-summary.js\n' >&2
+  exit 1
+fi
+
+if (( checkin_summary_line >= checkin_ui_line )); then
+  printf 'checkin-summary.js must load before checkin-ui.js\n' >&2
   exit 1
 fi
 
