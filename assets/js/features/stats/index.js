@@ -62,7 +62,11 @@ function updateSummaryStatistics() {
 
     const eggElement = document.getElementById('space-survival-egg');
     if (eggElement) {
-        eggElement.innerHTML = `🛸 折合飞船 <b>${summary.sols} Sols</b> 维生能源`;
+        eggElement.replaceChildren(
+            document.createTextNode('🛸 折合飞船 '),
+            createDomElement('b', { text: `${summary.sols} Sols` }),
+            document.createTextNode(' 维生能源')
+        );
     }
 
     document.getElementById('total-phone-resist').textContent = summary.phoneResistCount;

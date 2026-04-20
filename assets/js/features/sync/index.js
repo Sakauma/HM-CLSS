@@ -64,17 +64,11 @@ function shouldAutoApplyCloudData(cloudData) {
     return new Date(cloudData.lastSyncTime) > new Date(localLastSyncTime);
 }
 
-function setSyncButtonLoading(button, markup) {
-    const iconMatch = String(markup).match(/data-lucide="([^"]+)"/);
-    const label = String(markup).replace(/<[^>]+>/g, '').trim();
-
-    if (iconMatch) {
-        setElementIconLabel(button, iconMatch[1], label, {
-            iconClass: 'w-4 h-4 animate-spin'
-        });
-    } else {
-        button.textContent = label;
-    }
+function setSyncButtonLoading(button, label) {
+    if (!button) return;
+    setElementIconLabel(button, 'loader-2', label, {
+        iconClass: 'w-4 h-4 animate-spin'
+    });
     lucide.createIcons();
 }
 
@@ -125,9 +119,11 @@ async function handlePushCloud() {
     }
 
     const btn = document.getElementById('push-cloud-btn');
-    const originalText = btn.innerHTML;
+    const originalChildren = cloneChildNodesSnapshot(btn);
+    const originalDisabled = btn.disabled;
+    btn.disabled = true;
 
-    setSyncButtonLoading(btn, '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> 检查冲突...');
+    setSyncButtonLoading(btn, '检查冲突...');
 
     try {
         const confirmed = await maybeConfirmCloudOverwrite();
@@ -136,7 +132,7 @@ async function handlePushCloud() {
             return;
         }
 
-        setSyncButtonLoading(btn, '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> 上传中...');
+        setSyncButtonLoading(btn, '上传中...');
 
         const currentSyncTime = new Date().toISOString();
         await pushCloudWorkspaceData(buildCloudSyncPayload(currentSyncTime));
@@ -150,7 +146,8 @@ async function handlePushCloud() {
             showToast(`🌐 网络请求失败：${error.message}`, 'error');
         }
     } finally {
-        btn.innerHTML = originalText;
+        restoreChildNodesSnapshot(btn, originalChildren);
+        btn.disabled = originalDisabled;
         lucide.createIcons();
     }
 }
@@ -171,8 +168,10 @@ async function handlePullCloud() {
     if (!confirmed) return;
 
     const btn = document.getElementById('pull-cloud-btn');
-    const originalText = btn.innerHTML;
-    setSyncButtonLoading(btn, '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> 拉取中...');
+    const originalChildren = cloneChildNodesSnapshot(btn);
+    const originalDisabled = btn.disabled;
+    btn.disabled = true;
+    setSyncButtonLoading(btn, '拉取中...');
 
     try {
         const cloudData = await fetchCloudWorkspaceData();
@@ -190,7 +189,8 @@ async function handlePullCloud() {
             showToast(`🌐 网络请求失败：${error.message}`, 'error');
         }
     } finally {
-        btn.innerHTML = originalText;
+        restoreChildNodesSnapshot(btn, originalChildren);
+        btn.disabled = originalDisabled;
         lucide.createIcons();
     }
 }

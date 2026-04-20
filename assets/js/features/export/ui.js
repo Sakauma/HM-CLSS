@@ -32,7 +32,7 @@ function updateExportActionUi(profile) {
     }
 
     if (triggerBtn) {
-        triggerBtn.innerHTML = `<i data-lucide="${profile.icon}" class="w-4 h-4"></i> ${escapeHtml(profile.buttonLabel)}`;
+        setElementIconLabel(triggerBtn, profile.icon, profile.buttonLabel);
         lucide.createIcons();
     }
 }

@@ -31,7 +31,9 @@ function renderCurrentTaskState() {
     const m = Math.floor((elapsed % 3600000) / 60000);
     const s = Math.floor((elapsed % 60000) / 1000);
 
-    nameEl.innerHTML = `<span class="text-xs bg-primary/20 text-primary px-2 py-1 rounded-md mr-2">${escapeHtml(tagMap[currentTask.tag] || tagMap.other)}</span>${escapeHtml(currentTask.name)}`;
+    setElementBadgeLabel(nameEl, tagMap[currentTask.tag] || tagMap.other, currentTask.name, {
+        badgeClass: 'text-xs bg-primary/20 text-primary px-2 py-1 rounded-md mr-2'
+    });
     timeEl.textContent = `已进行: ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     progressBar.style.width = `${Math.min((elapsed / 36000000) * 100, 100)}%`;
     readyPanel?.classList.add('hidden');
@@ -299,6 +301,16 @@ function appendDomChildren(parent, children) {
     return parent;
 }
 
+function cloneChildNodesSnapshot(element) {
+    if (!element) return [];
+    return Array.from(element.childNodes).map((node) => node.cloneNode(true));
+}
+
+function restoreChildNodesSnapshot(element, snapshot = []) {
+    if (!element) return;
+    element.replaceChildren(...snapshot.map((node) => node.cloneNode(true)));
+}
+
 function createLucideIconElement(icon, className = '') {
     return createDomElement('i', {
         className,
@@ -320,6 +332,34 @@ function setElementIconLabel(element, icon, label, options = {}) {
         className: labelClass,
         text: label
     }));
+    element.replaceChildren(fragment);
+}
+
+function setElementBadgeLabel(element, badgeText, label, options = {}) {
+    if (!element) return;
+
+    const {
+        badgeClass = '',
+        labelClass = ''
+    } = options;
+
+    const fragment = document.createDocumentFragment();
+    if (badgeText) {
+        fragment.appendChild(createDomElement('span', {
+            className: badgeClass,
+            text: badgeText
+        }));
+    }
+
+    if (labelClass) {
+        fragment.appendChild(createDomElement('span', {
+            className: labelClass,
+            text: label
+        }));
+    } else {
+        fragment.appendChild(document.createTextNode(String(label)));
+    }
+
     element.replaceChildren(fragment);
 }
 

@@ -39,9 +39,11 @@ function renderResult(record, fromHistory = false) {
 
     const saveBtn = document.getElementById('btn-save-drink');
     if (saveBtn) {
-        saveBtn.innerHTML = currentDrinkInfo.saved
-            ? '<i data-lucide="archive-check" class="w-4 h-4"></i> 已封存'
-            : '<i data-lucide="archive" class="w-4 h-4"></i> 保存到酒单';
+        setElementIconLabel(
+            saveBtn,
+            currentDrinkInfo.saved ? 'archive-check' : 'archive',
+            currentDrinkInfo.saved ? '已封存' : '保存到酒单'
+        );
         saveBtn.disabled = !!currentDrinkInfo.saved;
         saveBtn.classList.toggle('opacity-60', !!currentDrinkInfo.saved);
         saveBtn.classList.toggle('cursor-not-allowed', !!currentDrinkInfo.saved);

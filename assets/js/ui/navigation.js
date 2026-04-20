@@ -137,12 +137,12 @@ function initNavigation() {
 
         if (primaryActionEl) {
             primaryActionEl.setAttribute('href', item.primaryAction.href);
-            primaryActionEl.innerHTML = `<i data-lucide="${item.primaryAction.icon}" class="w-4 h-4"></i>${escapeHtml(item.primaryAction.label)}`;
+            setElementIconLabel(primaryActionEl, item.primaryAction.icon, item.primaryAction.label);
         }
 
         if (secondaryActionEl) {
             secondaryActionEl.setAttribute('href', item.secondaryAction.href);
-            secondaryActionEl.innerHTML = `<i data-lucide="${item.secondaryAction.icon}" class="w-4 h-4"></i>${escapeHtml(item.secondaryAction.label)}`;
+            setElementIconLabel(secondaryActionEl, item.secondaryAction.icon, item.secondaryAction.label);
         }
 
         lucide.createIcons();
