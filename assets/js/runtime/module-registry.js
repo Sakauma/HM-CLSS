@@ -60,3 +60,30 @@ function initializeAppModules() {
 
     return initializedIds;
 }
+
+/**
+ * 按初始化逆序执行 cleanup，并允许测试或重载场景回收副作用。
+ * @returns {string[]}
+ */
+function disposeAppModules() {
+    const disposedIds = [];
+
+    [...getRegisteredAppModules()].reverse().forEach((module) => {
+        if (!initializedAppModules.has(module.id)) return;
+
+        const cleanup = initializedAppModules.get(module.id);
+        initializedAppModules.delete(module.id);
+
+        if (typeof cleanup === 'function') {
+            try {
+                cleanup();
+            } catch (error) {
+                console.error(`App module "${module.id}" cleanup failed:`, error);
+            }
+        }
+
+        disposedIds.push(module.id);
+    });
+
+    return disposedIds;
+}

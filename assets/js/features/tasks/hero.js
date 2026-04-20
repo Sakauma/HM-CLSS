@@ -2,6 +2,7 @@
  * 根据 currentTask 的状态刷新任务首屏卡片和进度条展示。
  */
 function renderCurrentTaskState() {
+    const activeTask = runtimeSelectors.currentTask();
     const container = document.getElementById('current-task-container');
     const readyPanel = document.getElementById('task-ready-panel');
     const readyStatusEl = document.getElementById('task-ready-status');
@@ -10,7 +11,7 @@ function renderCurrentTaskState() {
     const timeEl = document.getElementById('current-task-time');
     const progressBar = document.getElementById('task-progress-bar');
 
-    if (!currentTask) {
+    if (!activeTask) {
         container.classList.add('hidden');
         readyPanel?.classList.remove('hidden');
         if (readyStatusEl) readyStatusEl.textContent = '待命';
@@ -21,12 +22,12 @@ function renderCurrentTaskState() {
         return;
     }
 
-    const elapsed = Math.max(0, Date.now() - currentTask.startTimestamp);
+    const elapsed = Math.max(0, Date.now() - activeTask.startTimestamp);
     const h = Math.floor(elapsed / 3600000);
     const m = Math.floor((elapsed % 3600000) / 60000);
     const s = Math.floor((elapsed % 60000) / 1000);
 
-    setElementBadgeLabel(nameEl, tagMap[currentTask.tag] || tagMap.other, currentTask.name, {
+    setElementBadgeLabel(nameEl, tagMap[activeTask.tag] || tagMap.other, activeTask.name, {
         badgeClass: 'text-xs bg-primary/20 text-primary px-2 py-1 rounded-md mr-2'
     });
     timeEl.textContent = `已进行: ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;

@@ -52,6 +52,7 @@ http://localhost:8000
 node --check assets/js/runtime/theme.js
 node --check assets/js/runtime/store.js
 node --check assets/js/runtime/state.js
+node --check assets/js/runtime/storage-migrations.js
 node --check assets/js/runtime/storage.js
 node --check assets/js/runtime/date-utils.js
 node --check assets/js/runtime/dom-utils.js
@@ -100,8 +101,11 @@ node --check assets/js/features/export/ui.js
 node --check assets/js/features/export/index.js
 node --check assets/js/ui/shortcuts.js
 node --check assets/js/runtime/app-init.js
-node --test tests/unit/runtime-and-logic.test.js
+node --test tests/unit/*.test.js
 python3 -m py_compile scripts/browser-smoke.py
+python3 -m py_compile scripts/browser_smoke/helpers.py
+python3 -m py_compile scripts/browser_smoke/driver.py
+python3 -m py_compile scripts/browser_smoke/scenarios/*.py
 bash -n scripts/browser-smoke.sh
 bash -n scripts/setup-browser-test.sh
 ```
@@ -166,9 +170,7 @@ bash scripts/browser-smoke.sh
 当前仓库的主结构如下：
 
 - `index.html`
-  飞船主舱。负责页面骨架、Tailwind 配置，以及脚本加载顺序。
-- `assets/css/app.css`
-  样式聚合入口，按顺序引入主题、壳层、通用组件、业务外观与动效分层文件。
+  飞船主舱。负责页面骨架、Tailwind 配置、样式链接，以及脚本加载顺序。
 - `assets/css/theme.css`
   主题令牌、页面背景、滚动条与基础焦点反馈。
 - `assets/css/shell.css`
@@ -185,6 +187,8 @@ bash scripts/browser-smoke.sh
   运行时可变状态容器，以及对旧全局变量的统一代理入口。
 - `assets/js/runtime/state.js`
   全局共享状态、配置常量、标签映射与情绪/成就静态清单。
+- `assets/js/runtime/storage-migrations.js`
+  按 schema 版本登记迁移函数，避免把历史兼容逻辑继续堆进 `storage.js`。
 - `assets/js/runtime/storage.js`
   本地存储初始化、schema 迁移、结构归一化、持久化与当前任务恢复。
 - `assets/js/runtime/date-utils.js`
@@ -288,11 +292,17 @@ bash scripts/browser-smoke.sh
 - `scripts/browser-smoke.sh`
   真实 Firefox + Selenium 的浏览器冒烟入口。
 - `scripts/browser-smoke.py`
-  浏览器级功能检查的具体执行脚本。
+  浏览器级功能检查的启动脚本，按场景顺序编排执行。
+- `scripts/browser_smoke/`
+  浏览器冒烟共享 helper、driver 封装与分场景回归脚本。
 - `environment.browser-test.yml`
   浏览器测试环境的可复现依赖定义。
 - `tests/unit/runtime-and-logic.test.js`
   纯逻辑单元测试，覆盖值班规则、导出构建和本地存储迁移。
+- `tests/unit/sync-and-registry.test.js`
+  同步失败/冲突分支和模块注册中心生命周期测试。
+- `tests/unit/statistics-and-export.test.js`
+  统计聚合与空月导出 fixture 测试。
 - `docs/functional-self-check.md`
   面向发版前人工验收的功能级自测清单。
 
@@ -404,7 +414,7 @@ const CONFIG = {
 
 ### 4. 自定义“系统主题色”
 
-当前主题色通过 `assets/css/app.css` 顶部的 `:root` 颜色令牌驱动，`index.html` 里的 `tailwind.config` 只是消费这些变量。
+当前主题色通过 `assets/css/theme.css` 顶部的 `:root` 颜色令牌驱动，`index.html` 里的 `tailwind.config` 只是消费这些变量。
 
 ```css
 :root {
@@ -428,54 +438,55 @@ const CONFIG = {
 1. `runtime/theme.js`
 2. `runtime/store.js`
 3. `runtime/state.js`
-4. `runtime/storage.js`
-5. `runtime/date-utils.js`
-6. `runtime/dom-utils.js`
-7. `runtime/ambient.js`
-8. `runtime/module-registry.js`
-9. `workspace/metrics.js`
-10. `workspace/data.js`
-11. `runtime/app-init.js`
-12. `ui/navigation.js`
-13. `features/tavern/catalog.js`
-14. `features/tavern/logic.js`
-15. `features/tavern/stage.js`
-16. `features/tavern/result.js`
-17. `features/tavern/history.js`
-18. `features/tavern/ui.js`
-19. `features/tavern/index.js`
-20. `features/checkin/rules.js`
-21. `features/checkin/status.js`
-22. `features/checkin/retro.js`
-23. `features/checkin/summary.js`
-24. `features/checkin/ui.js`
-25. `features/checkin/index.js`
-26. `features/focus/achievements.js`
-27. `workspace/entries.js`
-28. `features/tasks/hero.js`
-29. `features/tasks/index.js`
-30. `features/notes/modal.js`
-31. `features/notes/render.js`
-32. `features/notes/index.js`
-33. `features/leave/rules.js`
-34. `features/leave/ui.js`
-35. `features/leave/index.js`
-36. `features/stats/data.js`
-37. `features/stats/charts.js`
-38. `features/stats/index.js`
-39. `features/dashboard/copy.js`
-40. `features/dashboard/confirm.js`
-41. `features/dashboard/toast.js`
-42. `features/dashboard/status.js`
-43. `features/dashboard/ui.js`
-44. `features/sync/state.js`
-45. `features/sync/api.js`
-46. `features/sync/index.js`
-47. `features/export/data.js`
-48. `features/export/formats.js`
-49. `features/export/ui.js`
-50. `features/export/index.js`
-51. `ui/shortcuts.js`
+4. `runtime/storage-migrations.js`
+5. `runtime/storage.js`
+6. `runtime/date-utils.js`
+7. `runtime/dom-utils.js`
+8. `runtime/ambient.js`
+9. `runtime/module-registry.js`
+10. `workspace/metrics.js`
+11. `workspace/data.js`
+12. `runtime/app-init.js`
+13. `ui/navigation.js`
+14. `features/tavern/catalog.js`
+15. `features/tavern/logic.js`
+16. `features/tavern/stage.js`
+17. `features/tavern/result.js`
+18. `features/tavern/history.js`
+19. `features/tavern/ui.js`
+20. `features/tavern/index.js`
+21. `features/checkin/rules.js`
+22. `features/checkin/status.js`
+23. `features/checkin/retro.js`
+24. `features/checkin/summary.js`
+25. `features/checkin/ui.js`
+26. `features/checkin/index.js`
+27. `features/focus/achievements.js`
+28. `workspace/entries.js`
+29. `features/tasks/hero.js`
+30. `features/tasks/index.js`
+31. `features/notes/modal.js`
+32. `features/notes/render.js`
+33. `features/notes/index.js`
+34. `features/leave/rules.js`
+35. `features/leave/ui.js`
+36. `features/leave/index.js`
+37. `features/stats/data.js`
+38. `features/stats/charts.js`
+39. `features/stats/index.js`
+40. `features/dashboard/copy.js`
+41. `features/dashboard/confirm.js`
+42. `features/dashboard/toast.js`
+43. `features/dashboard/status.js`
+44. `features/dashboard/ui.js`
+45. `features/sync/state.js`
+46. `features/sync/api.js`
+47. `features/sync/index.js`
+48. `features/export/data.js`
+49. `features/export/formats.js`
+50. `features/export/ui.js`
+51. `features/export/index.js`
+52. `ui/shortcuts.js`
 
 现在目录按 `runtime / workspace / ui / features` 分层：`runtime` 负责启动、模块注册、共享运行时和可变状态容器，`workspace` 负责跨模块共享的数据与口径，`ui` 负责导航和快捷键这类外层交互，`features` 按值班、酒馆、离舰、统计、同步、导出等功能继续拆分。`app-init.js` 现在只负责 `initData()` 和触发模块注册中心，具体功能模块各自向注册中心报到。顺序错乱会导致飞船在启动时失压。
 

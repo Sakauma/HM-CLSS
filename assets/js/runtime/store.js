@@ -30,6 +30,18 @@ function getRuntimeValue(key) {
     return runtimeState[key];
 }
 
+function selectRuntimeValue(key) {
+    return getRuntimeValue(key);
+}
+
+function selectRuntimeSlice(selector) {
+    if (typeof selector !== 'function') {
+        throw new Error('selectRuntimeSlice requires a selector function.');
+    }
+
+    return selector(runtimeState);
+}
+
 function notifyRuntimeSubscribers(key, value, previousValue) {
     const subscribers = runtimeStateSubscribers.get(key);
     if (!subscribers || subscribers.size === 0) return;
@@ -57,12 +69,10 @@ function updateRuntimeValue(key, updater) {
 function patchRuntimeValue(key, patch) {
     const currentValue = runtimeState[key];
     if (!currentValue || typeof currentValue !== 'object' || Array.isArray(currentValue)) {
-        runtimeState[key] = patch;
-        return runtimeState[key];
+        return setRuntimeValue(key, patch);
     }
 
-    runtimeState[key] = { ...currentValue, ...patch };
-    return runtimeState[key];
+    return setRuntimeValue(key, { ...currentValue, ...patch });
 }
 
 function appendRuntimeItem(key, item) {
@@ -107,6 +117,47 @@ function subscribeRuntimeValue(key, listener, options = {}) {
         }
     };
 }
+
+const runtimeSelectors = Object.freeze({
+    state: getRuntimeState,
+    value: selectRuntimeValue,
+    slice: selectRuntimeSlice,
+    currentTask: () => selectRuntimeValue('currentTask'),
+    taskTimer: () => selectRuntimeValue('taskTimer'),
+    ambientPreferences: () => selectRuntimeValue('ambientPreferences'),
+    currentDrinkInfo: () => selectRuntimeValue('currentDrinkInfo'),
+    selectedEmotions: () => selectRuntimeValue('selectedEmotions')
+});
+globalThis.runtimeSelectors = runtimeSelectors;
+
+const runtimeActions = Object.freeze({
+    set: setRuntimeValue,
+    update: updateRuntimeValue,
+    patch: patchRuntimeValue,
+    append: appendRuntimeItem,
+    prepend: prependRuntimeItem,
+    map: mapRuntimeItems,
+    filter: filterRuntimeItems,
+    setCurrentTask(task) {
+        return setRuntimeValue('currentTask', task);
+    },
+    clearCurrentTask() {
+        return setRuntimeValue('currentTask', null);
+    },
+    setTaskTimer(timerId) {
+        return setRuntimeValue('taskTimer', timerId);
+    },
+    setAmbientPreferences(preferences) {
+        return setRuntimeValue('ambientPreferences', preferences);
+    },
+    setCurrentDrinkInfo(drinkInfo) {
+        return setRuntimeValue('currentDrinkInfo', drinkInfo);
+    },
+    clearCurrentDrinkInfo() {
+        return setRuntimeValue('currentDrinkInfo', null);
+    }
+});
+globalThis.runtimeActions = runtimeActions;
 
 function bindRuntimeGlobals(target = window) {
     runtimeStateKeys.forEach((key) => {

@@ -87,9 +87,9 @@ test('runtime store subscriptions receive updates and can unsubscribe', () => {
         seen.push({ value, previousValue, key });
     }, { immediate: true });
 
-    context.setRuntimeValue('currentTask', { id: 'task_1' });
+    context.runtimeActions.setCurrentTask({ id: 'task_1' });
     unsubscribe();
-    context.setRuntimeValue('currentTask', { id: 'task_2' });
+    context.runtimeActions.setCurrentTask({ id: 'task_2' });
 
     assert.equal(seen.length, 2);
     assert.equal(seen[0].key, 'currentTask');
@@ -97,6 +97,8 @@ test('runtime store subscriptions receive updates and can unsubscribe', () => {
     assert.equal(seen[1].previousValue, null);
     assert.equal(seen[1].value.id, 'task_1');
     assert.equal(context.getRuntimeValue('currentTask').id, 'task_2');
+    assert.equal(context.runtimeSelectors.currentTask().id, 'task_2');
+    assert.equal(context.runtimeSelectors.slice((state) => state.currentTask.id), 'task_2');
 });
 
 test('checkin rules evaluate statuses and write retro records', () => {
@@ -479,6 +481,7 @@ test('storage migration normalizes legacy payloads and saveData persists schema 
         return context[key];
     };
 
+    loadScript(context, 'assets/js/runtime/storage-migrations.js');
     loadScript(context, 'assets/js/runtime/storage.js');
 
     assert.deepEqual(context.safeParseStoredJson('{"ok":true}', {}), { ok: true });

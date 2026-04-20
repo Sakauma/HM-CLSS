@@ -8,6 +8,7 @@ js_files=(
   assets/js/runtime/theme.js
   assets/js/runtime/store.js
   assets/js/runtime/state.js
+  assets/js/runtime/storage-migrations.js
   assets/js/runtime/storage.js
   assets/js/runtime/date-utils.js
   assets/js/runtime/dom-utils.js
@@ -62,14 +63,18 @@ for file in "${js_files[@]}"; do
   node --check "$file"
 done
 
-node --test tests/unit/runtime-and-logic.test.js
+node --test tests/unit/*.test.js
 python3 -m py_compile scripts/browser-smoke.py
+while IFS= read -r -d '' py_file; do
+  python3 -m py_compile "$py_file"
+done < <(find scripts/browser_smoke -type f -name '*.py' -print0)
 bash -n scripts/browser-smoke.sh
 bash -n scripts/setup-browser-test.sh
 
 required_scripts=(
   "assets/js/runtime/store.js"
   "assets/js/runtime/state.js"
+  "assets/js/runtime/storage-migrations.js"
   "assets/js/runtime/storage.js"
   "assets/js/runtime/date-utils.js"
   "assets/js/runtime/dom-utils.js"
@@ -114,8 +119,19 @@ for script_path in "${required_scripts[@]}"; do
   rg -F "$script_path" index.html >/dev/null
 done
 
+required_stylesheets=(
+  "assets/css/theme.css"
+  "assets/css/shell.css"
+  "assets/css/components.css"
+  "assets/css/features.css"
+  "assets/css/motion.css"
+)
+
+for stylesheet_path in "${required_stylesheets[@]}"; do
+  rg -F "$stylesheet_path" index.html >/dev/null
+done
+
 required_files=(
-  "assets/css/app.css"
   "assets/css/theme.css"
   "assets/css/shell.css"
   "assets/css/components.css"
@@ -124,8 +140,17 @@ required_files=(
   "environment.browser-test.yml"
   "scripts/browser-smoke.sh"
   "scripts/browser-smoke.py"
+  "scripts/browser_smoke/helpers.py"
+  "scripts/browser_smoke/driver.py"
+  "scripts/browser_smoke/scenarios/bootstrap.py"
+  "scripts/browser_smoke/scenarios/insights.py"
+  "scripts/browser_smoke/scenarios/workspace.py"
+  "scripts/browser_smoke/scenarios/accessibility.py"
+  "scripts/browser_smoke/scenarios/tavern.py"
   "scripts/setup-browser-test.sh"
   "tests/unit/runtime-and-logic.test.js"
+  "tests/unit/sync-and-registry.test.js"
+  "tests/unit/statistics-and-export.test.js"
 )
 
 for file_path in "${required_files[@]}"; do
@@ -134,6 +159,7 @@ done
 
 runtime_store_line="$(rg -n 'assets/js/runtime/store.js' index.html | cut -d: -f1)"
 runtime_state_line="$(rg -n 'assets/js/runtime/state.js' index.html | cut -d: -f1)"
+runtime_storage_migrations_line="$(rg -n 'assets/js/runtime/storage-migrations.js' index.html | cut -d: -f1)"
 runtime_storage_line="$(rg -n 'assets/js/runtime/storage.js' index.html | cut -d: -f1)"
 date_utils_line="$(rg -n 'assets/js/runtime/date-utils.js' index.html | cut -d: -f1)"
 dom_utils_line="$(rg -n 'assets/js/runtime/dom-utils.js' index.html | cut -d: -f1)"
@@ -187,6 +213,16 @@ fi
 
 if (( runtime_state_line >= runtime_storage_line )); then
   printf 'runtime-state.js must load before runtime-storage.js\n' >&2
+  exit 1
+fi
+
+if (( runtime_state_line >= runtime_storage_migrations_line )); then
+  printf 'runtime-state.js must load before runtime-storage-migrations.js\n' >&2
+  exit 1
+fi
+
+if (( runtime_storage_migrations_line >= runtime_storage_line )); then
+  printf 'runtime-storage-migrations.js must load before runtime-storage.js\n' >&2
   exit 1
 fi
 

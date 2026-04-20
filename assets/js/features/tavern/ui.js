@@ -104,7 +104,7 @@ function initTavernModule() {
 
     document.getElementById('btn-remix')?.addEventListener('click', () => {
         const remixText = currentDrinkInfo?.text || inputEl.value;
-        setRuntimeValue('currentDrinkInfo', null);
+        runtimeActions.clearCurrentDrinkInfo();
         if (typeof updateVoyageAmbientPresentation === 'function') {
             updateVoyageAmbientPresentation();
         }
@@ -124,7 +124,7 @@ function initTavernModule() {
     document.getElementById('btn-save-drink')?.addEventListener('click', () => {
         if (!currentDrinkInfo || currentDrinkInfo.saved) return;
         prependRuntimeItem('tavernData', { ...currentDrinkInfo, saved: true });
-        setRuntimeValue('currentDrinkInfo', { ...currentDrinkInfo, saved: true });
+        runtimeActions.setCurrentDrinkInfo({ ...currentDrinkInfo, saved: true });
         saveData();
         showToast('特调已封存入酒柜', 'success');
         renderResult(currentDrinkInfo, true);
@@ -157,7 +157,7 @@ function initTavernModule() {
     });
 
     document.getElementById('btn-history-create')?.addEventListener('click', () => {
-        setRuntimeValue('currentDrinkInfo', null);
+        runtimeActions.clearCurrentDrinkInfo();
         if (typeof updateVoyageAmbientPresentation === 'function') {
             updateVoyageAmbientPresentation();
         }

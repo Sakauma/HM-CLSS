@@ -1,0 +1,208 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+const test = require('node:test');
+
+const ROOT_DIR = path.resolve(__dirname, '..', '..');
+
+function loadScript(context, relativePath) {
+    const absolutePath = path.join(ROOT_DIR, relativePath);
+    const source = fs.readFileSync(absolutePath, 'utf8');
+    vm.runInContext(source, context, { filename: absolutePath });
+}
+
+function createBaseContext(overrides = {}) {
+    const context = vm.createContext({
+        console,
+        setTimeout,
+        clearTimeout,
+        setInterval,
+        clearInterval,
+        JSON,
+        Math,
+        Number,
+        String,
+        Boolean,
+        Array,
+        Object,
+        Date,
+        Map,
+        Set,
+        Promise,
+        Error,
+        ...overrides
+    });
+
+    context.globalThis = context;
+    context.window = context;
+    return context;
+}
+
+function createStorageMock(initialEntries = {}) {
+    const store = new Map(
+        Object.entries(initialEntries).map(([key, value]) => [key, String(value)])
+    );
+
+    return {
+        getItem(key) {
+            return store.has(key) ? store.get(key) : null;
+        },
+        setItem(key, value) {
+            store.set(key, String(value));
+        },
+        removeItem(key) {
+            store.delete(key);
+        }
+    };
+}
+
+function createButtonElement() {
+    return {
+        disabled: false,
+        childNodes: [],
+        value: '',
+        className: '',
+        addEventListener() {},
+        focus() {},
+        setAttribute(name, value) {
+            this[name] = value;
+        },
+        getAttribute(name) {
+            return this[name] ?? null;
+        }
+    };
+}
+
+test('module registry disposes cleanups in reverse order and allows reinitialization', () => {
+    const context = createBaseContext();
+    loadScript(context, 'assets/js/runtime/module-registry.js');
+
+    const events = [];
+    context.registerAppModule({
+        id: 'alpha',
+        order: 10,
+        init() {
+            events.push('init:alpha');
+            return () => events.push('dispose:alpha');
+        }
+    });
+    context.registerAppModule({
+        id: 'beta',
+        order: 20,
+        init() {
+            events.push('init:beta');
+            return () => events.push('dispose:beta');
+        }
+    });
+
+    assert.deepEqual(Array.from(context.initializeAppModules()), ['alpha', 'beta']);
+    assert.deepEqual(Array.from(context.disposeAppModules()), ['beta', 'alpha']);
+    assert.deepEqual(events, ['init:alpha', 'init:beta', 'dispose:beta', 'dispose:alpha']);
+    assert.deepEqual(Array.from(context.initializeAppModules()), ['alpha', 'beta']);
+});
+
+test('sync api surfaces fetch and push status codes', async () => {
+    const context = createBaseContext({
+        localStorage: createStorageMock({
+            githubToken: 'ghp_test',
+            gistId: 'gist_test'
+        }),
+        fetch: async (_url, options = {}) => ({
+            ok: false,
+            status: options.method === 'PATCH' ? 404 : 401,
+            json: async () => ({})
+        })
+    });
+
+    loadScript(context, 'assets/js/features/sync/state.js');
+    loadScript(context, 'assets/js/features/sync/api.js');
+
+    await assert.rejects(() => context.fetchCloudWorkspaceData(), /fetch_failed_401/);
+    await assert.rejects(() => context.pushCloudWorkspaceData({ ok: true }), /push_failed_404/);
+});
+
+test('sync controller covers conflict confirmation and failure branches', async () => {
+    const toastEvents = [];
+    let confirmOptions = null;
+    const elements = {
+        'github-token-input': { value: 'ghp_test' },
+        'gist-id-input': { value: 'gist_test' },
+        'save-config-btn': createButtonElement(),
+        'push-cloud-btn': createButtonElement(),
+        'pull-cloud-btn': createButtonElement()
+    };
+
+    const context = createBaseContext({
+        localStorage: createStorageMock({
+            githubToken: 'ghp_test',
+            gistId: 'gist_test',
+            localLastSyncTime: '2026-04-20T10:00:00.000Z'
+        }),
+        document: {
+            activeElement: null,
+            getElementById(id) {
+                return elements[id] || null;
+            }
+        },
+        lucide: { createIcons() {} },
+        registerAppModule() {},
+        cloneChildNodesSnapshot() { return []; },
+        restoreChildNodesSnapshot() {},
+        setElementIconLabel() {},
+        showToast(message, tone) {
+            toastEvents.push({ message, tone });
+        },
+        showConfirmDialog: async (options) => {
+            confirmOptions = options;
+            return false;
+        },
+        applyWorkspaceDatasetSnapshot(data) {
+            context.__appliedData = data;
+        },
+        saveData() {},
+        getTodayString() { return '2026-04-20'; },
+        refreshCheckinViews() {},
+        updateTodayPhoneResistTimes() {},
+        updateAchievementsList() {},
+        updateTodayTasksList() {},
+        updateSchedule() {},
+        updateLeaveRecordsList() {},
+        renderCurrentTaskState() {},
+        refreshDashboardHome() {},
+        renderTavernHistory() {},
+        countTotalTaskEntries() { return 0; },
+        countQuickNoteEntries() { return 0; },
+        ensureDayRecord(day) { return day; },
+        hasAnyCheckinRecord() { return false; },
+        checkinData: {},
+        phoneResistData: { totalCount: 0, records: { '2026-04-20': { count: 0 } } },
+        leaveData: [],
+        achievements: [],
+        tavernData: [],
+        currentTask: null
+    });
+
+    loadScript(context, 'assets/js/features/sync/state.js');
+    loadScript(context, 'assets/js/features/sync/index.js');
+
+    context.fetchCloudWorkspaceData = async () => ({ lastSyncTime: '2026-04-21T10:00:00.000Z' });
+    const overwriteConfirmed = await context.maybeConfirmCloudOverwrite();
+    assert.equal(overwriteConfirmed, false);
+    assert.equal(confirmOptions.badge, 'SYNC OVERRIDE');
+    assert.match(confirmOptions.message, /云端较新的数据/);
+
+    toastEvents.length = 0;
+    context.fetchCloudWorkspaceData = async () => { throw new Error('fetch_failed_401'); };
+    context.pushCloudWorkspaceData = async () => ({ ok: true });
+    await context.handlePushCloud();
+    assert.deepEqual(toastEvents.at(-1), { message: '❌ 上传失败，请检查配置信息。', tone: 'error' });
+    assert.equal(elements['push-cloud-btn'].disabled, false);
+
+    toastEvents.length = 0;
+    context.showConfirmDialog = async () => true;
+    context.fetchCloudWorkspaceData = async () => { throw new Error('network down'); };
+    await context.handlePullCloud();
+    assert.deepEqual(toastEvents.at(-1), { message: '🌐 网络请求失败：network down', tone: 'error' });
+    assert.equal(elements['pull-cloud-btn'].disabled, false);
+});

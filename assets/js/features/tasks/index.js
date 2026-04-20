@@ -90,7 +90,7 @@ function initTaskManagement() {
     document.getElementById('end-task').addEventListener('click', endTask);
     updateTodayTasksList();
     updateSchedule();
-    if (currentTask) startTaskTimer();
+    if (runtimeSelectors.currentTask()) startTaskTimer();
 }
 
 /**
@@ -101,9 +101,9 @@ function startTask() {
     const name = document.getElementById('task-name').value.trim();
     const tagValue = document.getElementById('task-tag').value;
     if (!name) return showToast('请输入任务名称', 'warning');
-    if (currentTask) endTask();
+    if (runtimeSelectors.currentTask()) endTask();
 
-    setRuntimeValue('currentTask', {
+    runtimeActions.setCurrentTask({
         id: 'task_' + Date.now(),
         name,
         tag: tagValue,
@@ -122,10 +122,11 @@ function startTask() {
  * 启动当前任务的秒级刷新计时器，仅用于更新展示层的耗时和进度。
  */
 function startTaskTimer() {
-    if (taskTimer) clearInterval(taskTimer);
+    const timerHandle = runtimeSelectors.taskTimer();
+    if (timerHandle) clearInterval(timerHandle);
     renderCurrentTaskState();
-    setRuntimeValue('taskTimer', setInterval(() => {
-        if (!currentTask) return;
+    runtimeActions.setTaskTimer(setInterval(() => {
+        if (!runtimeSelectors.currentTask()) return;
         renderCurrentTaskState();
     }, 1000));
 }
@@ -134,18 +135,19 @@ function startTaskTimer() {
  * 结束当前任务并写入当日任务日志。
  */
 function endTask() {
-    if (!currentTask) return;
+    const activeTask = runtimeSelectors.currentTask();
+    if (!activeTask) return;
 
-    clearInterval(taskTimer);
-    setRuntimeValue('taskTimer', null);
-    const duration = Math.floor((Date.now() - currentTask.startTimestamp) / 60000);
+    clearInterval(runtimeSelectors.taskTimer());
+    runtimeActions.setTaskTimer(null);
+    const duration = Math.floor((Date.now() - activeTask.startTimestamp) / 60000);
     appendDailyEntry(taskData, getTodayString(), {
-        ...currentTask,
+        ...activeTask,
         endTime: getCurrentTimeString(),
         duration,
         completed: true
     });
-    setRuntimeValue('currentTask', null);
+    runtimeActions.clearCurrentTask();
     persistCurrentTask();
     saveData(true);
     updateTodayTasksList();
