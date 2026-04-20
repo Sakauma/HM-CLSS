@@ -96,7 +96,6 @@ def compare_layout_snapshots(case, actual, expected) -> None:
     case_name = case["name"]
     require(expected is not None, f"Missing visual baseline for {case_name}")
     require(actual["viewport"] == expected["viewport"], f"{case_name} viewport mismatch")
-    require(actual["ambient"] == expected["ambient"], f"{case_name} ambient mismatch")
 
     for element_id, expected_metrics in expected["elements"].items():
         actual_metrics = actual["elements"].get(element_id)

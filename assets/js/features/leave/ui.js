@@ -98,7 +98,7 @@ function updateLeaveFormState() {
     const hasExistingCheckins = hasAnyCheckinRecord(dayData);
 
     if (!validation.valid) {
-        alertEl.className = 'rounded-2xl border border-warning/20 bg-warning/10 px-4 py-3 text-sm leading-6 text-warning';
+        alertEl.className = 'semantic-banner semantic-banner-warning';
         alertEl.textContent = validation.reason;
         submitBtn.disabled = true;
         submitBtn.className = CHECKIN_DISABLED_BUTTON_CLASS;
@@ -106,7 +106,7 @@ function updateLeaveFormState() {
     }
 
     if (workflow === 'retro' && (hasExistingLeave || hasExistingCheckins)) {
-        alertEl.className = 'rounded-2xl border border-warning/20 bg-warning/10 px-4 py-3 text-sm leading-6 text-warning';
+        alertEl.className = 'semantic-banner semantic-banner-warning';
         alertEl.textContent = '该日期已有旧记录，提交时会再确认一次。';
         submitBtn.disabled = false;
         submitBtn.className = CHECKIN_ACTIVE_BUTTON_CLASS;
@@ -114,15 +114,15 @@ function updateLeaveFormState() {
     }
 
     if (workflow === 'planned') {
-        alertEl.className = 'rounded-2xl border border-primary/20 bg-primary/10 px-4 py-3 text-sm leading-6 text-primary';
+        alertEl.className = 'semantic-banner semantic-banner-primary';
         alertEl.textContent = targetDate
             ? `生效日：${formatDisplayDate(targetDate)}`
             : '选择未来日期后显示生效日。';
     } else if (workflow === 'retro') {
-        alertEl.className = 'rounded-2xl border border-slate-200/80 bg-white/60 px-4 py-3 text-sm leading-6 text-slate-500 dark:border-slate-700/70 dark:bg-slate-900/40 dark:text-slate-400';
+        alertEl.className = 'semantic-banner semantic-banner-neutral';
         alertEl.textContent = '会刷新历史统计，不会改动今天的实时状态。';
     } else {
-        alertEl.className = 'rounded-2xl border border-success/20 bg-success/10 px-4 py-3 text-sm leading-6 text-success';
+        alertEl.className = 'semantic-banner semantic-banner-success';
         alertEl.textContent = '提交后会同步今天的值班按钮和首页状态。';
     }
 
@@ -147,16 +147,16 @@ function updateLeaveRecordsList() {
     }
 
     const modeLabelMap = {
-        normal: { text: '正常', style: 'bg-success/10 text-success border-success/20' },
-        planned: { text: '预请假', style: 'bg-primary/10 text-primary border-primary/20' },
-        retro: { text: '补请假', style: 'bg-warning/10 text-warning border-warning/20' }
+        normal: { text: '正常', style: 'semantic-tag semantic-tag-success semantic-tag-tight' },
+        planned: { text: '预请假', style: 'semantic-tag semantic-tag-primary semantic-tag-tight' },
+        retro: { text: '补请假', style: 'semantic-tag semantic-tag-warning semantic-tag-tight' }
     };
 
     const fragment = document.createDocumentFragment();
 
     [...leaveData].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach((leave) => {
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors align-top';
+        tr.className = 'surface-table-row align-top';
         const modeMeta = modeLabelMap[leave.requestMode] || modeLabelMap.normal;
         const dateCell = createDomElement('td', {
             className: 'py-3 px-4 font-mono text-slate-600 dark:text-slate-400'
@@ -168,13 +168,13 @@ function updateLeaveRecordsList() {
             text: formatDisplayDate(leave.date)
         }));
         dateWrap.appendChild(createDomElement('span', {
-            className: `inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${modeMeta.style}`,
+            className: modeMeta.style,
             text: modeMeta.text
         }));
         dateWrap.appendChild(createDomElement('span', {
             className: leave.type === 'full'
-                ? 'text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded ml-2 border border-primary/20'
-                : 'text-[10px] bg-warning/10 text-warning px-2 py-0.5 rounded ml-2 border border-warning/20',
+                ? 'semantic-tag semantic-tag-primary semantic-tag-tight'
+                : 'semantic-tag semantic-tag-warning semantic-tag-tight',
             text: leave.type === 'full' ? '全天' : `${leave.startTime} - ${leave.endTime}`
         }));
         dateCell.appendChild(dateWrap);

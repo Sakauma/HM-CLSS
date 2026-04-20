@@ -21,7 +21,7 @@ function createMarkdownNoteNode(noteText, className) {
 
 function createQuickNotesEmptyState() {
     return appendDomChildren(createDomElement('div', {
-        className: 'rounded-[1.4rem] border border-dashed border-slate-200/80 bg-slate-50/70 px-6 py-8 text-center dark:border-slate-700/70 dark:bg-slate-900/40'
+        className: 'surface-inline-note border-dashed px-6 py-8 text-center'
     }), [
         createDomElement('div', {
             className: 'module-eyebrow mb-3',
@@ -50,7 +50,7 @@ function createTodayNoteCard(note, index, date) {
     const tagCfg = noteTagConfig[tagKey] || noteTagConfig.idea;
 
     return appendDomChildren(createDomElement('div', {
-        className: 'flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 transition-colors relative group hover:border-primary/30 dark:border-slate-700/50 dark:bg-slate-900/50'
+        className: 'surface-inline-card flex items-start gap-3 p-3 transition-colors relative group hover:border-primary/30'
     }), [
         appendDomChildren(createDomElement('div', {
             className: 'flex flex-col gap-1.5 mt-1 shrink-0 w-12 items-center'
@@ -60,7 +60,7 @@ function createTodayNoteCard(note, index, date) {
                 text: getNoteTime(note)
             }),
             createDomElement('span', {
-                className: `text-[9px] border px-1 rounded w-full text-center ${tagCfg.color}`,
+                className: `${tagCfg.color} semantic-tag-full semantic-tag-tight`,
                 text: tagCfg.label
             })
         ]),

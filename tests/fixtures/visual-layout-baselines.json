@@ -50,7 +50,7 @@
         "visible": true,
         "width": 408,
         "x": 1109,
-        "y": 370
+        "y": 376
       },
       "schedule-content": {
         "childCount": 1,
@@ -58,26 +58,26 @@
         "visible": true,
         "width": 326,
         "x": 1178,
-        "y": 714
+        "y": 719
       },
       "task-name": {
         "childCount": 0,
-        "height": 51,
+        "height": 52,
         "visible": true,
-        "width": 272,
+        "width": 270,
         "x": 623,
-        "y": 350
+        "y": 353
       },
       "tasks-section": {
-        "childCount": 2,
-        "height": 785,
+        "childCount": 3,
+        "height": 1047,
         "visible": true,
         "width": 1152,
         "x": 394,
-        "y": 257
+        "y": 0
       }
     },
-    "scrollTop": 271,
+    "scrollTop": 524,
     "viewport": {
       "height": 1114,
       "width": 1600
@@ -164,11 +164,11 @@
     "elements": {
       "export-month-field": {
         "childCount": 2,
-        "height": 78,
+        "height": 80,
         "visible": true,
         "width": 465,
         "x": 440,
-        "y": 911
+        "y": 929
       },
       "export-trigger-btn": {
         "childCount": 2,
@@ -176,26 +176,26 @@
         "visible": true,
         "width": 465,
         "x": 440,
-        "y": 1117
+        "y": 1138
       },
       "github-token-input": {
         "childCount": 0,
-        "height": 46,
+        "height": 51,
         "visible": true,
         "width": 1102,
         "x": 419,
-        "y": 310
+        "y": 320
       },
       "settings-section": {
         "childCount": 3,
-        "height": 1251,
+        "height": 1272,
         "visible": true,
         "width": 1152,
         "x": 394,
         "y": 0
       }
     },
-    "scrollTop": 528,
+    "scrollTop": 524,
     "viewport": {
       "height": 1114,
       "width": 1600

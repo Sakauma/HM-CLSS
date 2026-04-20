@@ -70,135 +70,139 @@
         <!-- 左侧导航和全局摘要。 -->
         <aside class="shell-panel w-full shrink-0 border-b border-slate-200/60 transition-colors lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[22rem] lg:max-h-screen lg:flex-col lg:overflow-y-auto lg:border-b-0 lg:border-r dark:border-slate-700/40">
             <div class="p-5 pb-4 sm:p-6">
-                <div class="flex items-start justify-between gap-4">
-                    <div class="min-w-0">
-                        <div class="module-eyebrow mb-3">HAIL MARY / LIFE SUPPORT</div>
-                        <h1 class="flex items-center gap-3 text-2xl font-black tracking-tight text-slate-900 dark:text-slate-50">
-                            <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15 text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] dark:bg-primary/20">
-                                <i data-lucide="rocket" class="w-5 h-5"></i>
-                            </span>
-                            HM-CLSS
-                        </h1>
-                        <p class="mt-2 max-w-xs text-xs leading-5 text-slate-500 dark:text-slate-400">
-                            用一张舰桥工作台处理值班、专注、记录和同步。
-                        </p>
+                <div class="sidebar-brand-card">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="min-w-0">
+                            <div class="module-eyebrow mb-3">HAIL MARY / LIFE SUPPORT</div>
+                            <h1 class="flex items-center gap-3 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                                <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15 text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] dark:bg-primary/20">
+                                    <i data-lucide="rocket" class="w-5 h-5"></i>
+                                </span>
+                                HM-CLSS
+                            </h1>
+                            <p class="mt-2 max-w-xs text-xs leading-5 text-slate-500 dark:text-slate-400">
+                                用一张舰桥工作台处理值班、专注、记录和同步。
+                            </p>
+                        </div>
+                        <button id="theme-toggle" type="button" aria-label="切换主题" class="icon-shell-button shrink-0">
+                            <i data-lucide="moon" id="theme-icon-dark" class="w-5 h-5 hidden"></i>
+                            <i data-lucide="sun" id="theme-icon-light" class="w-5 h-5 hidden"></i>
+                        </button>
                     </div>
-                    <button id="theme-toggle" type="button" aria-label="切换主题" class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200/70 bg-white/70 text-slate-500 shadow-sm hover:-translate-y-0.5 hover:border-primary/30 hover:text-primary dark:border-slate-700/70 dark:bg-slate-900/70 dark:text-slate-300 dark:hover:border-primary/30">
-                        <i data-lucide="moon" id="theme-icon-dark" class="w-5 h-5 hidden"></i>
-                        <i data-lucide="sun" id="theme-icon-light" class="w-5 h-5 hidden"></i>
-                    </button>
-                </div>
-                <div class="mt-3 inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/70 px-4 py-2 text-[11px] font-medium text-slate-500 shadow-sm dark:border-slate-700/70 dark:bg-slate-900/70 dark:text-slate-400" id="current-date-time">
-                    加载时间...
+                    <div class="mt-3 sidebar-clock-pill text-[11px] font-medium text-slate-500 dark:text-slate-400" id="current-date-time">
+                        加载时间...
+                    </div>
                 </div>
             </div>
 
             <div class="px-4 pb-4 lg:px-5">
                 <div class="module-eyebrow mb-3 px-1">主控台模块</div>
-                <nav class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-2">
-                    <button id="nav-checkin" type="button" class="nav-rail-button nav-rail-button-active">
-                        <span class="nav-rail-icon">
-                            <i data-lucide="radar" class="w-4 h-4"></i>
-                        </span>
-                        <span class="min-w-0">
-                            <span class="nav-rail-label">舰桥值班日志</span>
-                            <span class="nav-rail-desc">今日状态、班次窗口与值班记录</span>
-                        </span>
-                    </button>
-                    <button id="nav-phone" type="button" class="nav-rail-button">
-                        <span class="nav-rail-icon">
-                            <i data-lucide="shield-check" class="w-4 h-4"></i>
-                        </span>
-                        <span class="min-w-0">
-                            <span class="nav-rail-label">认知干扰拦截</span>
-                            <span class="nav-rail-desc">记录抗干扰次数并追踪成就</span>
-                        </span>
-                    </button>
-                    <button id="nav-tasks" type="button" class="nav-rail-button">
-                        <span class="nav-rail-icon">
-                            <i data-lucide="terminal" class="w-4 h-4"></i>
-                        </span>
-                        <span class="min-w-0">
-                            <span class="nav-rail-label">全舰任务管理</span>
-                            <span class="nav-rail-desc">启动深度工作并回看今日沉淀</span>
-                        </span>
-                    </button>
-                    <button id="nav-archive" type="button" class="nav-rail-button">
-                        <span class="nav-rail-icon">
-                            <i data-lucide="book-open" class="w-4 h-4"></i>
-                        </span>
-                        <span class="min-w-0">
-                            <span class="nav-rail-label">全舰日志归档</span>
-                            <span class="nav-rail-desc">搜索历史灵感、日志与异常条目</span>
-                        </span>
-                    </button>
-                    <button id="nav-leave" type="button" class="nav-rail-button">
-                        <span class="nav-rail-icon">
-                            <i data-lucide="power-off" class="w-4 h-4"></i>
-                        </span>
-                        <span class="min-w-0">
-                            <span class="nav-rail-label">离舰活动审批</span>
-                            <span class="nav-rail-desc">登记全天或临时离舰并查看影响</span>
-                        </span>
-                    </button>
-                    <button id="nav-tavern" type="button" class="nav-rail-button">
-                        <span class="nav-rail-icon">
-                            <i data-lucide="martini" class="w-4 h-4"></i>
-                        </span>
-                        <span class="min-w-0">
-                            <span class="nav-rail-label">深空特调吧台</span>
-                            <span class="nav-rail-desc">把情绪记录成更容易回看的配方</span>
-                        </span>
-                    </button>
-                    <button id="nav-stats" type="button" class="nav-rail-button">
-                        <span class="nav-rail-icon">
-                            <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
-                        </span>
-                        <span class="min-w-0">
-                            <span class="nav-rail-label">维生统计分析</span>
-                            <span class="nav-rail-desc">查看趋势、时段分布与长期沉淀</span>
-                        </span>
-                    </button>
-                    <button id="nav-settings" type="button" class="nav-rail-button">
-                        <span class="nav-rail-icon">
-                            <i data-lucide="settings" class="w-4 h-4"></i>
-                        </span>
-                        <span class="min-w-0">
-                            <span class="nav-rail-label">深空通讯设置</span>
-                            <span class="nav-rail-desc">配置 Gist 同步并管理远端数据</span>
-                        </span>
-                    </button>
-                </nav>
+                <div class="nav-rail-shell">
+                    <nav class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-2">
+                        <button id="nav-checkin" type="button" class="nav-rail-button nav-rail-button-active">
+                            <span class="nav-rail-icon">
+                                <i data-lucide="radar" class="w-4 h-4"></i>
+                            </span>
+                            <span class="min-w-0">
+                                <span class="nav-rail-label">舰桥值班日志</span>
+                                <span class="nav-rail-desc">今日状态、班次窗口与值班记录</span>
+                            </span>
+                        </button>
+                        <button id="nav-phone" type="button" class="nav-rail-button">
+                            <span class="nav-rail-icon">
+                                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                            </span>
+                            <span class="min-w-0">
+                                <span class="nav-rail-label">认知干扰拦截</span>
+                                <span class="nav-rail-desc">记录抗干扰次数并追踪成就</span>
+                            </span>
+                        </button>
+                        <button id="nav-tasks" type="button" class="nav-rail-button">
+                            <span class="nav-rail-icon">
+                                <i data-lucide="terminal" class="w-4 h-4"></i>
+                            </span>
+                            <span class="min-w-0">
+                                <span class="nav-rail-label">全舰任务管理</span>
+                                <span class="nav-rail-desc">启动深度工作并回看今日沉淀</span>
+                            </span>
+                        </button>
+                        <button id="nav-archive" type="button" class="nav-rail-button">
+                            <span class="nav-rail-icon">
+                                <i data-lucide="book-open" class="w-4 h-4"></i>
+                            </span>
+                            <span class="min-w-0">
+                                <span class="nav-rail-label">全舰日志归档</span>
+                                <span class="nav-rail-desc">搜索历史灵感、日志与异常条目</span>
+                            </span>
+                        </button>
+                        <button id="nav-leave" type="button" class="nav-rail-button">
+                            <span class="nav-rail-icon">
+                                <i data-lucide="power-off" class="w-4 h-4"></i>
+                            </span>
+                            <span class="min-w-0">
+                                <span class="nav-rail-label">离舰活动审批</span>
+                                <span class="nav-rail-desc">登记全天或临时离舰并查看影响</span>
+                            </span>
+                        </button>
+                        <button id="nav-tavern" type="button" class="nav-rail-button">
+                            <span class="nav-rail-icon">
+                                <i data-lucide="martini" class="w-4 h-4"></i>
+                            </span>
+                            <span class="min-w-0">
+                                <span class="nav-rail-label">深空特调吧台</span>
+                                <span class="nav-rail-desc">把情绪记录成更容易回看的配方</span>
+                            </span>
+                        </button>
+                        <button id="nav-stats" type="button" class="nav-rail-button">
+                            <span class="nav-rail-icon">
+                                <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                            </span>
+                            <span class="min-w-0">
+                                <span class="nav-rail-label">维生统计分析</span>
+                                <span class="nav-rail-desc">查看趋势、时段分布与长期沉淀</span>
+                            </span>
+                        </button>
+                        <button id="nav-settings" type="button" class="nav-rail-button">
+                            <span class="nav-rail-icon">
+                                <i data-lucide="settings" class="w-4 h-4"></i>
+                            </span>
+                            <span class="min-w-0">
+                                <span class="nav-rail-label">深空通讯设置</span>
+                                <span class="nav-rail-desc">配置 Gist 同步并管理远端数据</span>
+                            </span>
+                        </button>
+                    </nav>
+                </div>
             </div>
 
             <div class="p-4 pt-0 sm:p-5 sm:pt-0">
-                <div class="mission-card p-4">
+                <div class="sidebar-summary-card p-4">
                     <div class="module-eyebrow mb-3">侧边摘要</div>
                     <div class="grid grid-cols-3 gap-2 text-center text-[11px]">
-                        <div class="rounded-2xl border border-slate-200/70 bg-white/60 px-2 py-3 dark:border-slate-700/60 dark:bg-white/[0.03]">
+                        <div class="sidebar-mini-stat">
                             <div class="text-slate-400">Alpha</div>
                             <div id="today-morning-status" class="mt-1 font-semibold">-</div>
                         </div>
-                        <div class="rounded-2xl border border-slate-200/70 bg-white/60 px-2 py-3 dark:border-slate-700/60 dark:bg-white/[0.03]">
+                        <div class="sidebar-mini-stat">
                             <div class="text-slate-400">Beta</div>
                             <div id="today-afternoon-status" class="mt-1 font-semibold">-</div>
                         </div>
-                        <div class="rounded-2xl border border-slate-200/70 bg-white/60 px-2 py-3 dark:border-slate-700/60 dark:bg-white/[0.03]">
+                        <div class="sidebar-mini-stat">
                             <div class="text-slate-400">Gamma</div>
                             <div id="today-evening-status" class="mt-1 font-semibold">-</div>
                         </div>
                     </div>
                     <div class="mt-3 grid grid-cols-2 gap-2 text-[11px]">
-                        <div class="rounded-2xl border border-slate-200/70 bg-white/60 px-3 py-3 dark:border-slate-700/60 dark:bg-white/[0.03]">
+                        <div class="sidebar-mini-stat px-3 py-3">
                             <div class="text-slate-400">干扰拦截</div>
                             <div id="today-phone-count" class="mt-1 font-semibold text-warning">0 次</div>
                         </div>
-                        <div class="rounded-2xl border border-slate-200/70 bg-white/60 px-3 py-3 dark:border-slate-700/60 dark:bg-white/[0.03]">
+                        <div class="sidebar-mini-stat px-3 py-3">
                             <div class="text-slate-400">当前任务</div>
                             <div id="today-active-task" class="mt-1 truncate font-semibold text-primary">-</div>
                         </div>
                     </div>
-                    <div class="mt-3 rounded-2xl border border-slate-200/70 bg-white/60 p-3 dark:border-slate-700/60 dark:bg-white/[0.03]">
+                    <div class="mt-3 sidebar-summary-note">
                         <div class="flex items-start gap-3">
                             <span id="today-command-indicator" class="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-primary"></span>
                             <div class="min-w-0">
@@ -223,7 +227,7 @@
                                 <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                     <div class="min-w-0 max-w-2xl">
                                         <div id="panel-meta-badge" class="module-eyebrow mb-2">TODAY OPS</div>
-                                        <h2 id="panel-meta-title" class="text-[1.9rem] font-black tracking-tight text-slate-950 dark:text-slate-50 sm:text-[2.05rem]">
+                                        <h2 id="panel-meta-title" class="text-[1.9rem] font-semibold tracking-tight text-slate-950 dark:text-slate-50 sm:text-[2.05rem]">
                                             舰桥值班与今日状态
                                         </h2>
                                         <p id="panel-meta-desc" class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">
@@ -403,7 +407,7 @@
                         <div class="overflow-x-auto">
                             <table class="min-w-full text-sm">
                                 <thead>
-                                    <tr class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400">
+                                    <tr class="surface-table-head">
                                         <th class="py-3 px-4 text-left rounded-l-lg font-medium">时段</th>
                                         <th class="py-3 px-4 text-left font-medium">唤醒时间</th>
                                         <th class="py-3 px-4 text-left font-medium">休眠时间</th>
@@ -412,21 +416,21 @@
                                     </tr>
                                 </thead>
                                 <tbody id="today-checkin-table" class="divide-y divide-slate-100 dark:divide-slate-800">
-                                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+                                    <tr class="surface-table-row">
                                         <td class="py-3 px-4 font-medium">Alpha 班次</td>
                                         <td class="py-3 px-4 font-mono text-slate-500" id="table-morning-checkin">-</td>
                                         <td class="py-3 px-4 font-mono text-slate-500" id="table-morning-checkout">-</td>
                                         <td class="py-3 px-4" id="table-morning-checkin-status">-</td>
                                         <td class="py-3 px-4" id="table-morning-checkout-status">-</td>
                                     </tr>
-                                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+                                    <tr class="surface-table-row">
                                         <td class="py-3 px-4 font-medium">Beta 班次</td>
                                         <td class="py-3 px-4 font-mono text-slate-500" id="table-afternoon-checkin">-</td>
                                         <td class="py-3 px-4 font-mono text-slate-500" id="table-afternoon-checkout">-</td>
                                         <td class="py-3 px-4" id="table-afternoon-checkin-status">-</td>
                                         <td class="py-3 px-4" id="table-afternoon-checkout-status">-</td>
                                     </tr>
-                                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+                                    <tr class="surface-table-row">
                                         <td class="py-3 px-4 font-medium">Gamma 班次</td>
                                         <td class="py-3 px-4 font-mono text-slate-500" id="table-evening-checkin">-</td>
                                         <td class="py-3 px-4 font-mono text-slate-500" id="table-evening-checkout">-</td>
@@ -454,12 +458,12 @@
                             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
                                     <label class="block text-sm font-medium text-slate-500 mb-2">目标日期</label>
-                                    <input type="date" id="retro-checkin-date" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all">
+                                    <input type="date" id="retro-checkin-date" class="system-input system-input-soft">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-slate-500 mb-2">班次</label>
                                     <div class="system-select-wrap">
-                                        <select id="retro-checkin-period" class="system-select">
+                                        <select id="retro-checkin-period" class="system-select system-select-soft">
                                             <option value="morning">Alpha 班次</option>
                                             <option value="afternoon">Beta 班次</option>
                                             <option value="evening">Gamma 班次</option>
@@ -471,19 +475,19 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-slate-500 mb-2">开始时间</label>
-                                    <input type="time" id="retro-checkin-start" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all">
+                                    <input type="time" id="retro-checkin-start" class="system-input system-input-soft">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-slate-500 mb-2">结束时间</label>
-                                    <input type="time" id="retro-checkin-end" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all">
+                                    <input type="time" id="retro-checkin-end" class="system-input system-input-soft">
                                 </div>
                                 <div class="md:col-span-2">
                                     <label class="block text-sm font-medium text-slate-500 mb-2">补录说明</label>
-                                    <input type="text" id="retro-checkin-reason" placeholder="如：出门太急漏记 / 历史记录补录" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all">
+                                    <input type="text" id="retro-checkin-reason" placeholder="如：出门太急漏记 / 历史记录补录" class="system-input system-input-soft">
                                 </div>
                             </div>
 
-                            <div class="mt-4 rounded-2xl border border-slate-200/80 bg-white/65 px-4 py-4 dark:border-slate-700/70 dark:bg-slate-900/40">
+                            <div class="system-panel-note mt-4 px-4 py-4">
                                 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                     <div class="min-w-0">
                                         <div class="text-xs font-mono text-slate-400">STATUS PREVIEW</div>
@@ -503,13 +507,13 @@
                             </div>
                         </div>
 
-                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 flex flex-col">
+                        <div class="surface-card surface-card-compact flex flex-col">
                             <div class="mb-4 flex items-end justify-between gap-4">
                                 <div>
-                                    <h3 class="text-lg font-semibold">补录配额与留痕</h3>
-                                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">按日期计数，同一天只算一次。</p>
+                                    <h3 class="surface-card-title">补录配额与留痕</h3>
+                                    <p class="surface-card-copy">按日期计数，同一天只算一次。</p>
                                 </div>
-                                <span class="text-xs font-mono text-slate-400">USAGE TRACE</span>
+                                <span class="surface-card-tag">USAGE TRACE</span>
                             </div>
 
                             <div class="grid grid-cols-2 gap-3">
@@ -532,20 +536,18 @@
                 <!-- 抗干扰与成就模块。 -->
                 <section id="phone-section" class="mb-8 hidden">
                     <div class="mission-card mb-5 p-5 sm:p-6">
-                        <div class="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(260px,0.65fr)] lg:items-center">
-                            <div>
+                        <div class="page-header-layout lg:grid-cols-[minmax(0,1.05fr)_minmax(260px,0.65fr)] lg:items-center">
+                            <div class="page-header-copy">
                                 <div class="module-eyebrow mb-2">FOCUS SHIELD</div>
-                                <h2 class="text-2xl font-black tracking-tight text-slate-950 dark:text-slate-50 sm:text-[1.9rem]">
-                                    专注力记录
-                                </h2>
-                                <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">
+                                <h2 class="page-header-title">专注力记录</h2>
+                                <p class="page-header-support">
                                     这里只有一个主动作：挡下一次干扰，就顺手记一笔。累计数字和主按钮都会留在首屏。
                                 </p>
                             </div>
                             <div class="metric-card !p-5 text-center">
-                                <div class="text-5xl font-black text-primary mb-2" id="phone-resist-count">0</div>
+                                <div class="text-5xl font-semibold text-primary mb-2" id="phone-resist-count">0</div>
                                 <p class="text-slate-500 mb-5 text-sm">累计拒绝碎片化诱惑次数</p>
-                                <button id="add-phone-resist" class="bg-primary hover:bg-primaryHover text-white py-3 px-6 rounded-xl font-medium transition-all active:scale-95 shadow-lg inline-flex items-center justify-center gap-2 w-full">
+                                <button id="add-phone-resist" class="action-btn action-btn-primary">
                                     <i data-lucide="shield-check"></i> 又成功克制了一次
                                 </button>
                             </div>
@@ -553,17 +555,16 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
-                            <h3 class="text-lg font-semibold mb-3">今日记录</h3>
-                            <div class="text-4xl font-bold text-primary mb-2" id="today-phone-resist-count">0</div>
-                            <p class="text-slate-500 text-sm">今日拦截次数</p>
-                            <div class="mt-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl text-xs text-slate-500 font-mono" id="today-phone-resist-times">
+                        <div class="surface-card">
+                            <h3 class="surface-card-title mb-3">今日记录</h3>
+                            <div class="text-4xl font-semibold tracking-tight text-primary mb-2" id="today-phone-resist-count">0</div>
+                            <p class="surface-card-copy !mt-0">今日拦截次数</p>
+                            <div class="surface-inline-note mt-4 p-3 text-xs text-slate-500 font-mono" id="today-phone-resist-times">
                                 暂无记录
                             </div>
                         </div>
-                        
-                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 overflow-y-auto max-h-64">
-                            <h3 class="text-lg font-semibold mb-4">成就图鉴</h3>
+                        <div class="surface-card overflow-y-auto max-h-64">
+                            <h3 class="surface-card-title mb-4">成就图鉴</h3>
                             <div class="space-y-4" id="achievements-list">
                                 </div>
                         </div>
@@ -572,14 +573,34 @@
 
                 <!-- 任务管理与今日时间轴。 -->
                 <section id="tasks-section" class="mb-8 hidden">
+                    <div class="mission-card mb-6 p-5 sm:p-6">
+                        <div class="focus-hero-grid">
+                            <div class="page-header-copy">
+                                <div class="module-eyebrow mb-2">FOCUS OPERATIONS</div>
+                                <h2 class="page-header-title">把主任务放到台面中央。</h2>
+                                <p class="page-header-support">
+                                    这里优先处理今天最重要的一条推进链路。开始、捕捉、回看都在同一屏里，但只有主动作会占据视觉中心。
+                                </p>
+                                <div class="focus-hero-note">
+                                    <span class="focus-hero-chip">Single Thread First</span>
+                                    <span class="focus-hero-chip">Capture Without Context Switch</span>
+                                </div>
+                            </div>
+                            <div class="focus-hero-card">
+                                <div class="metric-label">专注策略</div>
+                                <div class="mt-3 text-xl font-semibold tracking-tight text-slate-950 dark:text-slate-50">先启动，再捕捉，再回看。</div>
+                                <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">任务区保留主操作位，捕捉池只作为旁路缓存，不让思路从主线程上掉出去。</p>
+                            </div>
+                        </div>
+                    </div>
                     <div class="grid items-stretch gap-6 xl:grid-cols-[minmax(0,1.18fr)_minmax(320px,0.82fr)]">
-                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 flex h-full flex-col">
+                        <div class="surface-card flex h-full flex-col">
                             <div class="mb-4 flex items-end justify-between gap-4">
                                 <div>
-                                    <h3 class="text-lg font-semibold">开启深度工作</h3>
-                                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">把当前任务和进行中状态收在同一张主卡里，第一眼就能直接开始。</p>
+                                    <h3 class="surface-card-title">开启深度工作</h3>
+                                    <p class="surface-card-copy">把当前任务和进行中状态收在同一张主卡里，第一眼就能直接开始。</p>
                                 </div>
-                                <span class="text-xs font-mono text-slate-400">START FIRST</span>
+                                <span class="surface-card-tag">START FIRST</span>
                             </div>
                             <div class="grid gap-3 lg:grid-cols-[12rem_minmax(0,1fr)_auto]">
                                 <div class="system-select-wrap w-full shrink-0">
@@ -595,9 +616,9 @@
                                     </div>
                                 </div>
 
-                                <input type="text" id="task-name" placeholder="输入你现在要推进的任务..." class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-slate-700 dark:text-white transition-all">
+                                <input type="text" id="task-name" placeholder="输入你现在要推进的任务..." class="system-input">
 
-                                <button id="start-task" class="bg-primary hover:bg-primaryHover text-white py-3 px-8 rounded-xl font-medium transition-all shadow-md shrink-0">
+                                <button id="start-task" class="action-btn action-btn-primary shrink-0 px-8">
                                     开始专注
                                 </button>
                             </div>
@@ -605,11 +626,11 @@
                             <div id="current-task-container" class="mt-5 bg-primary/10 dark:bg-primary/20 border border-primary/20 rounded-2xl p-6 hidden transition-all">
                                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                     <div class="min-w-0">
-                                        <div class="text-xs text-primary font-bold uppercase tracking-wider mb-1">正在进行</div>
-                                        <div class="text-xl font-bold dark:text-white" id="current-task-name">-</div>
+                                        <div class="text-xs text-primary font-semibold uppercase tracking-wider mb-1">正在进行</div>
+                                        <div class="text-xl font-semibold dark:text-white" id="current-task-name">-</div>
                                         <div class="text-sm text-slate-500 dark:text-slate-400 mt-1 font-mono" id="current-task-time">已进行: 00:00:00</div>
                                     </div>
-                                    <button id="end-task" class="bg-danger hover:bg-red-600 text-white py-2 px-6 rounded-xl font-medium transition-all shadow-md shrink-0">
+                                    <button id="end-task" class="action-btn action-btn-primary shrink-0 !w-auto !min-h-[2.9rem] px-6">
                                         结束并记录
                                     </button>
                                 </div>
@@ -637,13 +658,13 @@
                             </div>
                         </div>
 
-                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 flex h-full flex-col">
+                        <div class="surface-card focus-capture-shell flex h-full flex-col">
                             <div class="flex items-center justify-between gap-4">
                                 <div>
-                                    <h3 class="text-lg font-semibold flex items-center gap-2"><i data-lucide="lightbulb" class="w-5 h-5 text-warning"></i> 噬星体捕捉池</h3>
-                                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">这里接住今天冒出来的灵感、异常和待办，不抢主任务位。</p>
+                                    <h3 class="surface-card-title flex items-center gap-2"><i data-lucide="lightbulb" class="w-5 h-5 text-warning"></i> 噬星体捕捉池</h3>
+                                    <p class="surface-card-copy">这里接住今天冒出来的灵感、异常和待办，不抢主任务位。</p>
                                 </div>
-                                <button class="open-quick-capture-btn inline-flex items-center gap-2 rounded-xl border border-slate-200/70 bg-white/70 px-3 py-2 text-xs font-semibold text-slate-600 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:text-primary dark:border-slate-700/70 dark:bg-slate-900/70 dark:text-slate-300">
+                                <button class="open-quick-capture-btn toolbar-ghost-button">
                                     <i data-lucide="square-pen" class="w-4 h-4"></i> 打开捕捉台
                                 </button>
                             </div>
@@ -654,18 +675,18 @@
                     </div>
 
                     <div class="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.16fr)_minmax(320px,0.84fr)]">
-                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
+                        <div class="surface-card">
                             <div class="mb-4 flex items-end justify-between gap-4">
                                 <div>
-                                    <h3 class="text-lg font-semibold">今日日志</h3>
-                                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">这是回看区，需要时再展开就好。</p>
+                                    <h3 class="surface-card-title">今日日志</h3>
+                                    <p class="surface-card-copy">这是回看区，需要时再展开就好。</p>
                                 </div>
-                                <span class="text-xs font-mono text-slate-400">ARCHIVE BELOW FOLD</span>
+                                <span class="surface-card-tag">ARCHIVE BELOW FOLD</span>
                             </div>
                             <div class="max-h-[24rem] overflow-auto">
                                 <table class="min-w-full text-sm">
                                     <thead>
-                                        <tr class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400">
+                                        <tr class="surface-table-head">
                                             <th class="py-3 px-4 text-left rounded-l-lg font-medium">任务名称</th>
                                             <th class="py-3 px-4 text-left font-medium">开始</th>
                                             <th class="py-3 px-4 text-left font-medium">结束</th>
@@ -679,16 +700,16 @@
                             </div>
                         </div>
 
-                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
+                        <div class="surface-card">
                             <div class="mb-4 flex items-end justify-between gap-4">
                                 <div>
-                                    <h3 class="text-lg font-semibold">事件视界映射</h3>
-                                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">时间分布用于复盘，不再占用首屏主操作位。</p>
+                                    <h3 class="surface-card-title">事件视界映射</h3>
+                                    <p class="surface-card-copy">时间分布用于复盘，不再占用首屏主操作位。</p>
                                 </div>
-                                <span class="text-xs font-mono text-slate-400">TIMELINE REVIEW</span>
+                                <span class="surface-card-tag">TIMELINE REVIEW</span>
                             </div>
-                            <div class="relative h-80 bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
-                                <div class="absolute left-0 top-0 bottom-0 w-16 border-r border-slate-200 dark:border-slate-700">
+                            <div class="surface-inline-note relative h-80 p-4">
+                                <div class="absolute left-0 top-0 bottom-0 w-16 border-r border-slate-200/80 dark:border-white/10">
                                     <div class="h-full flex flex-col justify-between py-2 text-xs text-slate-400 font-mono text-center">
                                         <div>06:00</div><div>08:00</div><div>10:00</div><div>12:00</div><div>14:00</div>
                                         <div>16:00</div><div>18:00</div><div>20:00</div><div>22:00</div><div>24:00</div>
@@ -707,19 +728,17 @@
                 <!-- 速记历史归档。 -->
                 <section id="archive-section" class="mb-8 hidden">
                     <div class="mission-card mb-6 p-5 sm:p-6">
-                        <div class="grid gap-5 lg:grid-cols-[minmax(0,0.95fr)_minmax(320px,1.05fr)] lg:items-center">
-                            <div class="max-w-2xl">
+                        <div class="page-header-layout lg:grid-cols-[minmax(0,0.95fr)_minmax(320px,1.05fr)] lg:items-center">
+                            <div class="page-header-copy">
                                 <div class="module-eyebrow mb-2">LOG ARCHIVE</div>
-                                <h2 class="text-2xl font-black tracking-tight text-slate-950 dark:text-slate-50 sm:text-[1.9rem]">
-                                    全舰日志归档
-                                </h2>
-                                <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">
+                                <h2 class="page-header-title">全舰日志归档</h2>
+                                <p class="page-header-support">
                                     先用关键词缩小范围，再决定要不要展开完整归档。
                                 </p>
                             </div>
                             <div class="relative">
                                 <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
-                                <input type="text" id="archive-search-input" autocomplete="off" placeholder="检索历史日志、灵感或异常记录..." class="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all text-sm font-medium">
+                                <input type="text" id="archive-search-input" autocomplete="off" placeholder="检索历史日志、灵感或异常记录..." class="system-input pl-12 pr-4 font-medium">
                             </div>
                         </div>
                     </div>
@@ -731,13 +750,13 @@
                 <!-- 离舰审批模块。 -->
                 <section id="leave-section" class="mb-8 hidden">
                     <div class="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_minmax(340px,0.92fr)]">
-                        <div id="leave-form-shell" class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
+                        <div id="leave-form-shell" class="surface-card">
                             <div class="mb-4 flex items-end justify-between gap-4">
                                 <div>
-                                    <h3 class="text-lg font-semibold">离舰流程</h3>
-                                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">今天、未来、历史修正各走各的，不容易点错。</p>
+                                    <h3 class="surface-card-title">离舰流程</h3>
+                                    <p class="surface-card-copy">今天、未来、历史修正各走各的，不容易点错。</p>
                                 </div>
-                                <span class="text-xs font-mono text-slate-400">FLOW SPLIT</span>
+                                <span class="surface-card-tag">FLOW SPLIT</span>
                             </div>
 
                             <div class="mb-4 flex flex-wrap gap-2">
@@ -746,7 +765,7 @@
                                 <button id="leave-workflow-retro" class="workflow-tab">补请假</button>
                             </div>
 
-                            <div class="mb-4 rounded-2xl border border-slate-200/80 bg-white/65 px-4 py-4 dark:border-slate-700/70 dark:bg-slate-900/40">
+                            <div class="system-panel-note mb-4 px-4 py-4">
                                 <div class="module-eyebrow mb-2">ACTIVE FLOW</div>
                                 <h4 id="leave-form-title" class="text-lg font-semibold text-slate-950 dark:text-slate-50">今日离舰</h4>
                                 <p id="leave-form-copy" class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">
@@ -754,14 +773,14 @@
                                 </p>
                             </div>
 
-                            <div id="leave-form-alert" class="rounded-2xl border border-success/20 bg-success/10 px-4 py-3 text-sm leading-6 text-success">
+                            <div id="leave-form-alert" class="semantic-banner semantic-banner-success">
                                 提交后会同步今天的值班状态。
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                 <div id="leave-date-group" class="hidden">
                                     <label class="block text-sm font-medium text-slate-500 mb-2">日期</label>
-                                    <input type="date" id="leave-date" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all">
+                                    <input type="date" id="leave-date" class="system-input">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-slate-500 mb-2">模式</label>
@@ -798,11 +817,11 @@
                                 </div>
                                 <div class="md:col-span-2">
                                     <label class="block text-sm font-medium text-slate-500 mb-2">缘由</label>
-                                    <input type="text" id="leave-reason" placeholder="如：参加学术会议 / 身体不适" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all">
+                                    <input type="text" id="leave-reason" placeholder="如：参加学术会议 / 身体不适" class="system-input">
                                 </div>
                                 <div class="md:col-span-2 hidden" id="leave-correction-group">
                                     <label class="block text-sm font-medium text-slate-500 mb-2">补录说明</label>
-                                    <input type="text" id="leave-correction-note" placeholder="如：当天漏填 / 事后补录" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all">
+                                    <input type="text" id="leave-correction-note" placeholder="如：当天漏填 / 事后补录" class="system-input">
                                 </div>
                             </div>
 
@@ -819,18 +838,18 @@
                             </div>
                         </div>
 
-                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800 flex flex-col">
+                        <div class="surface-card flex flex-col">
                             <div class="mb-4 flex items-end justify-between gap-4">
                                 <div>
-                                    <h3 class="text-lg font-semibold">历史记录</h3>
-                                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">每条记录都带来源标记，回看时不会混淆。</p>
+                                    <h3 class="surface-card-title">历史记录</h3>
+                                    <p class="surface-card-copy">每条记录都带来源标记，回看时不会混淆。</p>
                                 </div>
-                                <span class="text-xs font-mono text-slate-400">LOCAL SCROLL</span>
+                                <span class="surface-card-tag">LOCAL SCROLL</span>
                             </div>
                             <div class="overflow-x-auto max-h-[30rem] overflow-y-auto pr-1">
                                 <table class="min-w-full text-sm">
                                     <thead>
-                                        <tr class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400">
+                                        <tr class="surface-table-head">
                                             <th class="py-3 px-4 text-left rounded-l-lg font-medium">离舰日期</th>
                                             <th class="py-3 px-4 text-left font-medium">离舰理由</th>
                                             <th class="py-3 px-4 text-left rounded-r-lg font-medium">操作</th>
@@ -847,68 +866,64 @@
                 <!-- 统计分析模块。 -->
                 <section id="stats-section" class="mb-8 hidden">
                     <div class="mission-card mb-6 p-5 sm:p-6">
-                        <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-                            <div class="max-w-2xl">
+                        <div class="page-header-layout">
+                            <div class="page-header-copy">
                                 <div class="module-eyebrow mb-2">SYSTEM INTEL</div>
-                                <h2 class="text-2xl font-black tracking-tight text-slate-950 dark:text-slate-50 sm:text-[1.9rem]">
-                                    效能洞察
-                                </h2>
-                                <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">
+                                <h2 class="page-header-title">效能洞察</h2>
+                                <p class="page-header-support">
                                     先切换观察周期，再看趋势图和累计指标，复盘会更清楚。
                                 </p>
                             </div>
-                            <div id="stats-period-controls" class="flex gap-2 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl w-fit">
-                                <button class="stats-period-btn bg-white dark:bg-slate-700 text-slate-900 dark:text-white py-1.5 px-5 rounded-lg font-medium shadow-sm text-sm transition-all" data-period="week">本周</button>
-                                <button class="stats-period-btn text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 py-1.5 px-5 rounded-lg font-medium text-sm transition-all" data-period="month">本月</button>
-                                <button class="stats-period-btn text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 py-1.5 px-5 rounded-lg font-medium text-sm transition-all" data-period="year">年度</button>
+                            <div id="stats-period-controls" class="segmented-control w-fit">
+                                <button class="stats-period-btn stats-period-btn-active" data-period="week">本周</button>
+                                <button class="stats-period-btn stats-period-btn-idle" data-period="month">本月</button>
+                                <button class="stats-period-btn stats-period-btn-idle" data-period="year">年度</button>
                             </div>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
-                            <h3 class="text-sm font-semibold text-slate-500 mb-4">考勤合规率趋势</h3>
+                        <div class="surface-card">
+                            <h3 class="surface-card-title mb-4 text-base">考勤合规率趋势</h3>
                             <div class="h-64"><canvas id="checkin-rate-chart"></canvas></div>
                         </div>
-                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
-                            <h3 class="text-sm font-semibold text-slate-500 mb-4">各时段活跃分布</h3>
+                        <div class="surface-card">
+                            <h3 class="surface-card-title mb-4 text-base">各时段活跃分布</h3>
                             <div class="h-64"><canvas id="checkin-period-chart"></canvas></div>
                         </div>
                     </div>
-                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                        <div class="md:col-span-2 bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
-                            <h3 class="text-sm font-semibold text-slate-500 mb-4">专注时长沉淀 (h)</h3>
+                        <div class="md:col-span-2 surface-card">
+                            <h3 class="surface-card-title mb-4 text-base">专注时长沉淀 (h)</h3>
                             <div class="h-64"><canvas id="task-duration-chart"></canvas></div>
                         </div>
-                        <div class="md:col-span-1 bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
-                            <h3 class="text-sm font-semibold text-slate-500 mb-4">精力分布图谱</h3>
+                        <div class="md:col-span-1 surface-card">
+                            <h3 class="surface-card-title mb-4 text-base">精力分布图谱</h3>
                             <div class="h-64"><canvas id="task-tag-chart"></canvas></div>
                         </div>
-                        <div class="bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
-                            <h3 class="text-sm font-semibold text-slate-500 mb-4">认知干扰拦截指数</h3>
+                        <div class="surface-card">
+                            <h3 class="surface-card-title mb-4 text-base">认知干扰拦截指数</h3>
                             <div class="h-64"><canvas id="phone-resist-chart"></canvas></div>
                         </div>
                     </div>
-                    
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="bg-primary/5 dark:bg-primary/10 rounded-2xl p-6 border border-primary/10 text-center">
-                            <div class="text-3xl font-black text-primary mb-1" id="total-checkin-days">0</div>
+                        <div class="surface-stat-card">
+                            <div class="text-3xl font-semibold text-primary mb-1" id="total-checkin-days">0</div>
                             <div class="text-xs text-slate-500 font-medium">累计出勤天数</div>
                         </div>
-                        <div class="bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-800/30 text-center">
-                            <div class="text-3xl font-black text-indigo-600 dark:text-indigo-400 mb-1" id="total-task-hours">0</div>
+                        <div class="surface-stat-card">
+                            <div class="text-3xl font-semibold text-indigo-600 dark:text-indigo-400 mb-1" id="total-task-hours">0</div>
                             <div class="text-xs text-slate-500 font-medium">深度工作总时长(h)</div>
                             <div id="space-survival-egg" class="mt-3 text-[10px] text-indigo-400/80 font-mono bg-indigo-100/50 dark:bg-indigo-900/50 py-1 px-2 rounded-lg inline-block transition-all group-hover:scale-105">
                                 🛸 维生系统计算中...
                             </div>
                         </div>
-                        <div class="bg-orange-50 dark:bg-orange-900/20 rounded-2xl p-6 border border-orange-100 dark:border-orange-800/30 text-center">
-                            <div class="text-3xl font-black text-orange-500 mb-1" id="total-phone-resist">0</div>
+                        <div class="surface-stat-card">
+                            <div class="text-3xl font-semibold text-orange-500 mb-1" id="total-phone-resist">0</div>
                             <div class="text-xs text-slate-500 font-medium">总克制次数</div>
                         </div>
-                        <div class="bg-green-50 dark:bg-green-900/20 rounded-2xl p-6 border border-green-100 dark:border-green-800/30 text-center">
-                            <div class="text-3xl font-black text-green-500 mb-1" id="achievement-count">0</div>
+                        <div class="surface-stat-card">
+                            <div class="text-3xl font-semibold text-green-500 mb-1" id="achievement-count">0</div>
                             <div class="text-xs text-slate-500 font-medium">解锁成就总量</div>
                         </div>
                     </div>
@@ -916,7 +931,7 @@
 
                 <!-- 深空酒馆模块。 -->
                 <section id="tavern-section" class="mb-8 hidden hidden-flex-col">
-                    <div class="mission-card mb-5 p-5 sm:p-6">
+                    <div class="mission-card tavern-shell-hero mb-5 p-5 sm:p-6">
                         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                             <div>
                                 <div class="module-eyebrow mb-2">MOOD MIXOLOGY</div>
@@ -925,8 +940,15 @@
                                     把一句情绪样本调成一杯像真实吧台配方的饮品，再留进酒单里慢慢回看。
                                 </p>
                             </div>
-                            <div class="flex flex-wrap gap-3">
-                                <span class="tavern-chip"><strong id="history-library-count">58</strong> 款酒库已上线</span>
+                            <div class="tavern-hero-side">
+                                <div class="tavern-hero-pill">
+                                    <span class="tavern-hero-pill-label">Library</span>
+                                    <span class="tavern-hero-pill-value"><strong id="history-library-count">58</strong> 款酒谱</span>
+                                </div>
+                                <div class="tavern-hero-pill">
+                                    <span class="tavern-hero-pill-label">Tonight</span>
+                                    <span class="tavern-hero-pill-value">一句情绪，一杯命名饮品</span>
+                                </div>
                                 <button id="btn-view-tavern-history" class="tavern-action-secondary">
                                     <i data-lucide="book-open-text" class="w-4 h-4"></i> 打开酒单档案
                                 </button>
@@ -954,7 +976,7 @@
                                                 <label for="mood-text-input" class="text-sm font-semibold text-slate-900 dark:text-slate-100">情绪样本输入</label>
                                                 <div class="text-[11px] font-mono text-slate-400"><span id="mood-char-count">0</span>/50</div>
                                             </div>
-                                            <textarea id="mood-text-input" rows="3" class="mt-3 w-full resize-none rounded-2xl border border-slate-200/70 bg-white/70 px-4 py-3 text-sm leading-6 text-slate-700 outline-none ring-0 placeholder:text-slate-400 dark:border-white/10 dark:bg-slate-950/20 dark:text-slate-100" placeholder="例如：今天写代码写得有点烦，但其实还是想把它做好，只是脑子已经有点发烫。"></textarea>
+                                            <textarea id="mood-text-input" rows="3" class="system-input system-input-soft mt-3 min-h-[6rem] resize-none text-sm leading-6" placeholder="例如：今天写代码写得有点烦，但其实还是想把它做好，只是脑子已经有点发烫。"></textarea>
                                             <div class="mt-3 flex flex-wrap gap-2 text-[11px] text-slate-500 dark:text-slate-400">
                                                 <span class="tavern-chip">一句话就够，吧台会先理解，再替你命名。</span>
                                             </div>
@@ -1265,12 +1287,12 @@
                                             </div>
                                         </div>
 
-                                        <div class="mt-5 rounded-[1.4rem] border border-slate-200/70 bg-white/60 p-4 dark:border-slate-700/60 dark:bg-white/[0.03] sm:p-5">
+                                        <div class="system-panel-note mt-5 p-4 sm:p-5">
                                             <div class="flex items-center justify-between gap-4">
                                                 <span class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">浓度</span>
                                                 <span id="res-params" class="text-sm font-semibold text-slate-900 dark:text-slate-100">0.63 / 中度酿制</span>
                                             </div>
-                                            <div class="mt-3 h-2 overflow-hidden rounded-full bg-slate-200/70 dark:bg-slate-800/70">
+                                            <div class="mt-3 h-2 overflow-hidden rounded-full bg-slate-200/70 dark:bg-white/10">
                                                 <div id="res-bar" class="h-full rounded-full bg-slate-500 transition-all duration-1000" style="width: 0%"></div>
                                             </div>
                                             <div class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
@@ -1279,7 +1301,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="mt-5 rounded-[1.4rem] border border-slate-200/70 bg-white/60 p-4 dark:border-slate-700/60 dark:bg-white/[0.03] sm:p-5">
+                                        <div class="system-panel-note mt-5 p-4 sm:p-5">
                                             <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">调酒师注记</div>
                                             <p id="res-reason" class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">
                                                 这杯酒的前调来自你话里的紧绷，中调留给没有说完的压力，尾调放进你还想继续的那一点执念。
@@ -1344,17 +1366,15 @@
                 <!-- 同步与配置模块。 -->
                 <section id="settings-section" class="mb-8 hidden">
                     <div class="mission-card mb-5 p-5 sm:p-6">
-                        <div class="system-card-head">
-                            <div class="max-w-2xl">
+                        <div class="page-header-layout">
+                            <div class="page-header-copy">
                                 <div class="module-eyebrow mb-2">SYNC LINK</div>
-                                <h2 class="text-2xl font-black tracking-tight text-slate-950 dark:text-slate-50 sm:text-[1.9rem]">
-                                    云端同步中心
-                                </h2>
-                                <p class="system-card-copy">
+                                <h2 class="page-header-title">云端同步中心</h2>
+                                <p class="page-header-support">
                                     同步凭据、拉取和上传覆盖都留在同一条链路里，确认方向后再决定是否推云。
                                 </p>
                             </div>
-                            <div class="system-chip-row">
+                            <div class="page-header-side">
                                 <span class="status-chip status-chip-warning">上传覆盖高风险</span>
                                 <span class="tavern-chip">管理员专享</span>
                             </div>
@@ -1371,18 +1391,18 @@
                         <div class="system-form-stack">
                             <div>
                                 <label class="system-field-label">GitHub Token (需勾选 gist 权限)</label>
-                                <input type="password" id="github-token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all font-mono text-sm">
+                                <input type="password" id="github-token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="system-input font-mono text-sm">
                             </div>
                             <div>
                                 <label class="system-field-label">Gist ID</label>
-                                <input type="text" id="gist-id-input" placeholder="输入你想同步的 Gist ID" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all font-mono text-sm">
+                                <input type="text" id="gist-id-input" placeholder="输入你想同步的 Gist ID" class="system-input font-mono text-sm">
                             </div>
                         </div>
 
                         <div class="system-panel-actions">
-                            <button id="save-config-btn" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-2.5 px-6 rounded-xl font-medium transition-all">保存配置</button>
+                            <button id="save-config-btn" class="action-btn action-btn-secondary !w-auto !min-h-[2.75rem] px-6">保存配置</button>
                             <button id="pull-cloud-btn" class="bg-primary hover:bg-primaryHover text-white py-2.5 px-6 rounded-xl font-medium transition-all shadow-md flex items-center gap-2"><i data-lucide="cloud-download" class="w-4 h-4"></i> 拉取云端数据</button>
-                            <button id="push-cloud-btn" class="bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 text-white dark:text-slate-900 py-2.5 px-6 rounded-xl font-medium transition-all shadow-md flex items-center gap-2"><i data-lucide="cloud-upload" class="w-4 h-4"></i> 上传覆盖云端</button>
+                            <button id="push-cloud-btn" class="action-btn action-btn-secondary !w-auto !min-h-[2.75rem] px-6 flex items-center gap-2"><i data-lucide="cloud-upload" class="w-4 h-4"></i> 上传覆盖云端</button>
                         </div>
                     </div>
 
@@ -1429,14 +1449,14 @@
 
                                     <div id="export-month-field">
                                         <label class="mb-2 block text-sm font-medium text-slate-500">月度范围</label>
-                                        <input type="month" id="export-month-input" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary dark:text-white transition-all">
+                                        <input type="month" id="export-month-input" class="system-input">
                                     </div>
                                 </div>
 
                                 <div class="system-panel-note mt-4">
                                     <div class="flex items-center justify-between gap-3">
                                         <span class="system-panel-kicker">SELECTION</span>
-                                        <span id="export-selection-badge" class="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.16em] text-slate-500 dark:border-slate-700 dark:text-slate-300">MONTH JSON</span>
+                                        <span id="export-selection-badge" class="semantic-tag semantic-tag-neutral semantic-tag-tight">MONTH JSON</span>
                                     </div>
                                     <p id="export-selection-hint" class="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
                                         带摘要和明细，适合后续二次分析。
@@ -1500,7 +1520,7 @@
         </main>
     </div>
     
-    <div id="achievement-popup" class="fixed top-8 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl shadow-2xl p-4 w-80 hidden hidden-flex achievement-popup z-50 items-start gap-4 border border-slate-700 dark:border-slate-200">
+    <div id="achievement-popup" class="surface-modal-card fixed top-8 left-1/2 z-50 hidden w-80 -translate-x-1/2 hidden-flex achievement-popup items-start gap-4 p-4 text-slate-900 shadow-2xl dark:text-slate-100">
         <div class="p-2 bg-yellow-400/20 text-yellow-500 rounded-xl shrink-0">
             <i data-lucide="award" class="w-6 h-6"></i>
         </div>
@@ -1658,18 +1678,18 @@
     <script src="assets/js/ui/shortcuts.js"></script>
     <!-- 每日/每周总结弹窗。 -->
     <div id="daily-summary-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-md z-[70] hidden hidden-flex-col items-center justify-center transition-opacity">
-        <div class="bg-cardLight dark:bg-cardDark w-full max-w-md rounded-2xl shadow-2xl border border-primary/30 p-8 transform transition-all text-center modal-popup">
+        <div class="surface-modal-card modal-popup w-full max-w-md border border-primary/30 p-8 text-center transform transition-all">
             <div class="text-6xl mb-4 animate-bounce">🌌</div>
             <h2 class="text-2xl font-bold text-primary mb-2">一个地球日结束</h2>
             <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">管理员，今日维生系统已满载运转，您的努力正在点亮太阳。</p>
             <div class="grid grid-cols-2 gap-4 mb-6">
-                <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                <div class="surface-modal-stat p-4">
                     <div class="text-xs text-slate-500 mb-1">今日科研供能</div>
-                    <div class="text-3xl font-black text-indigo-500" id="daily-stat-hours">0h</div>
+                    <div class="text-3xl font-semibold text-indigo-500" id="daily-stat-hours">0h</div>
                 </div>
-                <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                <div class="surface-modal-stat p-4">
                     <div class="text-xs text-slate-500 mb-1">成功抵御干扰</div>
-                    <div class="text-3xl font-black text-orange-500" id="daily-stat-resist">0次</div>
+                    <div class="text-3xl font-semibold text-orange-500" id="daily-stat-resist">0次</div>
                 </div>
             </div>
             <button id="close-daily-modal" class="w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-xl font-medium transition-all shadow-md">确认数据并休眠</button>
@@ -1677,34 +1697,34 @@
     </div>
 
     <div id="weekly-summary-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-md z-[70] hidden hidden-flex-col items-center justify-center transition-opacity">
-        <div class="bg-cardLight dark:bg-cardDark w-full max-w-md rounded-2xl shadow-2xl border border-warning/50 p-8 transform transition-all text-center modal-popup">
+        <div class="surface-modal-card modal-popup w-full max-w-md border border-warning/50 p-8 text-center transform transition-all">
             <div class="text-6xl mb-4 animate-pulse">🚀</div>
             <h2 class="text-2xl font-bold text-warning mb-2">鲸鱼座τ星航线·全周度达成！</h2>
             <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">不可思议的意志力！本周维生系统7个地球日均保持完美运转，未发生任何故障。</p>
             <div class="grid grid-cols-3 gap-3 mb-6">
-                <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                <div class="surface-modal-stat p-3">
                     <div class="text-xs text-slate-500 mb-1">引擎连转</div>
-                    <div class="text-xl font-black text-success">7天</div>
+                    <div class="text-xl font-semibold text-success">7天</div>
                 </div>
-                <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                <div class="surface-modal-stat p-3">
                     <div class="text-xs text-slate-500 mb-1">累计科研</div>
-                    <div class="text-xl font-black text-indigo-500" id="weekly-stat-hours">0h</div>
+                    <div class="text-xl font-semibold text-indigo-500" id="weekly-stat-hours">0h</div>
                 </div>
-                <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                <div class="surface-modal-stat p-3">
                     <div class="text-xs text-slate-500 mb-1">总计拦截</div>
-                    <div class="text-xl font-black text-orange-500" id="weekly-stat-resist">0次</div>
+                    <div class="text-xl font-semibold text-orange-500" id="weekly-stat-resist">0次</div>
                 </div>
             </div>
             <button id="close-weekly-modal" class="w-full bg-warning hover:bg-yellow-600 text-slate-900 py-3 rounded-xl font-bold transition-all shadow-md">引擎出力提升1&#37 (归档本周)</button>
         </div>
     </div>
     <div id="confirm-dialog-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="confirm-dialog-title" aria-describedby="confirm-dialog-message" class="fixed inset-0 z-[72] hidden items-center justify-center bg-slate-900/60 px-4 py-6 backdrop-blur-md">
-        <div id="confirm-dialog-panel" class="w-full max-w-md rounded-2xl border border-slate-200/70 bg-cardLight p-6 shadow-2xl dark:border-slate-700/80 dark:bg-cardDark">
+        <div id="confirm-dialog-panel" class="surface-modal-card w-full max-w-md p-6">
             <div id="confirm-dialog-badge" class="status-chip status-chip-warning shrink-0">CONFIRM</div>
             <h3 id="confirm-dialog-title" class="mt-4 text-xl font-semibold text-slate-950 dark:text-slate-50">确认继续</h3>
             <p id="confirm-dialog-message" class="mt-3 text-sm leading-7 text-slate-500 dark:text-slate-400">确认执行当前操作吗？</p>
             <div class="mt-6 grid gap-3 sm:grid-cols-2">
-                <button id="confirm-dialog-cancel" class="w-full rounded-xl border border-slate-200/80 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-200 dark:hover:bg-slate-900">
+                <button id="confirm-dialog-cancel" class="action-btn action-btn-secondary !min-h-[2.9rem]">
                     取消
                 </button>
                 <button id="confirm-dialog-confirm" class="w-full rounded-xl bg-warning px-4 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-yellow-500">

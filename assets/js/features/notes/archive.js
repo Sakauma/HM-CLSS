@@ -5,7 +5,7 @@
 
 function createArchiveEmptyState(filterText) {
     return appendDomChildren(createDomElement('div', {
-        className: 'bg-cardLight dark:bg-cardDark rounded-2xl p-10 shadow-soft border border-slate-100 dark:border-slate-800 text-center flex flex-col items-center justify-center text-slate-400'
+        className: 'surface-card p-10 text-center flex flex-col items-center justify-center text-slate-400'
     }), [
         createLucideIconNode('inbox', 'w-12 h-12 mb-3 opacity-50'),
         createDomElement('p', {
@@ -20,20 +20,20 @@ function createArchiveNoteCard(note, date, index) {
     const tagCfg = noteTagConfig[tagKey] || noteTagConfig.idea;
 
     const tagChip = appendDomChildren(createDomElement('span', {
-        className: `text-[10px] flex items-center justify-center gap-1 border px-1.5 py-0.5 rounded w-full ${tagCfg.color}`
+        className: `${tagCfg.color} semantic-tag-full semantic-tag-tight gap-1`
     }), [
         createLucideIconNode(tagCfg.icon, 'w-3 h-3'),
         document.createTextNode(` ${tagCfg.label}`)
     ]);
 
     return appendDomChildren(createDomElement('div', {
-        className: 'flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 hover:border-primary/30 transition-colors relative group'
+        className: 'surface-inline-card flex items-start gap-4 p-4 hover:border-primary/20 transition-colors relative group'
     }), [
         appendDomChildren(createDomElement('div', {
             className: 'flex flex-col gap-2 mt-1 shrink-0 w-16 items-center'
         }), [
             createDomElement('span', {
-                className: 'text-sm font-mono text-slate-400 bg-slate-200/50 dark:bg-slate-800/50 px-2 py-0.5 rounded w-full text-center',
+                className: 'surface-inline-note text-sm font-mono text-slate-400 px-2 py-0.5 rounded w-full text-center',
                 text: getNoteTime(note)
             }),
             tagChip
@@ -57,10 +57,10 @@ function createArchiveSection(date, noteCards) {
     noteCards.forEach((card) => noteList.appendChild(card));
 
     return appendDomChildren(createDomElement('div', {
-        className: 'bg-cardLight dark:bg-cardDark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800'
+        className: 'surface-card'
     }), [
         appendDomChildren(createDomElement('h3', {
-            className: 'text-lg font-bold mb-4 text-primary flex items-center gap-2'
+            className: 'surface-card-title mb-4 text-primary flex items-center gap-2'
         }), [
             createLucideIconNode('calendar', 'w-5 h-5'),
             document.createTextNode(` ${date}`)

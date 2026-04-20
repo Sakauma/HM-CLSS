@@ -11,9 +11,9 @@
         }
         .dark .quick-capture-shell {
             background:
-                radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 28%),
-                linear-gradient(145deg, rgba(7, 17, 28, 0.98), rgba(10, 25, 38, 0.96));
-            box-shadow: 0 36px 110px rgba(2, 12, 27, 0.5);
+                radial-gradient(circle at top left, rgba(255, 255, 255, 0.05), transparent 26%),
+                linear-gradient(145deg, rgba(18, 22, 28, 0.98), rgba(26, 31, 38, 0.96));
+            box-shadow: 0 38px 110px rgba(0, 0, 0, 0.44);
         }
         .quick-capture-shell::before {
             content: '';
@@ -54,8 +54,8 @@
         }
         .dark .quick-capture-main,
         .dark .quick-capture-side {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(148, 163, 184, 0.12);
+            background: rgba(255, 255, 255, 0.028);
+            border-color: rgba(255, 255, 255, 0.075);
         }
         .quick-capture-main {
             padding: 1.5rem;
@@ -82,7 +82,7 @@
             font-size: 0.78rem;
         }
         .dark .quick-capture-chip {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.035);
             color: #adc0d3;
         }
         .quick-capture-editor {
@@ -93,8 +93,8 @@
             overflow: hidden;
         }
         .dark .quick-capture-editor {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(2, 6, 23, 0.16));
-            border-color: rgba(148, 163, 184, 0.12);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(16, 20, 26, 0.28));
+            border-color: rgba(255, 255, 255, 0.075);
         }
         .quick-capture-input {
             width: 100%;
@@ -125,8 +125,8 @@
             background: rgba(255, 255, 255, 0.64);
         }
         .dark .quick-capture-footer {
-            background: rgba(2, 6, 23, 0.16);
-            border-top-color: rgba(148, 163, 184, 0.1);
+            background: rgba(16, 20, 26, 0.24);
+            border-top-color: rgba(255, 255, 255, 0.07);
         }
         .quick-capture-ghost,
         .quick-capture-primary {

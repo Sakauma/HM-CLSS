@@ -3,8 +3,8 @@
  * 负责连接周期按钮、顶部摘要和图表渲染入口。
  */
 
-const STATS_PERIOD_BUTTON_ACTIVE_CLASS = 'stats-period-btn bg-white dark:bg-slate-700 text-slate-900 dark:text-white py-1.5 px-5 rounded-lg font-medium shadow-sm text-sm transition-all';
-const STATS_PERIOD_BUTTON_IDLE_CLASS = 'stats-period-btn text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 py-1.5 px-5 rounded-lg font-medium text-sm transition-all';
+const STATS_PERIOD_BUTTON_ACTIVE_CLASS = 'stats-period-btn stats-period-btn-active';
+const STATS_PERIOD_BUTTON_IDLE_CLASS = 'stats-period-btn stats-period-btn-idle';
 
 function setActiveStatsPeriodButton(activeBtn) {
     document.querySelectorAll('.stats-period-btn').forEach((button) => {
@@ -13,7 +13,7 @@ function setActiveStatsPeriodButton(activeBtn) {
 }
 
 function getActiveStatsPeriod() {
-    const activePeriodBtn = document.querySelector('.stats-period-btn.bg-white, .stats-period-btn.bg-slate-700');
+    const activePeriodBtn = document.querySelector('.stats-period-btn-active');
     return activePeriodBtn?.getAttribute('data-period') || 'week';
 }
 

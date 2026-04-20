@@ -28,7 +28,7 @@ function renderCurrentTaskState() {
     const s = Math.floor((elapsed % 60000) / 1000);
 
     setElementBadgeLabel(nameEl, tagMap[activeTask.tag] || tagMap.other, activeTask.name, {
-        badgeClass: 'text-xs bg-primary/20 text-primary px-2 py-1 rounded-md mr-2'
+        badgeClass: 'semantic-tag semantic-tag-primary semantic-tag-tight mr-2'
     });
     timeEl.textContent = `已进行: ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     progressBar.style.width = `${Math.min((elapsed / 36000000) * 100, 100)}%`;

@@ -5,21 +5,21 @@
 
 function createRetroEmptyState() {
     return createDomElement('div', {
-        className: 'rounded-2xl border border-dashed border-slate-200/80 bg-white/50 px-4 py-4 text-sm text-slate-500 dark:border-slate-700/80 dark:bg-slate-900/40 dark:text-slate-400',
+        className: 'surface-inline-note border-dashed px-4 py-4 text-sm text-slate-500 dark:text-slate-400',
         text: '暂无补录记录。'
     });
 }
 
 function createRetroEntryCard(entry) {
     const toneClassMap = {
-        success: 'bg-success/10 text-success border-success/20',
-        warning: 'bg-warning/10 text-warning border-warning/20',
-        danger: 'bg-danger/10 text-danger border-danger/20',
-        info: 'bg-primary/10 text-primary border-primary/20'
+        success: 'semantic-tag semantic-tag-success semantic-tag-tight',
+        warning: 'semantic-tag semantic-tag-warning semantic-tag-tight',
+        danger: 'semantic-tag semantic-tag-danger semantic-tag-tight',
+        info: 'semantic-tag semantic-tag-primary semantic-tag-tight'
     };
 
     return appendDomChildren(createDomElement('div', {
-        className: 'rounded-2xl border border-slate-200/70 bg-white/70 px-4 py-3 dark:border-slate-700/70 dark:bg-slate-900/40'
+        className: 'surface-inline-card px-4 py-3'
     }), [
         appendDomChildren(createDomElement('div', {
             className: 'flex items-start justify-between gap-3'
@@ -35,7 +35,7 @@ function createRetroEntryCard(entry) {
                 })
             ]),
             createDomElement('span', {
-                className: `inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold ${toneClassMap[entry.tone] || toneClassMap.info}`,
+                className: toneClassMap[entry.tone] || toneClassMap.info,
                 text: `补录 · ${entry.statusText}`
             })
         ]),

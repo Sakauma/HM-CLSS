@@ -10,10 +10,10 @@ function showToast(message, type = 'success') {
     const toast = document.createElement('div');
 
     const colors = {
-        success: 'bg-white dark:bg-slate-800 border-l-4 border-success text-slate-700 dark:text-slate-200',
-        error: 'bg-white dark:bg-slate-800 border-l-4 border-danger text-slate-700 dark:text-slate-200',
-        warning: 'bg-white dark:bg-slate-800 border-l-4 border-warning text-slate-700 dark:text-slate-200',
-        info: 'bg-white dark:bg-slate-800 border-l-4 border-primary text-slate-700 dark:text-slate-200'
+        success: 'border-l-4 border-success text-slate-700 dark:text-slate-200',
+        error: 'border-l-4 border-danger text-slate-700 dark:text-slate-200',
+        warning: 'border-l-4 border-warning text-slate-700 dark:text-slate-200',
+        info: 'border-l-4 border-primary text-slate-700 dark:text-slate-200'
     };
 
     const icons = {
@@ -24,7 +24,7 @@ function showToast(message, type = 'success') {
     };
 
     const tone = colors[type] ? type : 'success';
-    toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 pointer-events-auto animate-toast-in ${colors[tone]}`;
+    toast.className = `toast-shell flex items-center gap-3 px-4 py-3 border pointer-events-auto animate-toast-in ${colors[tone]}`;
     toast.setAttribute('role', tone === 'error' ? 'alert' : 'status');
     toast.setAttribute('aria-live', tone === 'error' ? 'assertive' : 'polite');
     toast.setAttribute('aria-atomic', 'true');

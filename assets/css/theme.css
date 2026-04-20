@@ -16,19 +16,38 @@
             --font-label: "IBM Plex Sans Condensed", "IBM Plex Sans", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
             --font-ui: var(--font-body);
             --font-mono: "IBM Plex Mono", "Noto Sans SC", ui-monospace, monospace;
+            --surface-strong-light: rgba(255, 255, 255, 0.84);
+            --surface-soft-light: rgba(255, 255, 255, 0.62);
+            --surface-strong-dark: rgba(12, 24, 36, 0.82);
+            --surface-soft-dark: rgba(255, 255, 255, 0.05);
+            --surface-stroke-light: rgba(148, 163, 184, 0.14);
+            --surface-stroke-dark: rgba(148, 163, 184, 0.12);
+            --shadow-soft-light: 0 20px 56px rgba(15, 23, 42, 0.07);
+            --shadow-soft-dark: 0 26px 64px rgba(2, 12, 27, 0.42);
         }
-        .dark { color-scheme: dark; }
+        .dark {
+            color-scheme: dark;
+            --color-primary: 132 189 255;
+            --color-primary-hover: 102 163 236;
+            --color-accent: 194 165 122;
+            --color-bg-dark: 11 14 18;
+            --color-card-dark: 24 28 34;
+            --surface-strong-dark: rgba(27, 31, 37, 0.86);
+            --surface-soft-dark: rgba(255, 255, 255, 0.035);
+            --surface-stroke-dark: rgba(255, 255, 255, 0.075);
+            --shadow-soft-dark: 0 30px 80px rgba(0, 0, 0, 0.42);
+        }
 
         body {
             font-family: var(--font-body);
             font-optical-sizing: auto;
             font-feature-settings: "kern" 1, "liga" 1, "tnum" 1;
             text-rendering: optimizeLegibility;
-            letter-spacing: 0.008em;
+            letter-spacing: 0.006em;
             line-height: 1.58;
             background:
-                radial-gradient(circle at top right, rgb(var(--color-primary) / 0.18), transparent 28%),
-                radial-gradient(circle at bottom left, rgb(var(--color-accent) / 0.14), transparent 24%),
+                radial-gradient(circle at top right, rgb(var(--color-primary) / 0.14), transparent 26%),
+                radial-gradient(circle at bottom left, rgb(var(--color-accent) / 0.1), transparent 22%),
                 linear-gradient(180deg, rgb(238 244 248) 0%, rgb(232 239 245) 100%);
         }
         h1, h2 {
@@ -41,9 +60,9 @@
         }
         .dark body {
             background:
-                radial-gradient(circle at top right, rgb(var(--color-primary) / 0.16), transparent 26%),
-                radial-gradient(circle at bottom left, rgb(var(--color-accent) / 0.12), transparent 22%),
-                linear-gradient(180deg, rgb(var(--color-bg-dark)) 0%, rgb(10 27 41) 100%);
+                radial-gradient(circle at top right, rgb(var(--color-primary) / 0.1), transparent 24%),
+                radial-gradient(circle at bottom left, rgba(255, 255, 255, 0.028), transparent 18%),
+                linear-gradient(180deg, rgb(var(--color-bg-dark)) 0%, rgb(17 21 26) 100%);
         }
         html[data-ambient="steady"] body {
             background:
@@ -53,9 +72,9 @@
         }
         html.dark[data-ambient="steady"] body {
             background:
-                radial-gradient(circle at top right, rgb(var(--color-primary) / 0.16), transparent 26%),
-                radial-gradient(circle at bottom left, rgb(var(--color-accent) / 0.12), transparent 22%),
-                linear-gradient(180deg, rgb(var(--color-bg-dark)) 0%, rgb(10 27 41) 100%);
+                radial-gradient(circle at top right, rgb(var(--color-primary) / 0.1), transparent 24%),
+                radial-gradient(circle at bottom left, rgba(255, 255, 255, 0.026), transparent 18%),
+                linear-gradient(180deg, rgb(var(--color-bg-dark)) 0%, rgb(17 21 26) 100%);
         }
         html[data-ambient="alert"] body {
             background:
@@ -65,9 +84,9 @@
         }
         html.dark[data-ambient="alert"] body {
             background:
-                radial-gradient(circle at top right, rgb(var(--color-danger) / 0.16), transparent 24%),
-                radial-gradient(circle at bottom left, rgb(var(--color-accent) / 0.1), transparent 18%),
-                linear-gradient(180deg, #0c1622 0%, #111d29 100%);
+                radial-gradient(circle at top right, rgb(var(--color-danger) / 0.1), transparent 20%),
+                radial-gradient(circle at bottom left, rgba(255, 255, 255, 0.024), transparent 16%),
+                linear-gradient(180deg, #111419 0%, #1a1f25 100%);
         }
         html[data-ambient="recovery"] body {
             background:
@@ -77,9 +96,9 @@
         }
         html.dark[data-ambient="recovery"] body {
             background:
-                radial-gradient(circle at top right, rgb(var(--color-success) / 0.16), transparent 24%),
-                radial-gradient(circle at bottom left, rgb(var(--color-primary) / 0.12), transparent 20%),
-                linear-gradient(180deg, #08161e 0%, #0d1d27 100%);
+                radial-gradient(circle at top right, rgb(var(--color-success) / 0.08), transparent 22%),
+                radial-gradient(circle at bottom left, rgb(var(--color-primary) / 0.06), transparent 18%),
+                linear-gradient(180deg, #0f1318 0%, #171d23 100%);
         }
         html[data-ambient="nightwatch"] body {
             background:
@@ -90,8 +109,8 @@
         html.dark[data-ambient="nightwatch"] body {
             background:
                 radial-gradient(circle at top right, rgb(var(--color-primary) / 0.12), transparent 22%),
-                radial-gradient(circle at bottom left, rgba(94, 114, 228, 0.16), transparent 20%),
-                linear-gradient(180deg, #06111c 0%, #0a1622 100%);
+                radial-gradient(circle at bottom left, rgba(149, 176, 255, 0.06), transparent 18%),
+                linear-gradient(180deg, #0b1015 0%, #151a21 100%);
         }
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -101,12 +120,12 @@
 
         button, a, input, select, textarea {
             transition-property: color, background-color, border-color, box-shadow, transform, opacity;
-            transition-duration: 180ms;
-            transition-timing-function: ease;
+            transition-duration: 220ms;
+            transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
             outline: none;
-            box-shadow: 0 0 0 3px rgb(var(--color-primary) / 0.28);
+            box-shadow: 0 0 0 4px rgb(var(--color-primary) / 0.16);
         }
 
         .shell-aurora {
@@ -143,25 +162,29 @@
                 linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
             background-size: 72px 72px;
             mask-image: radial-gradient(circle at center, black 35%, transparent 88%);
-            opacity: 0.3;
+            opacity: 0.16;
         }
         .dark .shell-grid-mask {
             background-image:
                 linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
-            opacity: 0.2;
+            opacity: 0.1;
         }
 
         .shell-panel {
-            background: rgb(var(--color-card-light) / 0.72);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(148, 163, 184, 0.16);
-            box-shadow: 0 28px 60px rgba(15, 23, 42, 0.08);
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.56)),
+                rgb(var(--color-card-light) / 0.74);
+            backdrop-filter: blur(24px) saturate(1.08);
+            border: 1px solid var(--surface-stroke-light);
+            box-shadow: var(--shadow-soft-light), inset 0 1px 0 rgba(255, 255, 255, 0.62);
         }
         .dark .shell-panel {
-            background: rgba(9, 23, 35, 0.76);
-            border-color: rgba(148, 163, 184, 0.12);
-            box-shadow: 0 28px 64px rgba(2, 12, 27, 0.44);
+            background:
+                linear-gradient(180deg, rgba(34, 39, 46, 0.88), rgba(21, 25, 31, 0.84)),
+                rgba(24, 28, 34, 0.86);
+            border-color: var(--surface-stroke-dark);
+            box-shadow: var(--shadow-soft-dark), inset 0 1px 0 rgba(255, 255, 255, 0.035);
         }
 
         .module-eyebrow {

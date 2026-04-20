@@ -21,11 +21,11 @@ function createTaskRow(task) {
     const endTime = typeof task.endTime === 'string' ? task.endTime : '-';
 
     const row = createDomElement('tr', {
-        className: 'hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors'
+        className: 'surface-table-row'
     });
     const nameCell = createDomElement('td', { className: 'py-3 px-4 font-medium flex items-center' });
     const tagChip = createDomElement('span', {
-        className: 'text-[11px] bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 px-2 py-0.5 rounded mr-2 border border-slate-200 dark:border-slate-600 whitespace-nowrap',
+        className: 'semantic-tag semantic-tag-neutral semantic-tag-tight mr-2 whitespace-nowrap',
         text: tagName
     });
     const nameText = createDomElement('span', {
@@ -50,7 +50,7 @@ function createTaskRow(task) {
         }),
         appendDomChildren(createDomElement('td', { className: 'py-3 px-4' }), [
             createDomElement('span', {
-                className: 'px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-md text-xs font-bold',
+                className: 'semantic-tag semantic-tag-success semantic-tag-tight',
                 text: '已完成'
             })
         ])

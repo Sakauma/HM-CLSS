@@ -72,8 +72,8 @@ function updateAchievementsList() {
 
         const isAchieved = achievements.includes(achievement.id);
         const bgClass = isAchieved
-            ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
-            : 'bg-slate-100 text-slate-400 dark:bg-slate-900 dark:text-slate-500';
+            ? 'bg-success/12 text-success dark:bg-success/18 dark:text-green-300'
+            : 'bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-slate-500';
         const icon = isAchieved ? 'check' : 'lock';
         const textClass = isAchieved ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500';
 

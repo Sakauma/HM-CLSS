@@ -31,10 +31,10 @@ const CONFIG = {
 };
 
 const noteTagConfig = {
-    idea: { icon: 'lightbulb', label: '灵感', color: 'text-warning bg-warning/10 border-warning/20' },
-    bug: { icon: 'bug', label: '异常', color: 'text-danger bg-danger/10 border-danger/20' },
-    todo: { icon: 'check-square', label: '待办', color: 'text-success bg-success/10 border-success/20' },
-    log: { icon: 'book', label: '日志', color: 'text-primary bg-primary/10 border-primary/20' }
+    idea: { icon: 'lightbulb', label: '灵感', color: 'semantic-tag semantic-tag-warning' },
+    bug: { icon: 'bug', label: '异常', color: 'semantic-tag semantic-tag-danger' },
+    todo: { icon: 'check-square', label: '待办', color: 'semantic-tag semantic-tag-success' },
+    log: { icon: 'book', label: '日志', color: 'semantic-tag semantic-tag-primary' }
 };
 
 const achievementList = [

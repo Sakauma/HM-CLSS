@@ -61,3 +61,71 @@
             background: rgba(255, 255, 255, 0.04);
             border-color: rgba(148, 163, 184, 0.12);
         }
+
+        .focus-hero-grid {
+            display: grid;
+            gap: 1.1rem;
+        }
+        @media (min-width: 900px) {
+            .focus-hero-grid {
+                grid-template-columns: minmax(0, 1.12fr) minmax(280px, 0.88fr);
+                align-items: stretch;
+            }
+        }
+        .focus-hero-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1.6rem;
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            background:
+                radial-gradient(circle at top right, rgba(77, 163, 255, 0.12), transparent 34%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.64)),
+                rgba(255, 255, 255, 0.68);
+            padding: 1.35rem;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82), 0 20px 42px rgba(15, 23, 42, 0.05);
+        }
+        .dark .focus-hero-card {
+            border-color: rgba(255, 255, 255, 0.075);
+            background:
+                radial-gradient(circle at top right, rgba(132, 189, 255, 0.07), transparent 30%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.038), rgba(255, 255, 255, 0.018)),
+                rgba(24, 28, 34, 0.76);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 24px 48px rgba(0, 0, 0, 0.2);
+        }
+        .focus-hero-note {
+            margin-top: 0.9rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55rem;
+        }
+        .focus-hero-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            background: rgba(255, 255, 255, 0.62);
+            padding: 0.55rem 0.85rem;
+            font-family: var(--font-label);
+            font-size: 0.74rem;
+            letter-spacing: 0.08em;
+            color: #6a7d91;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.84);
+        }
+        .dark .focus-hero-chip {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.07);
+            color: #94abc0;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
+        .focus-capture-shell {
+            position: relative;
+            overflow: hidden;
+        }
+        .focus-capture-shell::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(145deg, rgba(243, 179, 91, 0.08), transparent 42%, rgba(77, 163, 255, 0.06));
+            pointer-events: none;
+        }

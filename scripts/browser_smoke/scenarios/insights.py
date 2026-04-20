@@ -38,7 +38,7 @@ def test_statistics_panel(driver) -> None:
     wait_for(
         driver,
         lambda d: d.execute_script(
-            "return document.querySelector('.stats-period-btn.bg-white, .stats-period-btn.bg-slate-700')?.getAttribute('data-period')"
+            "return document.querySelector('.stats-period-btn-active')?.getAttribute('data-period')"
         ) == "month",
         "Month statistics period did not activate",
     )
@@ -54,7 +54,7 @@ def test_statistics_panel(driver) -> None:
     wait_for(
         driver,
         lambda d: d.execute_script(
-            "return document.querySelector('.stats-period-btn.bg-white, .stats-period-btn.bg-slate-700')?.getAttribute('data-period')"
+            "return document.querySelector('.stats-period-btn-active')?.getAttribute('data-period')"
         ) == "year",
         "Year statistics period did not activate",
     )

@@ -41,7 +41,7 @@ function initNavigation() {
             requestAnimationFrame(scrollCurrentPanelIntoView);
 
             if (item.sectionId === 'stats-section') {
-                const activePeriodBtn = document.querySelector('.stats-period-btn.bg-white, .stats-period-btn.bg-slate-700');
+                const activePeriodBtn = document.querySelector('.stats-period-btn-active');
                 if (activePeriodBtn) {
                     updateStatisticsCharts(activePeriodBtn.getAttribute('data-period'));
                 }
