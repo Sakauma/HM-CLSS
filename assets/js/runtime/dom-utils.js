@@ -22,11 +22,11 @@ function escapeHtml(value) {
 /**
  * 创建轻量 DOM 节点，便于列表和卡片渲染摆脱大段字符串拼接。
  * @param {string} tagName
- * @param {{ className?: string, text?: string, html?: string, attrs?: Record<string, unknown> }} [options]
+ * @param {{ className?: string, text?: string, attrs?: Record<string, unknown> }} [options]
  * @returns {HTMLElement}
  */
 function createDomElement(tagName, options = {}) {
-    const { className = '', text, html, attrs = {} } = options;
+    const { className = '', text, attrs = {} } = options;
     const element = document.createElement(tagName);
 
     if (className) {
@@ -35,8 +35,6 @@ function createDomElement(tagName, options = {}) {
 
     if (text != null) {
         element.textContent = String(text);
-    } else if (html != null) {
-        element.innerHTML = html;
     }
 
     Object.entries(attrs).forEach(([key, value]) => {
@@ -44,6 +42,18 @@ function createDomElement(tagName, options = {}) {
         element.setAttribute(key, String(value));
     });
 
+    return element;
+}
+
+function createHtmlFragment(html) {
+    const template = document.createElement('template');
+    template.innerHTML = String(html ?? '');
+    return template.content.cloneNode(true);
+}
+
+function replaceElementChildrenWithHtml(element, html) {
+    if (!element) return element;
+    element.replaceChildren(createHtmlFragment(html));
     return element;
 }
 

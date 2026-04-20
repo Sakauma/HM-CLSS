@@ -11,10 +11,12 @@ function createLucideIconNode(icon, className) {
 }
 
 function createMarkdownNoteNode(noteText, className) {
-    return createDomElement('div', {
-        className,
-        html: DOMPurify.sanitize(marked.parse(noteText))
-    });
+    return replaceElementChildrenWithHtml(
+        createDomElement('div', {
+            className
+        }),
+        DOMPurify.sanitize(marked.parse(noteText))
+    );
 }
 
 function createQuickNotesEmptyState() {
