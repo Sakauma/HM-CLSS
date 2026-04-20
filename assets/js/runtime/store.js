@@ -20,6 +20,7 @@ const runtimeState = {
 };
 
 const runtimeStateKeys = Object.keys(runtimeState);
+const runtimeStateSubscribers = new Map();
 
 function getRuntimeState() {
     return runtimeState;
@@ -29,8 +30,23 @@ function getRuntimeValue(key) {
     return runtimeState[key];
 }
 
+function notifyRuntimeSubscribers(key, value, previousValue) {
+    const subscribers = runtimeStateSubscribers.get(key);
+    if (!subscribers || subscribers.size === 0) return;
+
+    subscribers.forEach((listener) => {
+        try {
+            listener(value, previousValue, key);
+        } catch (error) {
+            console.error(`Runtime subscriber for "${key}" failed:`, error);
+        }
+    });
+}
+
 function setRuntimeValue(key, value) {
+    const previousValue = runtimeState[key];
     runtimeState[key] = value;
+    notifyRuntimeSubscribers(key, value, previousValue);
     return value;
 }
 
@@ -67,6 +83,29 @@ function mapRuntimeItems(key, mapper) {
 function filterRuntimeItems(key, predicate) {
     const currentValue = Array.isArray(getRuntimeValue(key)) ? getRuntimeValue(key) : [];
     return setRuntimeValue(key, currentValue.filter(predicate));
+}
+
+function subscribeRuntimeValue(key, listener, options = {}) {
+    if (typeof listener !== 'function') {
+        throw new Error(`subscribeRuntimeValue("${key}") requires a listener function.`);
+    }
+
+    const subscribers = runtimeStateSubscribers.get(key) || new Set();
+    subscribers.add(listener);
+    runtimeStateSubscribers.set(key, subscribers);
+
+    if (options.immediate) {
+        listener(getRuntimeValue(key), undefined, key);
+    }
+
+    return () => {
+        const currentSubscribers = runtimeStateSubscribers.get(key);
+        if (!currentSubscribers) return;
+        currentSubscribers.delete(listener);
+        if (currentSubscribers.size === 0) {
+            runtimeStateSubscribers.delete(key);
+        }
+    };
 }
 
 function bindRuntimeGlobals(target = window) {

@@ -90,7 +90,6 @@ function initTaskManagement() {
     document.getElementById('end-task').addEventListener('click', endTask);
     updateTodayTasksList();
     updateSchedule();
-    renderCurrentTaskState();
     if (currentTask) startTaskTimer();
 }
 
@@ -113,7 +112,6 @@ function startTask() {
     });
 
     persistCurrentTask();
-    renderCurrentTaskState();
     document.getElementById('task-name').value = '';
 
     startTaskTimer();
@@ -150,7 +148,6 @@ function endTask() {
     setRuntimeValue('currentTask', null);
     persistCurrentTask();
     saveData(true);
-    renderCurrentTaskState();
     updateTodayTasksList();
     updateSchedule();
     updateTodayStatus();

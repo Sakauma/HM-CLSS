@@ -78,6 +78,27 @@ function createStorageMock(initialEntries = {}) {
     };
 }
 
+test('runtime store subscriptions receive updates and can unsubscribe', () => {
+    const context = createBaseContext();
+    loadScript(context, 'assets/js/runtime/store.js');
+
+    const seen = [];
+    const unsubscribe = context.subscribeRuntimeValue('currentTask', (value, previousValue, key) => {
+        seen.push({ value, previousValue, key });
+    }, { immediate: true });
+
+    context.setRuntimeValue('currentTask', { id: 'task_1' });
+    unsubscribe();
+    context.setRuntimeValue('currentTask', { id: 'task_2' });
+
+    assert.equal(seen.length, 2);
+    assert.equal(seen[0].key, 'currentTask');
+    assert.equal(seen[0].value, null);
+    assert.equal(seen[1].previousValue, null);
+    assert.equal(seen[1].value.id, 'task_1');
+    assert.equal(context.getRuntimeValue('currentTask').id, 'task_2');
+});
+
 test('checkin rules evaluate statuses and write retro records', () => {
     const context = createBaseContext({
         CONFIG: {

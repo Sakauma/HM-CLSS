@@ -9,7 +9,9 @@ js_files=(
   assets/js/runtime/store.js
   assets/js/runtime/state.js
   assets/js/runtime/storage.js
-  assets/js/runtime/core.js
+  assets/js/runtime/date-utils.js
+  assets/js/runtime/dom-utils.js
+  assets/js/runtime/ambient.js
   assets/js/runtime/module-registry.js
   assets/js/workspace/metrics.js
   assets/js/workspace/data.js
@@ -29,6 +31,7 @@ js_files=(
   assets/js/features/checkin/index.js
   assets/js/features/focus/achievements.js
   assets/js/workspace/entries.js
+  assets/js/features/tasks/hero.js
   assets/js/features/tasks/index.js
   assets/js/features/notes/modal.js
   assets/js/features/notes/render.js
@@ -68,6 +71,9 @@ required_scripts=(
   "assets/js/runtime/store.js"
   "assets/js/runtime/state.js"
   "assets/js/runtime/storage.js"
+  "assets/js/runtime/date-utils.js"
+  "assets/js/runtime/dom-utils.js"
+  "assets/js/runtime/ambient.js"
   "assets/js/workspace/metrics.js"
   "assets/js/runtime/module-registry.js"
   "assets/js/workspace/data.js"
@@ -85,6 +91,7 @@ required_scripts=(
   "assets/js/features/leave/rules.js"
   "assets/js/features/leave/ui.js"
   "assets/js/workspace/entries.js"
+  "assets/js/features/tasks/hero.js"
   "assets/js/features/notes/modal.js"
   "assets/js/features/notes/render.js"
   "assets/js/features/sync/state.js"
@@ -109,6 +116,11 @@ done
 
 required_files=(
   "assets/css/app.css"
+  "assets/css/theme.css"
+  "assets/css/shell.css"
+  "assets/css/components.css"
+  "assets/css/features.css"
+  "assets/css/motion.css"
   "environment.browser-test.yml"
   "scripts/browser-smoke.sh"
   "scripts/browser-smoke.py"
@@ -123,7 +135,9 @@ done
 runtime_store_line="$(rg -n 'assets/js/runtime/store.js' index.html | cut -d: -f1)"
 runtime_state_line="$(rg -n 'assets/js/runtime/state.js' index.html | cut -d: -f1)"
 runtime_storage_line="$(rg -n 'assets/js/runtime/storage.js' index.html | cut -d: -f1)"
-core_line="$(rg -n 'assets/js/runtime/core.js' index.html | cut -d: -f1)"
+date_utils_line="$(rg -n 'assets/js/runtime/date-utils.js' index.html | cut -d: -f1)"
+dom_utils_line="$(rg -n 'assets/js/runtime/dom-utils.js' index.html | cut -d: -f1)"
+ambient_line="$(rg -n 'assets/js/runtime/ambient.js' index.html | cut -d: -f1)"
 module_registry_line="$(rg -n 'assets/js/runtime/module-registry.js' index.html | cut -d: -f1)"
 metrics_line="$(rg -n 'assets/js/workspace/metrics.js' index.html | cut -d: -f1)"
 workspace_data_line="$(rg -n 'assets/js/workspace/data.js' index.html | cut -d: -f1)"
@@ -142,6 +156,7 @@ checkin_summary_line="$(rg -n 'assets/js/features/checkin/summary.js' index.html
 checkin_ui_line="$(rg -n 'assets/js/features/checkin/ui.js' index.html | cut -d: -f1)"
 checkin_line="$(rg -n 'assets/js/features/checkin/index.js' index.html | cut -d: -f1)"
 workspace_entries_line="$(rg -n 'assets/js/workspace/entries.js' index.html | cut -d: -f1)"
+task_hero_line="$(rg -n 'assets/js/features/tasks/hero.js' index.html | cut -d: -f1)"
 tasks_line="$(rg -n 'assets/js/features/tasks/index.js' index.html | cut -d: -f1)"
 notes_line="$(rg -n 'assets/js/features/notes/index.js' index.html | cut -d: -f1)"
 notes_modal_line="$(rg -n 'assets/js/features/notes/modal.js' index.html | cut -d: -f1)"
@@ -175,13 +190,23 @@ if (( runtime_state_line >= runtime_storage_line )); then
   exit 1
 fi
 
-if (( runtime_storage_line >= core_line )); then
-  printf 'runtime-storage.js must load before core.js\n' >&2
+if (( runtime_storage_line >= date_utils_line )); then
+  printf 'runtime-storage.js must load before date-utils.js\n' >&2
   exit 1
 fi
 
-if (( core_line >= module_registry_line )); then
-  printf 'core.js must load before module-registry.js\n' >&2
+if (( date_utils_line >= dom_utils_line )); then
+  printf 'date-utils.js must load before dom-utils.js\n' >&2
+  exit 1
+fi
+
+if (( dom_utils_line >= ambient_line )); then
+  printf 'dom-utils.js must load before ambient.js\n' >&2
+  exit 1
+fi
+
+if (( ambient_line >= module_registry_line )); then
+  printf 'ambient.js must load before module-registry.js\n' >&2
   exit 1
 fi
 
@@ -270,8 +295,13 @@ if (( checkin_line >= workspace_entries_line )); then
   exit 1
 fi
 
-if (( workspace_entries_line >= tasks_line )); then
-  printf 'workspace-entries.js must load before tasks.js\n' >&2
+if (( workspace_entries_line >= task_hero_line )); then
+  printf 'workspace-entries.js must load before task-hero.js\n' >&2
+  exit 1
+fi
+
+if (( task_hero_line >= tasks_line )); then
+  printf 'task-hero.js must load before tasks.js\n' >&2
   exit 1
 fi
 

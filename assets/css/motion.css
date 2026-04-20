@@ -1,0 +1,131 @@
+        .achievement-popup { animation: popup 0.5s ease-out, fadeOut 0.5s ease-in 3.5s forwards; }
+        .modal-popup { animation: popup 0.5s ease-out forwards; }
+        @keyframes popup {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0; pointer-events: none;}
+        }
+
+        @keyframes toastSlideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes toastFadeOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        .animate-toast-in { animation: toastSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .animate-toast-out { animation: toastFadeOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+        .md-content h1 { font-size: 1.25em; font-weight: bold; margin-top: 0.5em; margin-bottom: 0.5em; }
+        .md-content h2 { font-size: 1.1em; font-weight: bold; margin-top: 0.5em; margin-bottom: 0.5em; }
+        .md-content ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 0.5em; }
+        .md-content ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 0.5em; }
+        .md-content p { margin-bottom: 0.5em; }
+        .md-content p:last-child { margin-bottom: 0; }
+        .md-content code { background-color: rgba(100,116,139,0.1); padding: 0.1em 0.3em; border-radius: 0.25em; font-family: monospace; font-size: 0.9em; color: #6366f1; }
+        .dark .md-content code { color: #818cf8; }
+        .md-content pre { background-color: rgba(15,23,42,0.05); padding: 0.75em; border-radius: 0.5em; overflow-x: auto; margin-bottom: 0.5em; }
+        .dark .md-content pre { background-color: rgba(255,255,255,0.05); }
+        .md-content pre code { background-color: transparent; padding: 0; color: inherit; }
+        .md-content blockquote { border-left: 3px solid #cbd5e1; padding-left: 0.75em; color: #64748b; font-style: italic; }
+        .dark .md-content blockquote { border-left-color: #475569; color: #94a3b8; }
+        .md-content a { color: #6366f1; text-decoration: underline; }
+
+        /* --- 深空酒馆专属质感动效 --- */
+        /* 液体注入与颜色流动 */
+        @keyframes liquidFill {
+            0% { height: 10%; opacity: 0.5; filter: hue-rotate(0deg); }
+            100% { height: 85%; opacity: 0.95; filter: hue-rotate(15deg); }
+        }
+        @keyframes liquidRock {
+            0%, 100% {
+                transform: translate3d(-0.08rem, 0.05rem, 0);
+            }
+            50% {
+                transform: translate3d(0.08rem, 0.16rem, 0);
+            }
+        }
+        @keyframes tavernSurfaceFront {
+            0% {
+                transform: translate3d(var(--tavern-wave-front-left), var(--tavern-wave-front-down), 0) rotate(calc(-1 * var(--tavern-wave-front-tilt)));
+            }
+            50% {
+                transform: translate3d(var(--tavern-wave-front-right), var(--tavern-wave-front-up), 0) rotate(var(--tavern-wave-front-tilt));
+            }
+            100% {
+                transform: translate3d(var(--tavern-wave-front-left), var(--tavern-wave-front-down), 0) rotate(calc(-1 * var(--tavern-wave-front-tilt)));
+            }
+        }
+        @keyframes tavernSurfaceBack {
+            0% {
+                transform: translate3d(var(--tavern-wave-back-left), var(--tavern-wave-back-down), 0) rotate(calc(-1 * var(--tavern-wave-back-tilt))) scaleX(1.012);
+            }
+            50% {
+                transform: translate3d(var(--tavern-wave-back-right), var(--tavern-wave-back-up), 0) rotate(var(--tavern-wave-back-tilt)) scaleX(0.988);
+            }
+            100% {
+                transform: translate3d(var(--tavern-wave-back-left), var(--tavern-wave-back-down), 0) rotate(calc(-1 * var(--tavern-wave-back-tilt))) scaleX(1.012);
+            }
+        }
+        /* 情绪气泡上升 */
+        @keyframes bubbleRise {
+            0% { transform: translateY(20px) scale(0.5); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-80px) scale(1.2); opacity: 0; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .tavern-liquid,
+            .tavern-wave,
+            .tavern-bubbles span {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        .animate-liquid { animation: liquidFill 3.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+        .animate-glass { animation: glassFloat 4s ease-in-out infinite; }
+        .bubble-1 { animation: bubbleRise 2s infinite ease-in; }
+        .bubble-2 { animation: bubbleRise 2.5s infinite ease-in 0.5s; }
+        .bubble-3 { animation: bubbleRise 1.8s infinite ease-in 1s; }
+
+        /* 玻璃高光质感增强 */
+        .glass-effect {
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.02) 100%);
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .dark .glass-effect {
+            background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 100%);
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.05), 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 1024px) {
+            .quick-capture-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+            .tavern-liquid,
+            .tavern-liquid::before,
+            .tavern-liquid::after,
+            .tavern-bubbles span,
+            .tavern-action-primary,
+            .tavern-action-secondary,
+            .tavern-suggestion,
+            .quick-capture-ghost,
+            .quick-capture-primary {
+                animation: none !important;
+                transition: none !important;
+            }

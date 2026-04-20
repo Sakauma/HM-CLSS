@@ -364,8 +364,35 @@ def test_quick_capture_flow(driver: webdriver.Firefox) -> None:
     log("   quick capture ok")
 
 
+def test_task_hero_flow(driver: webdriver.Firefox) -> None:
+    log("7. Checking task hero flow")
+    send_shortcut(driver, Keys.ALT, "3")
+    wait_visible(driver, "tasks-section")
+
+    token = f"browser task {int(time.time())}"
+    set_field_value(driver, "task-name", token)
+    click(driver, "start-task")
+
+    wait_for(
+        driver,
+        lambda d: not is_hidden(d, "current-task-container"),
+        "current-task-container did not become visible",
+    )
+    wait_text_contains(driver, "current-task-name", token)
+    wait_text_contains(driver, "hero-active-task-display", token)
+
+    click(driver, "end-task")
+    wait_for(
+        driver,
+        lambda d: is_hidden(d, "current-task-container"),
+        "current-task-container did not hide after ending the task",
+    )
+    wait_text_contains(driver, "today-tasks-table", token)
+    log("   task hero ok")
+
+
 def test_leave_workflows(driver: webdriver.Firefox) -> None:
-    log("7. Checking leave workflow split")
+    log("8. Checking leave workflow split")
     send_shortcut(driver, Keys.ALT, "5")
     wait_visible(driver, "leave-section")
     wait_text_contains(driver, "leave-form-title", "今日离舰")
@@ -388,7 +415,7 @@ def test_leave_workflows(driver: webdriver.Firefox) -> None:
 
 
 def test_retro_checkin_flow(driver: webdriver.Firefox) -> None:
-    log("8. Checking retro checkin workflow")
+    log("9. Checking retro checkin workflow")
     send_shortcut(driver, Keys.ALT, "1")
     wait_visible(driver, "checkin-section")
 
@@ -439,7 +466,7 @@ def test_retro_checkin_flow(driver: webdriver.Firefox) -> None:
 
 
 def test_tavern_flow(driver: webdriver.Firefox) -> None:
-    log("9. Checking tavern analysis flow")
+    log("10. Checking tavern analysis flow")
     send_shortcut(driver, Keys.ALT, "6")
     wait_visible(driver, "tavern-section")
     require(find(driver, "btn-start-analyze").get_attribute("disabled") is not None, "Analyze button should start disabled")
@@ -513,6 +540,7 @@ def main() -> int:
         test_statistics_panel(driver)
         test_settings_and_exports(driver)
         test_quick_capture_flow(driver)
+        test_task_hero_flow(driver)
         test_leave_workflows(driver)
         test_retro_checkin_flow(driver)
         test_tavern_flow(driver)

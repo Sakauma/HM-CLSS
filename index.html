@@ -1577,12 +1577,14 @@
         </div>
     </div>
 
-    <!-- 脚本加载顺序：先状态与存储，再提前注册启动编排，随后加载业务模块、导出链路与快捷键层。 -->
+    <!-- 脚本加载顺序：先状态、时间与 DOM 工具，再注册启动编排，随后加载业务模块、导出链路与快捷键层。 -->
     <script src="assets/js/runtime/theme.js"></script>
     <script src="assets/js/runtime/store.js"></script>
     <script src="assets/js/runtime/state.js"></script>
     <script src="assets/js/runtime/storage.js"></script>
-    <script src="assets/js/runtime/core.js"></script>
+    <script src="assets/js/runtime/date-utils.js"></script>
+    <script src="assets/js/runtime/dom-utils.js"></script>
+    <script src="assets/js/runtime/ambient.js"></script>
     <script src="assets/js/runtime/module-registry.js"></script>
     <script src="assets/js/workspace/metrics.js"></script>
     <script src="assets/js/workspace/data.js"></script>
@@ -1603,6 +1605,7 @@
     <script src="assets/js/features/checkin/index.js"></script>
     <script src="assets/js/features/focus/achievements.js"></script>
     <script src="assets/js/workspace/entries.js"></script>
+    <script src="assets/js/features/tasks/hero.js"></script>
     <script src="assets/js/features/tasks/index.js"></script>
     <script src="assets/js/features/notes/modal.js"></script>
     <script src="assets/js/features/notes/render.js"></script>

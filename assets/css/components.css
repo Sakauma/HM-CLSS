@@ -1,0 +1,200 @@
+        /* 状态徽章、主要操作按钮与值班卡片。 */
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.45rem 0.85rem;
+            border-radius: 9999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+        .status-chip::before {
+            content: '';
+            width: 0.48rem;
+            height: 0.48rem;
+            border-radius: 9999px;
+            background: currentColor;
+            opacity: 0.85;
+        }
+        .status-chip-info {
+            color: #1d4ed8;
+            background: rgb(var(--color-primary) / 0.12);
+            border-color: rgb(var(--color-primary) / 0.18);
+        }
+        .status-chip-success {
+            color: #059669;
+            background: rgb(var(--color-success) / 0.12);
+            border-color: rgb(var(--color-success) / 0.18);
+        }
+        .status-chip-warning {
+            color: #b45309;
+            background: rgb(var(--color-warning) / 0.14);
+            border-color: rgb(var(--color-warning) / 0.22);
+        }
+        .status-chip-danger {
+            color: #be123c;
+            background: rgb(var(--color-danger) / 0.14);
+            border-color: rgb(var(--color-danger) / 0.22);
+        }
+        .dark .status-chip-info {
+            color: #8cc9ff;
+            background: rgb(var(--color-primary) / 0.15);
+        }
+        .dark .status-chip-success {
+            color: #7ef0c1;
+            background: rgb(var(--color-success) / 0.14);
+        }
+        .dark .status-chip-warning {
+            color: #f8d996;
+            background: rgb(var(--color-warning) / 0.12);
+        }
+        .dark .status-chip-danger {
+            color: #fda4af;
+            background: rgb(var(--color-danger) / 0.12);
+        }
+
+        .command-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+            min-height: 2.9rem;
+            padding: 0.75rem 1.15rem;
+            border-radius: 1rem;
+            font-size: 0.92rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+        .command-link-primary {
+            color: white;
+            background: linear-gradient(135deg, rgb(var(--color-primary)), rgb(var(--color-primary-hover)));
+            box-shadow: 0 18px 36px rgb(var(--color-primary) / 0.24);
+        }
+        .command-link-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 22px 42px rgb(var(--color-primary) / 0.3);
+        }
+        .command-link-secondary {
+            color: #1e293b;
+            background: rgba(255, 255, 255, 0.54);
+            border-color: rgba(148, 163, 184, 0.18);
+        }
+        .dark .command-link-secondary {
+            color: #d9e8f4;
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(148, 163, 184, 0.12);
+        }
+        .command-link-secondary:hover {
+            transform: translateY(-1px);
+            border-color: rgb(var(--color-primary) / 0.22);
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 3rem;
+            padding: 0.8rem 1rem;
+            border-radius: 1rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+        .action-btn-primary {
+            color: white;
+            background: linear-gradient(135deg, rgb(var(--color-primary)), rgb(var(--color-primary-hover)));
+            box-shadow: 0 16px 34px rgb(var(--color-primary) / 0.18);
+        }
+        .action-btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 20px 42px rgb(var(--color-primary) / 0.22);
+        }
+        .action-btn-secondary {
+            color: #1e293b;
+            background: rgba(255, 255, 255, 0.7);
+            border-color: rgba(148, 163, 184, 0.18);
+        }
+        .dark .action-btn-secondary {
+            color: #d6e5f1;
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(148, 163, 184, 0.12);
+        }
+        .action-btn-disabled {
+            color: #94a3b8;
+            background: rgba(148, 163, 184, 0.12);
+            border-color: rgba(148, 163, 184, 0.12);
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        .dark .action-btn-disabled {
+            color: #6b8096;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .shift-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1.5rem;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            background: rgba(255, 255, 255, 0.58);
+            padding: 1.35rem;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+        }
+        .shift-card::before {
+            content: '';
+            position: absolute;
+            inset: 0 auto auto 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, rgb(var(--color-primary) / 0.9), rgb(var(--color-accent) / 0.85));
+            opacity: 0.8;
+        }
+        .dark .shift-card {
+            border-color: rgba(148, 163, 184, 0.12);
+            background: rgba(255, 255, 255, 0.03);
+            box-shadow: 0 20px 44px rgba(2, 12, 27, 0.28);
+        }
+        .shift-window {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.4rem 0.7rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #1d4ed8;
+            background: rgb(var(--color-primary) / 0.12);
+        }
+        .dark .shift-window {
+            color: #9acfff;
+            background: rgb(var(--color-primary) / 0.12);
+        }
+
+        .ops-table-shell {
+            border-radius: 1.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            background: rgba(255, 255, 255, 0.66);
+            overflow: hidden;
+            box-shadow: 0 20px 48px rgba(15, 23, 42, 0.06);
+        }
+        .dark .ops-table-shell {
+            border-color: rgba(148, 163, 184, 0.12);
+            background: rgba(255, 255, 255, 0.03);
+            box-shadow: 0 24px 48px rgba(2, 12, 27, 0.3);
+        }
+
+        .hidden-flex {
+            display: flex;
+        }
+        .hidden-flex.hidden {
+            display: none !important;
+        }
+        .hidden-flex-col {
+            display: flex;
+            flex-direction: column;
+        }
+        .hidden-flex-col.hidden {
+            display: none !important;
+        }
+

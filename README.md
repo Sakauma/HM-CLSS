@@ -53,7 +53,9 @@ node --check assets/js/runtime/theme.js
 node --check assets/js/runtime/store.js
 node --check assets/js/runtime/state.js
 node --check assets/js/runtime/storage.js
-node --check assets/js/runtime/core.js
+node --check assets/js/runtime/date-utils.js
+node --check assets/js/runtime/dom-utils.js
+node --check assets/js/runtime/ambient.js
 node --check assets/js/runtime/module-registry.js
 node --check assets/js/workspace/metrics.js
 node --check assets/js/workspace/data.js
@@ -73,6 +75,7 @@ node --check assets/js/features/checkin/ui.js
 node --check assets/js/features/checkin/index.js
 node --check assets/js/features/focus/achievements.js
 node --check assets/js/workspace/entries.js
+node --check assets/js/features/tasks/hero.js
 node --check assets/js/features/tasks/index.js
 node --check assets/js/features/notes/modal.js
 node --check assets/js/features/notes/render.js
@@ -165,7 +168,17 @@ bash scripts/browser-smoke.sh
 - `index.html`
   飞船主舱。负责页面骨架、Tailwind 配置，以及脚本加载顺序。
 - `assets/css/app.css`
-  全站样式、主题令牌、动画和各模块外观细节。
+  样式聚合入口，按顺序引入主题、壳层、通用组件、业务外观与动效分层文件。
+- `assets/css/theme.css`
+  主题令牌、页面背景、滚动条与基础焦点反馈。
+- `assets/css/shell.css`
+  页面壳层、导航、环境横幅和系统面板外观。
+- `assets/css/components.css`
+  状态徽章、主按钮、流程切换和通用操作卡片。
+- `assets/css/features.css`
+  深空酒馆、速记弹窗和富文本内容等业务外观。
+- `assets/css/motion.css`
+  弹窗、toast、酒馆液面和减弱动效规则。
 - `assets/js/runtime/theme.js`
   主题切换与深浅色图标同步。
 - `assets/js/runtime/store.js`
@@ -174,8 +187,12 @@ bash scripts/browser-smoke.sh
   全局共享状态、配置常量、标签映射与情绪/成就静态清单。
 - `assets/js/runtime/storage.js`
   本地存储初始化、schema 迁移、结构归一化、持久化与当前任务恢复。
-- `assets/js/runtime/core.js`
-  时间工具、环境态派生、任务首屏状态与通用转义函数。
+- `assets/js/runtime/date-utils.js`
+  日期键、展示日期与当前时间的统一工具。
+- `assets/js/runtime/dom-utils.js`
+  轻量 DOM helper、图标标签封装与旧记录字段兼容。
+- `assets/js/runtime/ambient.js`
+  值班留痕判断、补录配额和全局航行情绪派生。
 - `assets/js/runtime/module-registry.js`
   启动模块注册中心，负责统一收集和执行各功能模块的 `init` 入口。
 - `assets/js/workspace/metrics.js`
@@ -214,6 +231,8 @@ bash scripts/browser-smoke.sh
   戒断次数记录、成就判定与成就弹窗。
 - `assets/js/workspace/entries.js`
   任务与速记共用的按日期写入、删除和轻量回刷工具。
+- `assets/js/features/tasks/hero.js`
+  当前任务首屏卡与进度条渲染。
 - `assets/js/features/tasks/index.js`
   任务开始/结束、计时器、任务表格与时间轴。
 - `assets/js/features/notes/modal.js`
@@ -410,50 +429,53 @@ const CONFIG = {
 2. `runtime/store.js`
 3. `runtime/state.js`
 4. `runtime/storage.js`
-5. `runtime/core.js`
-6. `runtime/module-registry.js`
-7. `workspace/metrics.js`
-8. `workspace/data.js`
-9. `runtime/app-init.js`
-10. `ui/navigation.js`
-11. `features/tavern/catalog.js`
-12. `features/tavern/logic.js`
-13. `features/tavern/stage.js`
-14. `features/tavern/result.js`
-15. `features/tavern/history.js`
-16. `features/tavern/ui.js`
-17. `features/tavern/index.js`
-18. `features/checkin/rules.js`
-19. `features/checkin/status.js`
-20. `features/checkin/retro.js`
-21. `features/checkin/summary.js`
-22. `features/checkin/ui.js`
-23. `features/checkin/index.js`
-24. `features/focus/achievements.js`
-25. `workspace/entries.js`
-26. `features/tasks/index.js`
-27. `features/notes/modal.js`
-28. `features/notes/render.js`
-29. `features/notes/index.js`
-27. `features/leave/rules.js`
-28. `features/leave/ui.js`
-29. `features/leave/index.js`
-30. `features/stats/data.js`
-31. `features/stats/charts.js`
-32. `features/stats/index.js`
-33. `features/dashboard/copy.js`
-34. `features/dashboard/confirm.js`
-35. `features/dashboard/toast.js`
-36. `features/dashboard/status.js`
-37. `features/dashboard/ui.js`
-35. `features/sync/state.js`
-36. `features/sync/api.js`
-37. `features/sync/index.js`
-38. `features/export/data.js`
-39. `features/export/formats.js`
-40. `features/export/ui.js`
-41. `features/export/index.js`
-42. `ui/shortcuts.js`
+5. `runtime/date-utils.js`
+6. `runtime/dom-utils.js`
+7. `runtime/ambient.js`
+8. `runtime/module-registry.js`
+9. `workspace/metrics.js`
+10. `workspace/data.js`
+11. `runtime/app-init.js`
+12. `ui/navigation.js`
+13. `features/tavern/catalog.js`
+14. `features/tavern/logic.js`
+15. `features/tavern/stage.js`
+16. `features/tavern/result.js`
+17. `features/tavern/history.js`
+18. `features/tavern/ui.js`
+19. `features/tavern/index.js`
+20. `features/checkin/rules.js`
+21. `features/checkin/status.js`
+22. `features/checkin/retro.js`
+23. `features/checkin/summary.js`
+24. `features/checkin/ui.js`
+25. `features/checkin/index.js`
+26. `features/focus/achievements.js`
+27. `workspace/entries.js`
+28. `features/tasks/hero.js`
+29. `features/tasks/index.js`
+30. `features/notes/modal.js`
+31. `features/notes/render.js`
+32. `features/notes/index.js`
+33. `features/leave/rules.js`
+34. `features/leave/ui.js`
+35. `features/leave/index.js`
+36. `features/stats/data.js`
+37. `features/stats/charts.js`
+38. `features/stats/index.js`
+39. `features/dashboard/copy.js`
+40. `features/dashboard/confirm.js`
+41. `features/dashboard/toast.js`
+42. `features/dashboard/status.js`
+43. `features/dashboard/ui.js`
+44. `features/sync/state.js`
+45. `features/sync/api.js`
+46. `features/sync/index.js`
+47. `features/export/data.js`
+48. `features/export/formats.js`
+49. `features/export/ui.js`
+50. `features/export/index.js`
+51. `ui/shortcuts.js`
 
 现在目录按 `runtime / workspace / ui / features` 分层：`runtime` 负责启动、模块注册、共享运行时和可变状态容器，`workspace` 负责跨模块共享的数据与口径，`ui` 负责导航和快捷键这类外层交互，`features` 按值班、酒馆、离舰、统计、同步、导出等功能继续拆分。`app-init.js` 现在只负责 `initData()` 和触发模块注册中心，具体功能模块各自向注册中心报到。顺序错乱会导致飞船在启动时失压。
 
