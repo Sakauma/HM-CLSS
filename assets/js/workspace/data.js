@@ -35,27 +35,10 @@ function extractWorkspaceDatasetSource(source) {
 }
 
 function ensureWorkspaceTodayDefaults() {
-    if (!phoneResistData || typeof phoneResistData !== 'object') {
-        setRuntimeValue('phoneResistData', { totalCount: 0, records: {} });
-    }
-    if (!phoneResistData.records) phoneResistData.records = {};
-    if (!Array.isArray(leaveData)) setRuntimeValue('leaveData', []);
-    if (!Array.isArray(achievements)) setRuntimeValue('achievements', []);
-    if (!Array.isArray(tavernData)) setRuntimeValue('tavernData', []);
-    if (!quickNotesData || typeof quickNotesData !== 'object') setRuntimeValue('quickNotesData', {});
-    if (!taskData || typeof taskData !== 'object') setRuntimeValue('taskData', {});
-    if (!checkinData || typeof checkinData !== 'object') setRuntimeValue('checkinData', {});
-
-    mapRuntimeItems('leaveData', (leave) => normalizeLeaveRecord(leave));
-    Object.keys(checkinData).forEach((date) => {
-        checkinData[date] = ensureDayRecord(checkinData[date]);
+    normalizeWorkspaceRuntimeState({
+        ensureTodayDefaults: true,
+        normalizeAmbient: false
     });
-
-    const today = getTodayString();
-    if (!checkinData[today]) checkinData[today] = createEmptyDayRecord();
-    if (!phoneResistData.records[today]) phoneResistData.records[today] = { count: 0, times: [] };
-    if (!taskData[today]) taskData[today] = [];
-    if (!quickNotesData[today]) quickNotesData[today] = [];
 }
 
 function applyWorkspaceDatasetSnapshot(snapshot) {

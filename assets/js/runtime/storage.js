@@ -166,18 +166,10 @@ function initData() {
         localStorage.removeItem(CURRENT_TASK_STORAGE_KEY);
     }
 
-    if (!phoneResistData.records) phoneResistData.records = {};
-    if (!Array.isArray(leaveData)) setRuntimeValue('leaveData', []);
-    mapRuntimeItems('leaveData', (leave) => normalizeLeaveRecord(leave));
-    Object.keys(checkinData).forEach((date) => {
-        checkinData[date] = ensureDayRecord(checkinData[date]);
+    normalizeWorkspaceRuntimeState({
+        ensureTodayDefaults: true,
+        normalizeAmbient: true
     });
-    setRuntimeValue('ambientPreferences', normalizeAmbientPreferences(ambientPreferences));
-
-    const today = getTodayString();
-    if (!checkinData[today]) checkinData[today] = createEmptyDayRecord();
-    if (!phoneResistData.records[today]) phoneResistData.records[today] = { count: 0, times: [] };
-    if (!taskData[today]) taskData[today] = [];
 
     saveData(true);
 }
@@ -275,6 +267,41 @@ function normalizeAmbientPreferences(preferences) {
         intensity: 'subtle',
         easterEggs: normalized.easterEggs !== false
     };
+}
+
+function normalizeWorkspaceRuntimeState(options = {}) {
+    const {
+        ensureTodayDefaults = false,
+        normalizeAmbient = false
+    } = options;
+
+    if (!phoneResistData || typeof phoneResistData !== 'object') {
+        setRuntimeValue('phoneResistData', { totalCount: 0, records: {} });
+    }
+    if (!phoneResistData.records) phoneResistData.records = {};
+    if (!Array.isArray(leaveData)) setRuntimeValue('leaveData', []);
+    if (!Array.isArray(achievements)) setRuntimeValue('achievements', []);
+    if (!Array.isArray(tavernData)) setRuntimeValue('tavernData', []);
+    if (!quickNotesData || typeof quickNotesData !== 'object') setRuntimeValue('quickNotesData', {});
+    if (!taskData || typeof taskData !== 'object') setRuntimeValue('taskData', {});
+    if (!checkinData || typeof checkinData !== 'object') setRuntimeValue('checkinData', {});
+
+    mapRuntimeItems('leaveData', (leave) => normalizeLeaveRecord(leave));
+    Object.keys(checkinData).forEach((date) => {
+        checkinData[date] = ensureDayRecord(checkinData[date]);
+    });
+
+    if (normalizeAmbient) {
+        setRuntimeValue('ambientPreferences', normalizeAmbientPreferences(ambientPreferences));
+    }
+
+    if (!ensureTodayDefaults) return;
+
+    const today = getTodayString();
+    if (!checkinData[today]) checkinData[today] = createEmptyDayRecord();
+    if (!phoneResistData.records[today]) phoneResistData.records[today] = { count: 0, times: [] };
+    if (!taskData[today]) taskData[today] = [];
+    if (!quickNotesData[today]) quickNotesData[today] = [];
 }
 
 function saveData(preventAutoSync = false) {
