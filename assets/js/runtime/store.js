@@ -34,6 +34,10 @@ function setRuntimeValue(key, value) {
     return value;
 }
 
+function updateRuntimeValue(key, updater) {
+    return setRuntimeValue(key, updater(getRuntimeValue(key)));
+}
+
 function patchRuntimeValue(key, patch) {
     const currentValue = runtimeState[key];
     if (!currentValue || typeof currentValue !== 'object' || Array.isArray(currentValue)) {
@@ -43,6 +47,26 @@ function patchRuntimeValue(key, patch) {
 
     runtimeState[key] = { ...currentValue, ...patch };
     return runtimeState[key];
+}
+
+function appendRuntimeItem(key, item) {
+    const currentValue = Array.isArray(getRuntimeValue(key)) ? getRuntimeValue(key) : [];
+    return setRuntimeValue(key, [...currentValue, item]);
+}
+
+function prependRuntimeItem(key, item) {
+    const currentValue = Array.isArray(getRuntimeValue(key)) ? getRuntimeValue(key) : [];
+    return setRuntimeValue(key, [item, ...currentValue]);
+}
+
+function mapRuntimeItems(key, mapper) {
+    const currentValue = Array.isArray(getRuntimeValue(key)) ? getRuntimeValue(key) : [];
+    return setRuntimeValue(key, currentValue.map(mapper));
+}
+
+function filterRuntimeItems(key, predicate) {
+    const currentValue = Array.isArray(getRuntimeValue(key)) ? getRuntimeValue(key) : [];
+    return setRuntimeValue(key, currentValue.filter(predicate));
 }
 
 function bindRuntimeGlobals(target = window) {

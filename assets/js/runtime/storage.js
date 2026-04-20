@@ -151,28 +151,28 @@ function initData() {
         ? migrateStoredWorkspacePayload(readStoredWorkspacePayload(), storedVersion)
         : readStoredWorkspacePayload();
 
-    quickNotesData = payload.quickNotesData;
-    checkinData = payload.checkinData;
-    phoneResistData = payload.phoneResistData;
-    taskData = payload.taskData;
-    leaveData = payload.leaveData;
-    achievements = payload.achievements;
-    tavernData = payload.tavernData;
-    ambientPreferences = payload.ambientPreferences;
-    currentTask = payload.currentTask;
+    setRuntimeValue('quickNotesData', payload.quickNotesData);
+    setRuntimeValue('checkinData', payload.checkinData);
+    setRuntimeValue('phoneResistData', payload.phoneResistData);
+    setRuntimeValue('taskData', payload.taskData);
+    setRuntimeValue('leaveData', payload.leaveData);
+    setRuntimeValue('achievements', payload.achievements);
+    setRuntimeValue('tavernData', payload.tavernData);
+    setRuntimeValue('ambientPreferences', payload.ambientPreferences);
+    setRuntimeValue('currentTask', payload.currentTask);
 
     if (!isValidCurrentTaskRecord(currentTask)) {
-        currentTask = null;
+        setRuntimeValue('currentTask', null);
         localStorage.removeItem(CURRENT_TASK_STORAGE_KEY);
     }
 
     if (!phoneResistData.records) phoneResistData.records = {};
-    if (!Array.isArray(leaveData)) leaveData = [];
-    leaveData = leaveData.map((leave) => normalizeLeaveRecord(leave));
+    if (!Array.isArray(leaveData)) setRuntimeValue('leaveData', []);
+    mapRuntimeItems('leaveData', (leave) => normalizeLeaveRecord(leave));
     Object.keys(checkinData).forEach((date) => {
         checkinData[date] = ensureDayRecord(checkinData[date]);
     });
-    ambientPreferences = normalizeAmbientPreferences(ambientPreferences);
+    setRuntimeValue('ambientPreferences', normalizeAmbientPreferences(ambientPreferences));
 
     const today = getTodayString();
     if (!checkinData[today]) checkinData[today] = createEmptyDayRecord();

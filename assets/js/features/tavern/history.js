@@ -77,7 +77,7 @@ function renderTavernHistory() {
             });
             if (!confirmed) return;
             const id = this.getAttribute('data-id');
-            tavernData = tavernData.filter((drink) => drink.id !== id);
+            filterRuntimeItems('tavernData', (drink) => drink.id !== id);
             saveData();
             renderTavernHistory();
             showToast('这杯特调已从酒柜移除', 'success');

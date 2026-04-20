@@ -4,7 +4,7 @@
  */
 
 function renderResult(record, fromHistory = false) {
-    currentDrinkInfo = { ...record, saved: !!fromHistory || record.saved };
+    setRuntimeValue('currentDrinkInfo', { ...record, saved: !!fromHistory || record.saved });
     if (typeof updateVoyageAmbientPresentation === 'function') {
         updateVoyageAmbientPresentation();
     }

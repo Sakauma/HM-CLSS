@@ -104,13 +104,13 @@ function startTask() {
     if (!name) return showToast('请输入任务名称', 'warning');
     if (currentTask) endTask();
 
-    currentTask = {
+    setRuntimeValue('currentTask', {
         id: 'task_' + Date.now(),
         name,
         tag: tagValue,
         startTime: getCurrentTimeString(),
         startTimestamp: Date.now()
-    };
+    });
 
     persistCurrentTask();
     renderCurrentTaskState();
@@ -126,10 +126,10 @@ function startTask() {
 function startTaskTimer() {
     if (taskTimer) clearInterval(taskTimer);
     renderCurrentTaskState();
-    taskTimer = setInterval(() => {
+    setRuntimeValue('taskTimer', setInterval(() => {
         if (!currentTask) return;
         renderCurrentTaskState();
-    }, 1000);
+    }, 1000));
 }
 
 /**
@@ -139,7 +139,7 @@ function endTask() {
     if (!currentTask) return;
 
     clearInterval(taskTimer);
-    taskTimer = null;
+    setRuntimeValue('taskTimer', null);
     const duration = Math.floor((Date.now() - currentTask.startTimestamp) / 60000);
     appendDailyEntry(taskData, getTodayString(), {
         ...currentTask,
@@ -147,7 +147,7 @@ function endTask() {
         duration,
         completed: true
     });
-    currentTask = null;
+    setRuntimeValue('currentTask', null);
     persistCurrentTask();
     saveData(true);
     renderCurrentTaskState();

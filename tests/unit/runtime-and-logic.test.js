@@ -372,6 +372,15 @@ test('storage migration normalizes legacy payloads and saveData persists schema 
         currentTask: null
     });
 
+    context.setRuntimeValue = (key, value) => {
+        context[key] = value;
+        return value;
+    };
+    context.mapRuntimeItems = (key, mapper) => {
+        context[key] = (Array.isArray(context[key]) ? context[key] : []).map(mapper);
+        return context[key];
+    };
+
     loadScript(context, 'assets/js/runtime/storage.js');
 
     assert.deepEqual(context.safeParseStoredJson('{"ok":true}', {}), { ok: true });

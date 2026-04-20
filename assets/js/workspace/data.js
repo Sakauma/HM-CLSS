@@ -36,17 +36,17 @@ function extractWorkspaceDatasetSource(source) {
 
 function ensureWorkspaceTodayDefaults() {
     if (!phoneResistData || typeof phoneResistData !== 'object') {
-        phoneResistData = { totalCount: 0, records: {} };
+        setRuntimeValue('phoneResistData', { totalCount: 0, records: {} });
     }
     if (!phoneResistData.records) phoneResistData.records = {};
-    if (!Array.isArray(leaveData)) leaveData = [];
-    if (!Array.isArray(achievements)) achievements = [];
-    if (!Array.isArray(tavernData)) tavernData = [];
-    if (!quickNotesData || typeof quickNotesData !== 'object') quickNotesData = {};
-    if (!taskData || typeof taskData !== 'object') taskData = {};
-    if (!checkinData || typeof checkinData !== 'object') checkinData = {};
+    if (!Array.isArray(leaveData)) setRuntimeValue('leaveData', []);
+    if (!Array.isArray(achievements)) setRuntimeValue('achievements', []);
+    if (!Array.isArray(tavernData)) setRuntimeValue('tavernData', []);
+    if (!quickNotesData || typeof quickNotesData !== 'object') setRuntimeValue('quickNotesData', {});
+    if (!taskData || typeof taskData !== 'object') setRuntimeValue('taskData', {});
+    if (!checkinData || typeof checkinData !== 'object') setRuntimeValue('checkinData', {});
 
-    leaveData = leaveData.map((leave) => normalizeLeaveRecord(leave));
+    mapRuntimeItems('leaveData', (leave) => normalizeLeaveRecord(leave));
     Object.keys(checkinData).forEach((date) => {
         checkinData[date] = ensureDayRecord(checkinData[date]);
     });
@@ -60,13 +60,13 @@ function ensureWorkspaceTodayDefaults() {
 
 function applyWorkspaceDatasetSnapshot(snapshot) {
     const source = extractWorkspaceDatasetSource(snapshot);
-    checkinData = source.checkinData || {};
-    phoneResistData = source.phoneResistData || { totalCount: 0, records: {} };
-    taskData = source.taskData || {};
-    leaveData = source.leaveData || [];
-    achievements = source.achievements || [];
-    quickNotesData = source.quickNotesData || {};
-    tavernData = source.tavernData || [];
+    setRuntimeValue('checkinData', source.checkinData || {});
+    setRuntimeValue('phoneResistData', source.phoneResistData || { totalCount: 0, records: {} });
+    setRuntimeValue('taskData', source.taskData || {});
+    setRuntimeValue('leaveData', source.leaveData || []);
+    setRuntimeValue('achievements', source.achievements || []);
+    setRuntimeValue('quickNotesData', source.quickNotesData || {});
+    setRuntimeValue('tavernData', source.tavernData || []);
     ensureWorkspaceTodayDefaults();
 }
 
