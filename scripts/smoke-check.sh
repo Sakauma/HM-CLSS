@@ -142,9 +142,12 @@ done
 required_stylesheets=(
   "assets/css/theme.css"
   "assets/css/shell.css"
+  "assets/css/shell-navigation.css"
+  "assets/css/shell-panels.css"
   "assets/css/components.css"
   "assets/css/features.css"
   "assets/css/features-notes.css"
+  "assets/css/features-tavern.css"
   "assets/css/motion.css"
 )
 
@@ -155,9 +158,12 @@ done
 required_files=(
   "assets/css/theme.css"
   "assets/css/shell.css"
+  "assets/css/shell-navigation.css"
+  "assets/css/shell-panels.css"
   "assets/css/components.css"
   "assets/css/features.css"
   "assets/css/features-notes.css"
+  "assets/css/features-tavern.css"
   "assets/css/motion.css"
   ".github/workflows/ci.yml"
   "environment.browser-test.yml"

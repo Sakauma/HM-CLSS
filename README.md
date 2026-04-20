@@ -192,13 +192,19 @@ bash scripts/browser-smoke.sh
 - `assets/css/theme.css`
   主题令牌、页面背景、滚动条与基础焦点反馈。
 - `assets/css/shell.css`
-  页面壳层、导航、环境横幅和系统面板外观。
+  舰桥主任务卡和摘要卡这类共享壳层样式。
+- `assets/css/shell-navigation.css`
+  左侧导航、当前舱段高亮和环境横幅。
+- `assets/css/shell-panels.css`
+  设置页与系统面板卡、下拉和流程切换样式。
 - `assets/css/components.css`
   状态徽章、主按钮、流程切换和通用操作卡片。
 - `assets/css/features.css`
-  深空酒馆业务外观。
+  深空酒馆结果卡与历史酒柜等结果态外观。
 - `assets/css/features-notes.css`
   速记弹窗、归档列表和快速捕捉相关外观。
+- `assets/css/features-tavern.css`
+  深空酒馆舞台、酒杯、液面、波浪和情绪光效。
 - `assets/css/motion.css`
   弹窗、toast、酒馆液面和减弱动效规则。
 - `assets/js/runtime/theme.js`
