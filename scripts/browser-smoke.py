@@ -252,6 +252,19 @@ def test_settings_and_exports(driver: webdriver.Firefox) -> None:
         lambda d: d.execute_script("return localStorage.getItem('gistId');") == gist_id,
         "gistId was not saved to localStorage",
     )
+    wait_for(
+        driver,
+        lambda d: "配置已保存到本地" in find(d, "toast-container").text,
+        "save-config toast did not appear",
+    )
+    wait_for(
+        driver,
+        lambda d: any(
+            element.get_attribute("role") == "status"
+            for element in d.find_elements(By.CSS_SELECTOR, "#toast-container > *")
+        ),
+        "toast container did not expose a status live region",
+    )
 
     driver.execute_script("document.getElementById('export-trigger-btn').scrollIntoView({ block: 'center' });")
     set_field_value(driver, "export-month-input", date.today().strftime("%Y-%m"))
@@ -402,6 +415,25 @@ def test_retro_checkin_flow(driver: webdriver.Firefox) -> None:
         driver,
         lambda d: "browser smoke retro checkin" in find(d, "retro-recent-log").text,
         "retro recent log did not include the submitted reason",
+    )
+
+    set_field_value(driver, "retro-checkin-start", "08:10")
+    set_field_value(driver, "retro-checkin-end", "12:10")
+    set_field_value(driver, "retro-checkin-reason", "browser smoke retro override")
+    click(driver, "retro-checkin-submit")
+    wait_visible(driver, "confirm-dialog-modal")
+    wait_text_contains(driver, "confirm-dialog-title", "覆盖这条班次记录")
+    click(driver, "confirm-dialog-cancel")
+    wait_hidden(driver, "confirm-dialog-modal")
+
+    click(driver, "retro-checkin-submit")
+    wait_visible(driver, "confirm-dialog-modal")
+    click(driver, "confirm-dialog-confirm")
+    wait_hidden(driver, "confirm-dialog-modal")
+    wait_for(
+        driver,
+        lambda d: "browser smoke retro override" in find(d, "retro-recent-log").text,
+        "retro override reason did not update after confirmation",
     )
     log("   retro checkin ok")
 

@@ -134,6 +134,62 @@ test('checkin rules evaluate statuses and write retro records', () => {
     assert.equal(summary.tone, 'warning');
 });
 
+test('checkin and dashboard status presentation map internal states to user copy', () => {
+    const context = createBaseContext({
+        CONFIG: {
+            schedule: {
+                morning: { okCheckInBefore: 9, okCheckOutBefore: 12 },
+                afternoon: { okCheckInBefore: 14, okCheckOutBefore: 18 },
+                evening: { okCheckInBefore: 20, okCheckOutBefore: 23 }
+            }
+        },
+        checkinData: {},
+        createEmptyDayRecord: () => createCheckinDay(),
+        ensureDayRecord: (day) => createCheckinDay(day),
+        formatLocalDate: (date) => date.toISOString().slice(0, 10)
+    });
+
+    loadScript(context, 'assets/js/features/checkin/rules.js');
+    loadScript(context, 'assets/js/features/checkin/status.js');
+    loadScript(context, 'assets/js/features/dashboard/status.js');
+
+    const checkinWarning = context.getCheckinStatusPresentation('warning', true);
+    assert.equal(checkinWarning.text, '警告');
+    assert.match(checkinWarning.className, /text-warning/);
+
+    const checkoutExcused = context.getCheckoutStatusPresentation('excused', true);
+    assert.equal(checkoutExcused.text, '离舰豁免');
+    assert.match(checkoutExcused.className, /text-blue-500/);
+
+    const activeDay = createCheckinDay({
+        morning: {
+            checkIn: '08:55',
+            checkOut: null,
+            status: { checkIn: 'success', checkOut: null },
+            entrySource: 'live',
+            updatedAt: null,
+            correctionReason: ''
+        }
+    });
+    const activePresentation = context.getTodayPeriodStatusPresentation(activeDay, 'morning');
+    assert.equal(activePresentation.text, '工作中');
+    assert.match(activePresentation.className, /text-primary/);
+
+    const excusedDay = createCheckinDay({
+        morning: {
+            checkIn: '09:10',
+            checkOut: '11:20',
+            status: { checkIn: 'excused', checkOut: 'excused' },
+            entrySource: 'live',
+            updatedAt: null,
+            correctionReason: ''
+        }
+    });
+    const excusedPresentation = context.getTodayPeriodStatusPresentation(excusedDay, 'morning');
+    assert.equal(excusedPresentation.text, '已离舰');
+    assert.match(excusedPresentation.className, /text-blue-500/);
+});
+
 test('export data builds stable monthly snapshot summaries', () => {
     const context = createBaseContext({
         getTodayString: () => '2026-04-20',
