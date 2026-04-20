@@ -47,3 +47,11 @@ jobs:
       - name: Run browser smoke
         shell: bash -el {0}
         run: bash scripts/browser-smoke.sh
+
+      - name: Upload browser smoke artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-smoke-artifacts
+          path: .artifacts/browser-smoke
+          if-no-files-found: ignore

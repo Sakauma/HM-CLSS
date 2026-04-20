@@ -183,17 +183,22 @@ required_files=(
   "scripts/browser-smoke.py"
   "scripts/browser_smoke/helpers.py"
   "scripts/browser_smoke/driver.py"
+  "scripts/browser_smoke/artifacts.py"
   "scripts/browser_smoke/scenarios/bootstrap.py"
   "scripts/browser_smoke/scenarios/insights.py"
   "scripts/browser_smoke/scenarios/sync.py"
   "scripts/browser_smoke/scenarios/workspace.py"
   "scripts/browser_smoke/scenarios/accessibility.py"
   "scripts/browser_smoke/scenarios/tavern.py"
+  "scripts/browser_smoke/scenarios/visual.py"
   "scripts/setup-browser-test.sh"
-  "tests/unit/runtime-and-logic.test.js"
+  "tests/unit/helpers.js"
+  "tests/unit/runtime-store-and-checkin.test.js"
+  "tests/unit/export-storage-workspace.test.js"
   "tests/unit/tavern-logic.test.js"
   "tests/unit/sync-and-registry.test.js"
   "tests/unit/statistics-and-export.test.js"
+  "tests/fixtures/visual-layout-baselines.json"
 )
 
 for file_path in "${required_files[@]}"; do

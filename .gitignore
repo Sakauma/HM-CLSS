@@ -8,5 +8,6 @@ __pycache__/
 .coverage
 htmlcov/
 *.log
+.artifacts/
 .DS_Store
 plan.md

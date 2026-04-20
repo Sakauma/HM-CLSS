@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import time
 from datetime import date, timedelta
 
 from selenium.webdriver.common.keys import Keys
@@ -40,7 +39,7 @@ def test_quick_capture_flow(driver) -> None:
         "Quick capture tab loop did not wrap to the first control",
     )
 
-    token = f"browser-smoke-{int(time.time())}"
+    token = "browser-smoke-capture"
     set_field_value(driver, "quick-capture-input", token)
     wait_for(
         driver,
@@ -67,7 +66,7 @@ def test_task_hero_flow(driver) -> None:
     send_shortcut(driver, Keys.ALT, "3")
     wait_visible(driver, "tasks-section")
 
-    token = f"browser task {int(time.time())}"
+    token = "browser-smoke-task"
     set_field_value(driver, "task-name", token)
     click(driver, "start-task")
 

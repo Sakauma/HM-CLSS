@@ -138,3 +138,54 @@ def set_field_value(driver: WebDriver, element_id: str, value: str) -> None:
 
 def click(driver: WebDriver, element_id: str) -> None:
     find(driver, element_id).click()
+
+
+def install_debug_hooks(driver: WebDriver) -> None:
+    driver.execute_script(
+        """
+        if (window.__hmClssSmokeHooksInstalled) return;
+        window.__hmClssSmokeHooksInstalled = true;
+        window.__hmClssConsoleEvents = [];
+        window.__hmClssPageErrors = [];
+
+        const safeStringify = (value) => {
+          try {
+            if (typeof value === 'string') return value;
+            return JSON.stringify(value);
+          } catch (_error) {
+            return String(value);
+          }
+        };
+
+        ['log', 'info', 'warn', 'error'].forEach((level) => {
+          const original = console[level].bind(console);
+          console[level] = (...args) => {
+            window.__hmClssConsoleEvents.push({
+              level,
+              message: args.map(safeStringify).join(' '),
+              at: new Date().toISOString()
+            });
+            return original(...args);
+          };
+        });
+
+        window.addEventListener('error', (event) => {
+          window.__hmClssPageErrors.push({
+            type: 'error',
+            message: event.message || '',
+            source: event.filename || '',
+            line: event.lineno || 0,
+            column: event.colno || 0,
+            at: new Date().toISOString()
+          });
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+          window.__hmClssPageErrors.push({
+            type: 'unhandledrejection',
+            message: safeStringify(event.reason),
+            at: new Date().toISOString()
+          });
+        });
+        """
+    )

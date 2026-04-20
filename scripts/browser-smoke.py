@@ -6,8 +6,9 @@ import sys
 
 from selenium.common.exceptions import TimeoutException
 
+from browser_smoke.artifacts import capture_failure_artifacts, ensure_artifact_dir
 from browser_smoke.driver import build_driver
-from browser_smoke.helpers import log, wait_ready
+from browser_smoke.helpers import install_debug_hooks, log, wait_ready
 from browser_smoke.scenarios.accessibility import test_accessibility_regressions
 from browser_smoke.scenarios.bootstrap import (
     test_bootstrap,
@@ -20,6 +21,7 @@ from browser_smoke.scenarios.insights import (
 )
 from browser_smoke.scenarios.sync import test_sync_error_states
 from browser_smoke.scenarios.tavern import test_tavern_flow
+from browser_smoke.scenarios.visual import test_visual_layout_baselines
 from browser_smoke.scenarios.workspace import (
     test_leave_workflows,
     test_quick_capture_flow,
@@ -31,9 +33,12 @@ from browser_smoke.scenarios.workspace import (
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run HM-CLSS browser smoke checks with Firefox + Selenium.")
     parser.add_argument("--url", default="http://127.0.0.1:8000", help="Target URL to test.")
+    parser.add_argument("--artifact-dir", default="", help="Directory used to store browser smoke artifacts.")
+    parser.add_argument("--visual-baseline", default="tests/fixtures/visual-layout-baselines.json", help="Path to the visual layout baseline fixture.")
     args = parser.parse_args()
 
     driver = build_driver()
+    artifact_dir = ensure_artifact_dir(args.artifact_dir)
     try:
         try:
             driver.get(args.url)
@@ -46,19 +51,31 @@ def main() -> int:
         except TimeoutException:
             log("Refresh hit the page-load timeout; continuing with DOM checks.")
         wait_ready(driver)
+        install_debug_hooks(driver)
 
-        test_bootstrap(driver)
-        test_theme_toggle(driver)
-        test_navigation_shortcuts(driver)
-        test_statistics_panel(driver)
-        test_settings_and_exports(driver)
-        test_sync_error_states(driver)
-        test_quick_capture_flow(driver)
-        test_task_hero_flow(driver)
-        test_leave_workflows(driver)
-        test_retro_checkin_flow(driver)
-        test_accessibility_regressions(driver)
-        test_tavern_flow(driver)
+        scenarios = [
+            ("bootstrap", lambda: test_bootstrap(driver)),
+            ("theme-toggle", lambda: test_theme_toggle(driver)),
+            ("navigation-shortcuts", lambda: test_navigation_shortcuts(driver)),
+            ("statistics-panel", lambda: test_statistics_panel(driver)),
+            ("settings-and-exports", lambda: test_settings_and_exports(driver)),
+            ("sync-error-states", lambda: test_sync_error_states(driver)),
+            ("quick-capture-flow", lambda: test_quick_capture_flow(driver)),
+            ("task-hero-flow", lambda: test_task_hero_flow(driver)),
+            ("leave-workflows", lambda: test_leave_workflows(driver)),
+            ("retro-checkin-flow", lambda: test_retro_checkin_flow(driver)),
+            ("accessibility-regressions", lambda: test_accessibility_regressions(driver)),
+            ("visual-layout-baselines", lambda: test_visual_layout_baselines(driver, args.visual_baseline, artifact_dir)),
+            ("tavern-flow", lambda: test_tavern_flow(driver)),
+        ]
+
+        for scenario_name, scenario in scenarios:
+            try:
+                scenario()
+            except Exception as error:
+                capture_failure_artifacts(driver, artifact_dir, scenario_name, error)
+                raise
+
         log("Browser smoke passed.")
         return 0
     finally:

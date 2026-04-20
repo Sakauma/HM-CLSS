@@ -5,6 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEFAULT_URL="http://127.0.0.1:8000"
 TARGET_URL="${HM_CLSS_SMOKE_URL:-$DEFAULT_URL}"
 CONDA_ENV_PATH="${HM_CLSS_BROWSER_ENV:-$ROOT_DIR/.conda/browser-test}"
+ARTIFACT_DIR="${HM_CLSS_BROWSER_ARTIFACT_DIR:-$ROOT_DIR/.artifacts/browser-smoke}"
 SERVER_PID=""
 ENV_PYTHON=""
 
@@ -68,4 +69,8 @@ if ! probe_url "$TARGET_URL"; then
 fi
 
 exec conda run --no-capture-output -p "$CONDA_ENV_PATH" \
-  python "$ROOT_DIR/scripts/browser-smoke.py" --url "$TARGET_URL" "$@"
+  python "$ROOT_DIR/scripts/browser-smoke.py" \
+  --url "$TARGET_URL" \
+  --artifact-dir "$ARTIFACT_DIR" \
+  --visual-baseline "$ROOT_DIR/tests/fixtures/visual-layout-baselines.json" \
+  "$@"

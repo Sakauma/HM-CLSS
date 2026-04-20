@@ -1,0 +1,204 @@
+{
+  "checkin": {
+    "ambient": "recovery",
+    "elements": {
+      "checkin-section": {
+        "childCount": 3,
+        "height": 1401,
+        "visible": true,
+        "width": 1152,
+        "x": 394,
+        "y": 0
+      },
+      "retro-recent-log": {
+        "childCount": 1,
+        "height": 395,
+        "visible": true,
+        "width": 486,
+        "x": 1035,
+        "y": 980
+      },
+      "shift-ops-grid": {
+        "childCount": 3,
+        "height": 422,
+        "visible": true,
+        "width": 1152,
+        "x": 394,
+        "y": 0
+      },
+      "today-checkin-log": {
+        "childCount": 2,
+        "height": 300,
+        "visible": true,
+        "width": 1152,
+        "x": 394,
+        "y": 454
+      }
+    },
+    "scrollTop": 528,
+    "viewport": {
+      "height": 1114,
+      "width": 1600
+    }
+  },
+  "tasks": {
+    "ambient": "recovery",
+    "elements": {
+      "quick-notes-container": {
+        "childCount": 1,
+        "height": 68,
+        "visible": true,
+        "width": 408,
+        "x": 1109,
+        "y": 370
+      },
+      "schedule-content": {
+        "childCount": 1,
+        "height": 286,
+        "visible": true,
+        "width": 326,
+        "x": 1178,
+        "y": 714
+      },
+      "task-name": {
+        "childCount": 0,
+        "height": 51,
+        "visible": true,
+        "width": 272,
+        "x": 623,
+        "y": 350
+      },
+      "tasks-section": {
+        "childCount": 2,
+        "height": 785,
+        "visible": true,
+        "width": 1152,
+        "x": 394,
+        "y": 257
+      }
+    },
+    "scrollTop": 271,
+    "viewport": {
+      "height": 1114,
+      "width": 1600
+    }
+  },
+  "leave": {
+    "ambient": "recovery",
+    "elements": {
+      "leave-form-shell": {
+        "childCount": 6,
+        "height": 750,
+        "visible": true,
+        "width": 609,
+        "x": 394,
+        "y": 292
+      },
+      "leave-records-table": {
+        "childCount": 1,
+        "height": 52,
+        "visible": true,
+        "width": 465,
+        "x": 1052,
+        "y": 429
+      },
+      "leave-section": {
+        "childCount": 1,
+        "height": 750,
+        "visible": true,
+        "width": 1152,
+        "x": 394,
+        "y": 292
+      }
+    },
+    "scrollTop": 236,
+    "viewport": {
+      "height": 1114,
+      "width": 1600
+    }
+  },
+  "tavern": {
+    "ambient": "recovery",
+    "elements": {
+      "mood-text-input": {
+        "childCount": 0,
+        "height": 98,
+        "visible": true,
+        "width": 546,
+        "x": 444,
+        "y": 541
+      },
+      "state-input": {
+        "childCount": 1,
+        "height": 789,
+        "visible": true,
+        "width": 1150,
+        "x": 395,
+        "y": 252
+      },
+      "tavern-section": {
+        "childCount": 2,
+        "height": 961,
+        "visible": true,
+        "width": 1152,
+        "x": 394,
+        "y": 82
+      },
+      "view-tavern-container": {
+        "childCount": 4,
+        "height": 791,
+        "visible": true,
+        "width": 1152,
+        "x": 394,
+        "y": 251
+      }
+    },
+    "scrollTop": 446,
+    "viewport": {
+      "height": 1114,
+      "width": 1600
+    }
+  },
+  "settings": {
+    "ambient": "recovery",
+    "elements": {
+      "export-month-field": {
+        "childCount": 2,
+        "height": 78,
+        "visible": true,
+        "width": 465,
+        "x": 440,
+        "y": 702
+      },
+      "export-trigger-btn": {
+        "childCount": 2,
+        "height": 52,
+        "visible": true,
+        "width": 465,
+        "x": 440,
+        "y": 909
+      },
+      "github-token-input": {
+        "childCount": 0,
+        "height": 46,
+        "visible": true,
+        "width": 1102,
+        "x": 419,
+        "y": 78
+      },
+      "settings-section": {
+        "childCount": 3,
+        "height": 1275,
+        "visible": true,
+        "width": 1152,
+        "x": 394,
+        "y": -232
+      }
+    },
+    "scrollTop": 760,
+    "viewport": {
+      "height": 1114,
+      "width": 1600
+    }
+  }
+}

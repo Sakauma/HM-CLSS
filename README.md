@@ -176,6 +176,7 @@ bash scripts/browser-smoke.sh
 - `push` / `pull_request` 自动运行 `bash scripts/smoke-check.sh`
 - 浏览器环境可用时继续运行 `bash scripts/browser-smoke.sh`
 - 本地脚本和 CI 使用同一套 `conda` 浏览器环境定义，不走两套口径
+- 浏览器冒烟失败时会把截图、页面源码和控制台留痕上传为 CI 工件
 
 可选环境变量：
 
@@ -187,6 +188,8 @@ bash scripts/browser-smoke.sh
   覆盖默认求解器；脚本默认使用 `classic` 以兼容缺少 `libmamba` 的 `conda` 安装。
 - `HM_CLSS_SMOKE_URL`
   指向自定义预览地址；未提供时默认使用 `http://127.0.0.1:8000`。
+- `HM_CLSS_BROWSER_ARTIFACT_DIR`
+  覆盖默认的浏览器冒烟工件目录；默认输出到 `.artifacts/browser-smoke`。
 
 
 ## 🗂️ 舰体结构
@@ -359,10 +362,16 @@ bash scripts/browser-smoke.sh
   浏览器级功能检查的启动脚本，按场景顺序编排执行。
 - `scripts/browser_smoke/`
   浏览器冒烟共享 helper、driver 封装与分场景回归脚本。
+- `tests/fixtures/visual-layout-baselines.json`
+  关键舱段的布局视觉基线，用于浏览器回归时对比主要面板是否漂移。
 - `environment.browser-test.yml`
   浏览器测试环境的可复现依赖定义。
-- `tests/unit/runtime-and-logic.test.js`
-  纯逻辑单元测试，覆盖值班规则、导出构建和本地存储迁移。
+- `tests/unit/helpers.js`
+  单测共享上下文、脚本加载和本地存储 mock。
+- `tests/unit/runtime-store-and-checkin.test.js`
+  运行时状态、值班规则和首页状态映射测试。
+- `tests/unit/export-storage-workspace.test.js`
+  导出构建、工作区快照和本地存储迁移测试。
 - `tests/unit/sync-and-registry.test.js`
   同步失败/冲突分支和模块注册中心生命周期测试。
 - `tests/unit/statistics-and-export.test.js`
@@ -580,7 +589,7 @@ const CONFIG = {
 - `bash scripts/setup-browser-test.sh`
   创建或更新真实浏览器测试所需的 `conda` 环境。
 - `bash scripts/browser-smoke.sh`
-  在 Firefox + Selenium 中做关键交互冒烟。
+  在 Firefox + Selenium 中做关键交互冒烟、布局视觉基线校验，并在失败时留下截图和页面工件。
 
 自动化之外，发版前仍建议按 [docs/functional-self-check.md](./docs/functional-self-check.md) 做一轮功能级人工巡检，尤其是下面这些高风险舱段：
 
