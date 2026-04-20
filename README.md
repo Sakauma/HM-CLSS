@@ -362,6 +362,8 @@ bash scripts/browser-smoke.sh
   浏览器级功能检查的启动脚本，按场景顺序编排执行。
 - `scripts/browser_smoke/`
   浏览器冒烟共享 helper、driver 封装与分场景回归脚本。
+- `scripts/smoke_manifest/`
+  `smoke-check` 使用的清单目录，分别维护语法检查、脚本顺序、样式、文件和关键 DOM id。
 - `tests/fixtures/visual-layout-baselines.json`
   关键舱段的布局视觉基线，用于浏览器回归时对比主要面板是否漂移。
 - `environment.browser-test.yml`
@@ -506,7 +508,7 @@ const CONFIG = {
 
 如果你未来继续拆分脚本，不要随意打乱 `index.html` 中的 `<script src="assets/js/...">` 顺序。
 
-当前顺序遵循依赖关系：
+当前顺序遵循依赖关系，`scripts/smoke_manifest/script-order.txt` 与 `index.html` 保持同一份清单：
 
 1. `runtime/theme.js`
 2. `runtime/store.js`
