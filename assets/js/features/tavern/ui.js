@@ -4,14 +4,12 @@
  */
 
 function initTavernModule() {
+    const disposables = createDisposables();
     const inputEl = document.getElementById('mood-text-input');
     const countEl = document.getElementById('mood-char-count');
     const analyzeBtn = document.getElementById('btn-start-analyze');
     const emotionBarContainer = document.getElementById('emotion-bar-container');
-
-    document.getElementById('history-library-count').textContent = cocktailCatalog.length;
-
-    inputEl?.addEventListener('input', (event) => {
+    const handleInputChange = (event) => {
         let text = event.target.value;
         if (text.length > MAX_MOOD_CHARS) {
             text = text.slice(0, MAX_MOOD_CHARS);
@@ -20,10 +18,20 @@ function initTavernModule() {
         countEl.textContent = text.length;
         analyzeBtn.disabled = text.trim().length === 0;
         updateInputPreview(text);
-    });
+    };
+    const handleResize = () => {
+        const activeState = document.querySelector('#view-tavern-container > [id^="state-"].opacity-100');
+        if (activeState?.id) {
+            syncTavernContainerHeight(activeState.id);
+        }
+    };
+
+    document.getElementById('history-library-count').textContent = cocktailCatalog.length;
+
+    disposables.listen(inputEl, 'input', handleInputChange);
 
     document.querySelectorAll('.tavern-suggestion').forEach((button) => {
-        button.addEventListener('click', () => {
+        disposables.listen(button, 'click', () => {
             inputEl.value = button.getAttribute('data-mood') || '';
             countEl.textContent = inputEl.value.length;
             analyzeBtn.disabled = inputEl.value.trim().length === 0;
@@ -31,7 +39,7 @@ function initTavernModule() {
         });
     });
 
-    document.getElementById('btn-random-mood')?.addEventListener('click', () => {
+    disposables.listen(document.getElementById('btn-random-mood'), 'click', () => {
         const suggestion = tavernSuggestionTexts[Date.now() % tavernSuggestionTexts.length];
         inputEl.value = suggestion;
         countEl.textContent = suggestion.length;
@@ -39,7 +47,7 @@ function initTavernModule() {
         updateInputPreview(suggestion);
     });
 
-    analyzeBtn?.addEventListener('click', () => {
+    disposables.listen(analyzeBtn, 'click', () => {
         const text = inputEl.value.trim();
         if (!text) return;
 
@@ -96,13 +104,13 @@ function initTavernModule() {
         }, 3320);
     });
 
-    document.getElementById('btn-stop-analyze')?.addEventListener('click', () => {
+    disposables.listen(document.getElementById('btn-stop-analyze'), 'click', () => {
         clearAnalysisTimers();
         switchTavernState('state-input');
         updateInputPreview(inputEl.value);
     });
 
-    document.getElementById('btn-remix')?.addEventListener('click', () => {
+    disposables.listen(document.getElementById('btn-remix'), 'click', () => {
         const remixText = currentDrinkInfo?.text || inputEl.value;
         runtimeActions.clearCurrentDrinkInfo();
         if (typeof updateVoyageAmbientPresentation === 'function') {
@@ -115,13 +123,13 @@ function initTavernModule() {
         updateInputPreview(remixText);
     });
 
-    document.getElementById('btn-back-to-input')?.addEventListener('click', () => {
+    disposables.listen(document.getElementById('btn-back-to-input'), 'click', () => {
         clearAnalysisTimers();
         switchTavernState('state-input');
         updateInputPreview(inputEl.value);
     });
 
-    document.getElementById('btn-save-drink')?.addEventListener('click', () => {
+    disposables.listen(document.getElementById('btn-save-drink'), 'click', () => {
         if (!currentDrinkInfo || currentDrinkInfo.saved) return;
         prependRuntimeItem('tavernData', { ...currentDrinkInfo, saved: true });
         runtimeActions.setCurrentDrinkInfo({ ...currentDrinkInfo, saved: true });
@@ -130,7 +138,7 @@ function initTavernModule() {
         renderResult(currentDrinkInfo, true);
     });
 
-    document.getElementById('btn-share-drink')?.addEventListener('click', async () => {
+    disposables.listen(document.getElementById('btn-share-drink'), 'click', async () => {
         if (!currentDrinkInfo) return;
 
         try {
@@ -141,22 +149,22 @@ function initTavernModule() {
         }
     });
 
-    document.getElementById('btn-result-history')?.addEventListener('click', () => {
+    disposables.listen(document.getElementById('btn-result-history'), 'click', () => {
         switchTavernState('state-history');
         renderTavernHistory();
     });
 
-    document.getElementById('btn-view-tavern-history')?.addEventListener('click', () => {
+    disposables.listen(document.getElementById('btn-view-tavern-history'), 'click', () => {
         switchTavernState('state-history');
         renderTavernHistory();
     });
 
-    document.getElementById('btn-close-history')?.addEventListener('click', () => {
+    disposables.listen(document.getElementById('btn-close-history'), 'click', () => {
         switchTavernState('state-input');
         updateInputPreview(inputEl.value);
     });
 
-    document.getElementById('btn-history-create')?.addEventListener('click', () => {
+    disposables.listen(document.getElementById('btn-history-create'), 'click', () => {
         runtimeActions.clearCurrentDrinkInfo();
         if (typeof updateVoyageAmbientPresentation === 'function') {
             updateVoyageAmbientPresentation();
@@ -168,10 +176,9 @@ function initTavernModule() {
     switchTavernState('state-input');
     renderTavernHistory();
     updateInputPreview('');
-    window.addEventListener('resize', () => {
-        const activeState = document.querySelector('#view-tavern-container > [id^="state-"].opacity-100');
-        if (activeState?.id) {
-            syncTavernContainerHeight(activeState.id);
-        }
-    });
+    disposables.listen(window, 'resize', handleResize);
+    return () => {
+        clearAnalysisTimers();
+        disposables.dispose();
+    };
 }

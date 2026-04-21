@@ -9,6 +9,14 @@ const themeToggleBtn = document.getElementById('theme-toggle');
 const htmlElement = document.documentElement;
 const systemThemeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
+function refreshThemeDependentCharts() {
+    if (!window.checkinRateChart) return;
+    const activePeriodBtn = document.querySelector('.stats-period-btn-active');
+    if (activePeriodBtn) {
+        updateStatisticsCharts(activePeriodBtn.getAttribute('data-period'));
+    }
+}
+
 /**
  * 根据当前主题切换页头图标显隐状态。
  */
@@ -45,23 +53,15 @@ if (localStorage.theme === 'dark' || (!('theme' in localStorage) && systemThemeM
 updateThemeIcon();
 syncThemeToggleAccessibility();
 
-// 手动切换主题后，顺带刷新依赖配色的统计图实例。
-themeToggleBtn?.addEventListener('click', () => {
+function handleThemeToggleClick() {
     htmlElement.classList.toggle('dark');
     localStorage.theme = htmlElement.classList.contains('dark') ? 'dark' : 'light';
     updateThemeIcon();
     syncThemeToggleAccessibility();
+    refreshThemeDependentCharts();
+}
 
-    if (window.checkinRateChart) {
-        const activePeriodBtn = document.querySelector('.stats-period-btn-active');
-        if (activePeriodBtn) {
-            updateStatisticsCharts(activePeriodBtn.getAttribute('data-period'));
-        }
-    }
-});
-
-// 仅当用户没有手动指定主题时，才跟随系统主题变化。
-systemThemeMediaQuery.addEventListener('change', (event) => {
+function handleSystemThemeChange(event) {
     if (!('theme' in localStorage)) {
         if (event.matches) {
             htmlElement.classList.add('dark');
@@ -71,12 +71,32 @@ systemThemeMediaQuery.addEventListener('change', (event) => {
 
         updateThemeIcon();
         syncThemeToggleAccessibility();
-
-        if (window.checkinRateChart) {
-            const activePeriodBtn = document.querySelector('.stats-period-btn-active');
-            if (activePeriodBtn) {
-                updateStatisticsCharts(activePeriodBtn.getAttribute('data-period'));
-            }
-        }
+        refreshThemeDependentCharts();
     }
-});
+}
+
+function initThemeModule() {
+    const disposables = createDisposables();
+    disposables.listen(themeToggleBtn, 'click', handleThemeToggleClick);
+    disposables.listen(systemThemeMediaQuery, 'change', handleSystemThemeChange);
+    return () => {
+        disposables.dispose();
+    };
+}
+
+function registerThemeModule() {
+    registerAppModule({
+        id: 'runtime-theme',
+        order: 15,
+        init: initThemeModule
+    });
+}
+
+if (typeof registerAppModule === 'function') {
+    registerThemeModule();
+} else {
+    if (!Array.isArray(window.__hmClssDeferredModuleRegistrars)) {
+        window.__hmClssDeferredModuleRegistrars = [];
+    }
+    window.__hmClssDeferredModuleRegistrars.push(registerThemeModule);
+}

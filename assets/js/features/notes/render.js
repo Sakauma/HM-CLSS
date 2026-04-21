@@ -25,9 +25,13 @@ async function handleNoteDeletion(event) {
 }
 
 function initNotesRendering() {
-    document.getElementById('archive-search-input')?.addEventListener('input', (event) => {
+    const disposables = createDisposables();
+    disposables.listen(document.getElementById('archive-search-input'), 'input', (event) => {
         renderArchive(event.target.value.trim());
     });
-    document.getElementById('archive-list-container')?.addEventListener('click', handleNoteDeletion);
-    document.getElementById('quick-notes-container')?.addEventListener('click', handleNoteDeletion);
+    disposables.listen(document.getElementById('archive-list-container'), 'click', handleNoteDeletion);
+    disposables.listen(document.getElementById('quick-notes-container'), 'click', handleNoteDeletion);
+    return () => {
+        disposables.dispose();
+    };
 }

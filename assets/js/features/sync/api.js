@@ -21,7 +21,11 @@ async function fetchWorkspaceGistResponse() {
 function parseWorkspaceGistContent(gistResponseData) {
     const file = gistResponseData?.files?.[SYNC_GIST_FILE];
     if (!file?.content) return null;
-    return JSON.parse(file.content);
+    try {
+        return JSON.parse(file.content);
+    } catch (error) {
+        throw new Error('fetch_invalid_payload');
+    }
 }
 
 async function fetchCloudWorkspaceData() {

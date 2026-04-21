@@ -81,8 +81,8 @@ def test_settings_and_exports(driver) -> None:
     click(driver, "save-config-btn")
     wait_for(
         driver,
-        lambda d: d.execute_script("return localStorage.getItem('githubToken');") == token,
-        "githubToken was not saved to localStorage",
+        lambda d: d.execute_script("return sessionStorage.getItem('githubToken');") == token,
+        "githubToken was not saved to sessionStorage",
     )
     wait_for(
         driver,
@@ -91,7 +91,12 @@ def test_settings_and_exports(driver) -> None:
     )
     wait_for(
         driver,
-        lambda d: "配置已保存到本地" in find(d, "toast-container").text,
+        lambda d: d.execute_script("return localStorage.getItem('githubToken');") is None,
+        "githubToken should not persist in localStorage",
+    )
+    wait_for(
+        driver,
+        lambda d: "Token 仅保存在当前会话" in find(d, "toast-container").text,
         "save-config toast did not appear",
     )
     wait_for(

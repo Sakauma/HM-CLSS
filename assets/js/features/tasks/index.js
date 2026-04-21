@@ -2,11 +2,20 @@
  * 挂载任务相关按钮，并恢复页面首次渲染所需的任务状态。
  */
 function initTaskManagement() {
-    document.getElementById('start-task').addEventListener('click', startTask);
-    document.getElementById('end-task').addEventListener('click', endTask);
+    const disposables = createDisposables();
+    disposables.listen(document.getElementById('start-task'), 'click', startTask);
+    disposables.listen(document.getElementById('end-task'), 'click', endTask);
     updateTodayTasksList();
     updateSchedule();
     if (runtimeSelectors.currentTask()) startTaskTimer();
+    return () => {
+        const timerHandle = runtimeSelectors.taskTimer();
+        if (timerHandle) {
+            clearInterval(timerHandle);
+            runtimeActions.setTaskTimer(null);
+        }
+        disposables.dispose();
+    };
 }
 
 /**

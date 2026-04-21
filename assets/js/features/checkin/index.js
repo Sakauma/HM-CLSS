@@ -7,19 +7,23 @@
  * 初始化三段班次的按钮监听、今日表格和补打卡面板。
  */
 function initCheckin() {
+    const disposables = createDisposables();
     CHECKIN_PERIODS.forEach((period) => {
-        document.getElementById(`${period}-checkin`).addEventListener('click', () => checkIn(period));
-        document.getElementById(`${period}-checkout`).addEventListener('click', () => checkOut(period));
+        disposables.listen(document.getElementById(`${period}-checkin`), 'click', () => checkIn(period));
+        disposables.listen(document.getElementById(`${period}-checkout`), 'click', () => checkOut(period));
     });
 
-    document.getElementById('retro-checkin-date')?.addEventListener('input', updateRetroCheckinPanel);
-    document.getElementById('retro-checkin-period')?.addEventListener('change', updateRetroCheckinPanel);
-    document.getElementById('retro-checkin-start')?.addEventListener('input', updateRetroCheckinPanel);
-    document.getElementById('retro-checkin-end')?.addEventListener('input', updateRetroCheckinPanel);
-    document.getElementById('retro-checkin-reason')?.addEventListener('input', updateRetroCheckinPanel);
-    document.getElementById('retro-checkin-submit')?.addEventListener('click', submitRetroCheckin);
+    disposables.listen(document.getElementById('retro-checkin-date'), 'input', updateRetroCheckinPanel);
+    disposables.listen(document.getElementById('retro-checkin-period'), 'change', updateRetroCheckinPanel);
+    disposables.listen(document.getElementById('retro-checkin-start'), 'input', updateRetroCheckinPanel);
+    disposables.listen(document.getElementById('retro-checkin-end'), 'input', updateRetroCheckinPanel);
+    disposables.listen(document.getElementById('retro-checkin-reason'), 'input', updateRetroCheckinPanel);
+    disposables.listen(document.getElementById('retro-checkin-submit'), 'click', submitRetroCheckin);
 
     refreshCheckinViews();
+    return () => {
+        disposables.dispose();
+    };
 }
 
 /**

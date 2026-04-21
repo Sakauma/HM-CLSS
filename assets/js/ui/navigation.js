@@ -7,6 +7,7 @@
  * 初始化导航按钮，并把“面板说明区”的内容和当前激活模块保持同步。
  */
 function initNavigation() {
+    const disposables = createDisposables();
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const navigationItems = NAVIGATION_ITEMS;
     const scrollCurrentPanelIntoView = createNavigationScroller(prefersReducedMotion);
@@ -24,7 +25,7 @@ function initNavigation() {
         button.setAttribute('aria-label', item.hotkey ? `${item.title}，快捷键 ${item.hotkey}` : item.title);
         section.setAttribute('aria-hidden', button.id === navigationItems[0].btnId ? 'false' : 'true');
 
-        button.addEventListener('click', function() {
+        disposables.listen(button, 'click', function() {
             navigationItems.forEach((navItem) => {
                 const targetSection = document.getElementById(navItem.sectionId);
                 const targetButton = document.getElementById(navItem.btnId);
@@ -69,6 +70,10 @@ function initNavigation() {
     // 首次加载时默认展示第一个面板，并初始化对应说明。
     updatePanelMeta(navigationItems[0]);
     setNavButtonState(document.getElementById(navigationItems[0].btnId), true);
+
+    return () => {
+        disposables.dispose();
+    };
 }
 
 registerAppModule({

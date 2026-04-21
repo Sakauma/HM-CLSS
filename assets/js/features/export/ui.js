@@ -91,6 +91,7 @@ function refreshExportPreview() {
 }
 
 function initExportTools() {
+    const disposables = createDisposables();
     const monthInput = document.getElementById('export-month-input');
     const profileSelect = document.getElementById('export-profile-select');
     const triggerBtn = document.getElementById('export-trigger-btn');
@@ -101,9 +102,12 @@ function initExportTools() {
     profileSelect.value = 'month_json';
     updateExportPreview();
 
-    monthInput.addEventListener('input', updateExportPreview);
-    profileSelect.addEventListener('change', updateExportPreview);
-    triggerBtn.addEventListener('click', executeSelectedExport);
+    disposables.listen(monthInput, 'input', updateExportPreview);
+    disposables.listen(profileSelect, 'change', updateExportPreview);
+    disposables.listen(triggerBtn, 'click', executeSelectedExport);
+    return () => {
+        disposables.dispose();
+    };
 }
 
 registerAppModule({

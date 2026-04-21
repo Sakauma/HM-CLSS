@@ -11,11 +11,11 @@ function createLucideIconNode(icon, className) {
 }
 
 function createMarkdownNoteNode(noteText, className) {
-    return replaceElementChildrenWithHtml(
+    return replaceElementChildrenWithTrustedHtml(
         createDomElement('div', {
             className
         }),
-        DOMPurify.sanitize(marked.parse(noteText))
+        createTrustedHtml(DOMPurify.sanitize(marked.parse(noteText)))
     );
 }
 

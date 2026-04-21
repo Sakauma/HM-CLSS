@@ -14,12 +14,20 @@ function updateDateTime() {
 }
 
 function bindSummaryModalControls() {
-    document.getElementById('close-daily-modal')?.addEventListener('click', () => {
+    const disposables = createDisposables();
+    const closeDaily = () => {
         document.getElementById('daily-summary-modal')?.classList.add('hidden');
-    });
-    document.getElementById('close-weekly-modal')?.addEventListener('click', () => {
+    };
+    const closeWeekly = () => {
         document.getElementById('weekly-summary-modal')?.classList.add('hidden');
-    });
+    };
+
+    disposables.listen(document.getElementById('close-daily-modal'), 'click', closeDaily);
+    disposables.listen(document.getElementById('close-weekly-modal'), 'click', closeWeekly);
+
+    return () => {
+        disposables.dispose();
+    };
 }
 
 registerAppModule({
@@ -27,7 +35,8 @@ registerAppModule({
     order: 10,
     init() {
         updateDateTime();
-        setInterval(updateDateTime, 1000);
+        const timerId = setInterval(updateDateTime, 1000);
+        return () => clearInterval(timerId);
     }
 });
 

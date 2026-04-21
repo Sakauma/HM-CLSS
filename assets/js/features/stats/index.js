@@ -21,14 +21,18 @@ function getActiveStatsPeriod() {
  * 绑定统计周期按钮，并初始化顶部摘要数据。
  */
 function initStatistics() {
+    const disposables = createDisposables();
     document.querySelectorAll('.stats-period-btn').forEach((btn) => {
-        btn.addEventListener('click', () => {
+        disposables.listen(btn, 'click', () => {
             setActiveStatsPeriodButton(btn);
             updateStatisticsCharts(btn.getAttribute('data-period'));
         });
     });
 
     updateSummaryStatistics();
+    return () => {
+        disposables.dispose();
+    };
 }
 
 /**

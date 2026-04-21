@@ -102,11 +102,36 @@ test('module registry disposes cleanups in reverse order and allows reinitializa
     assert.deepEqual(Array.from(context.initializeAppModules()), ['alpha', 'beta']);
 });
 
+test('module registry flushes deferred module registrars registered before the registry script loads', () => {
+    const context = createBaseContext({
+        __hmClssDeferredModuleRegistrars: [
+            () => {
+                context.registerAppModule({
+                    id: 'deferred-theme',
+                    order: 15,
+                    init() {
+                        context.__deferredInitialized = true;
+                    }
+                });
+            }
+        ]
+    });
+
+    loadScript(context, 'assets/js/runtime/module-registry.js');
+
+    const moduleIds = Array.from(context.getRegisteredAppModules()).map((module) => module.id);
+    assert.deepEqual(moduleIds, ['deferred-theme']);
+    context.initializeAppModules();
+    assert.equal(context.__deferredInitialized, true);
+});
+
 test('sync api surfaces fetch and push status codes', async () => {
     const context = createBaseContext({
         localStorage: createStorageMock({
-            githubToken: 'ghp_test',
             gistId: 'gist_test'
+        }),
+        sessionStorage: createStorageMock({
+            githubToken: 'ghp_test'
         }),
         fetch: async (_url, options = {}) => ({
             ok: false,
@@ -122,6 +147,96 @@ test('sync api surfaces fetch and push status codes', async () => {
     await assert.rejects(() => context.pushCloudWorkspaceData({ ok: true }), /push_failed_404/);
 });
 
+test('sync api classifies malformed gist payloads', async () => {
+    const context = createBaseContext({
+        localStorage: createStorageMock({
+            gistId: 'gist_test'
+        }),
+        sessionStorage: createStorageMock({
+            githubToken: 'ghp_test'
+        }),
+        fetch: async () => ({
+            ok: true,
+            status: 200,
+            json: async () => ({
+                files: {
+                    'workspace_data.json': {
+                        content: '{not-valid-json}'
+                    }
+                }
+            })
+        })
+    });
+
+    loadScript(context, 'assets/js/features/sync/state.js');
+    loadScript(context, 'assets/js/features/sync/api.js');
+
+    await assert.rejects(() => context.fetchCloudWorkspaceData(), /fetch_invalid_payload/);
+});
+
+test('sync state migrates legacy token storage into session scope', () => {
+    const localStorage = createStorageMock({
+        githubToken: 'legacy_token',
+        gistId: 'gist_test'
+    });
+    const sessionStorage = createStorageMock();
+    const context = createBaseContext({
+        localStorage,
+        sessionStorage
+    });
+
+    loadScript(context, 'assets/js/features/sync/state.js');
+
+    assert.equal(sessionStorage.getItem('githubToken'), 'legacy_token');
+    assert.equal(localStorage.getItem('githubToken'), null);
+    const credentials = context.getSyncCredentials();
+    assert.equal(credentials.githubToken, 'legacy_token');
+    assert.equal(credentials.gistId, 'gist_test');
+});
+
+test('sync state clears pending auto-sync timers on demand and on credential changes', () => {
+    const scheduledTimers = [];
+    const clearedTimers = [];
+    const context = createBaseContext({
+        localStorage: createStorageMock({
+            gistId: 'gist_test'
+        }),
+        sessionStorage: createStorageMock({
+            githubToken: 'ghp_test'
+        }),
+        setTimeout(callback, delay) {
+            const timer = { callback, delay };
+            scheduledTimers.push(timer);
+            return timer;
+        },
+        clearTimeout(timer) {
+            clearedTimers.push(timer);
+        },
+        countTotalTaskEntries() { return 0; },
+        countQuickNoteEntries() { return 0; },
+        ensureDayRecord(day) { return day; },
+        hasAnyCheckinRecord() { return false; },
+        checkinData: {},
+        phoneResistData: { totalCount: 0, records: {} },
+        leaveData: [],
+        achievements: [],
+        tavernData: [],
+        currentTask: null
+    });
+
+    loadScript(context, 'assets/js/features/sync/state.js');
+    loadScript(context, 'assets/js/features/sync/logic.js');
+
+    context.triggerAutoSync();
+    assert.equal(scheduledTimers.length, 1);
+    assert.equal(context.clearAutoSyncTimer(), true);
+    assert.deepEqual(clearedTimers, [scheduledTimers[0]]);
+
+    context.triggerAutoSync();
+    context.saveSyncCredentials('ghp_other', 'gist_other');
+    assert.deepEqual(clearedTimers, [scheduledTimers[0], scheduledTimers[1]]);
+});
+
 test('sync controller covers conflict confirmation and failure branches', async () => {
     const toastEvents = [];
     let confirmOptions = null;
@@ -135,9 +250,11 @@ test('sync controller covers conflict confirmation and failure branches', async 
 
     const context = createBaseContext({
         localStorage: createStorageMock({
-            githubToken: 'ghp_test',
             gistId: 'gist_test',
             localLastSyncTime: '2026-04-20T10:00:00.000Z'
+        }),
+        sessionStorage: createStorageMock({
+            githubToken: 'ghp_test'
         }),
         document: {
             activeElement: null,
@@ -188,6 +305,15 @@ test('sync controller covers conflict confirmation and failure branches', async 
     loadScript(context, 'assets/js/features/sync/logic.js');
     loadScript(context, 'assets/js/features/sync/index.js');
 
+    context.saveSyncConfig();
+    assert.deepEqual(toastEvents.at(-1), {
+        message: '⚙️ Token 仅保存在当前会话，Gist ID 已保存到本地。',
+        tone: 'success'
+    });
+    assert.equal(context.sessionStorage.getItem('githubToken'), 'ghp_test');
+    assert.equal(context.localStorage.getItem('githubToken'), null);
+    assert.equal(context.localStorage.getItem('gistId'), 'gist_test');
+
     context.fetchCloudWorkspaceData = async () => ({ lastSyncTime: '2026-04-21T10:00:00.000Z' });
     const overwriteConfirmed = await context.maybeConfirmCloudOverwrite();
     assert.equal(overwriteConfirmed, false);
@@ -207,4 +333,9 @@ test('sync controller covers conflict confirmation and failure branches', async 
     await context.handlePullCloud();
     assert.deepEqual(toastEvents.at(-1), { message: '🌐 网络请求失败：network down', tone: 'error' });
     assert.equal(elements['pull-cloud-btn'].disabled, false);
+
+    toastEvents.length = 0;
+    context.fetchCloudWorkspaceData = async () => { throw new Error('fetch_invalid_payload'); };
+    await context.handlePullCloud();
+    assert.deepEqual(toastEvents.at(-1), { message: '❌ 云端数据文件内容损坏，当前无法拉取。', tone: 'error' });
 });

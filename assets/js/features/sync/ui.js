@@ -26,7 +26,10 @@ function readSyncConfigForm() {
 function saveSyncConfig() {
     const { token, nextGistId } = readSyncConfigForm();
     saveSyncCredentials(token, nextGistId);
-    showToast('⚙️ 配置已保存到本地！', 'success');
+    const tokenStorageCopy = getSyncTokenStorage() === localStorage
+        ? 'Token 与 Gist ID 已保存到本地。'
+        : 'Token 仅保存在当前会话，Gist ID 已保存到本地。';
+    showToast(`⚙️ ${tokenStorageCopy}`, 'success');
 }
 
 function showSyncMissingConfigToast() {

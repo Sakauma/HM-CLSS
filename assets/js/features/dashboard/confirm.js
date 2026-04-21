@@ -6,6 +6,7 @@
 let confirmDialogResolver = null;
 let confirmDialogLastTrigger = null;
 let confirmDialogBindingsReady = false;
+let confirmDialogCleanup = null;
 
 function getConfirmDialogElements() {
     return {
@@ -46,20 +47,30 @@ function ensureConfirmDialogBindings() {
     const { modal, panel, confirmBtn, cancelBtn } = getConfirmDialogElements();
     if (!modal || !panel || !confirmBtn || !cancelBtn) return;
 
+    const disposables = createDisposables();
     confirmDialogBindingsReady = true;
-    confirmBtn.addEventListener('click', () => closeConfirmDialog(true));
-    cancelBtn.addEventListener('click', () => closeConfirmDialog(false));
-    modal.addEventListener('click', (event) => {
+    disposables.listen(confirmBtn, 'click', () => closeConfirmDialog(true));
+    disposables.listen(cancelBtn, 'click', () => closeConfirmDialog(false));
+    disposables.listen(modal, 'click', (event) => {
         if (event.target === modal) {
             closeConfirmDialog(false);
         }
     });
-    panel.addEventListener('click', (event) => event.stopPropagation());
-    document.addEventListener('keydown', (event) => {
+    disposables.listen(panel, 'click', (event) => event.stopPropagation());
+    disposables.listen(document, 'keydown', (event) => {
         if (event.key === 'Escape' && confirmDialogResolver) {
             closeConfirmDialog(false);
         }
     });
+
+    confirmDialogCleanup = () => {
+        if (confirmDialogResolver) {
+            closeConfirmDialog(false);
+        }
+        confirmDialogBindingsReady = false;
+        disposables.dispose();
+        confirmDialogCleanup = null;
+    };
 }
 
 function showConfirmDialog(options = {}) {
@@ -122,3 +133,16 @@ function showConfirmDialog(options = {}) {
         requestAnimationFrame(() => elements.confirmBtn.focus());
     });
 }
+
+registerAppModule({
+    id: 'confirm-dialog',
+    order: 112,
+    init() {
+        ensureConfirmDialogBindings();
+        return () => {
+            if (typeof confirmDialogCleanup === 'function') {
+                confirmDialogCleanup();
+            }
+        };
+    }
+});

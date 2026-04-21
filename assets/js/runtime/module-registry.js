@@ -87,3 +87,13 @@ function disposeAppModules() {
 
     return disposedIds;
 }
+
+const deferredModuleRegistrars = Array.isArray(window.__hmClssDeferredModuleRegistrars)
+    ? window.__hmClssDeferredModuleRegistrars.splice(0)
+    : [];
+
+deferredModuleRegistrars.forEach((registerDeferredModule) => {
+    if (typeof registerDeferredModule === 'function') {
+        registerDeferredModule();
+    }
+});

@@ -116,6 +116,7 @@ function updateSchedule() {
 
     const fragment = document.createDocumentFragment();
     const hourHeight = 384 / 18;
+    let renderedBlockCount = 0;
 
     tasks.forEach((task) => {
         if (typeof task.startTime !== 'string' || typeof task.endTime !== 'string') return;
@@ -133,7 +134,13 @@ function updateSchedule() {
         const height = (endHour - startHour) * hourHeight;
 
         fragment.appendChild(createScheduleBlock(task, top, height));
+        renderedBlockCount += 1;
     });
+
+    if (renderedBlockCount === 0) {
+        container.replaceChildren(createScheduleEmptyState());
+        return;
+    }
 
     container.replaceChildren(fragment);
 }

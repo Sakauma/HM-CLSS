@@ -45,15 +45,62 @@ function createDomElement(tagName, options = {}) {
     return element;
 }
 
-function createHtmlFragment(html) {
+function createDisposables() {
+    const disposers = [];
+
+    return {
+        add(disposer) {
+            if (typeof disposer === 'function') {
+                disposers.push(disposer);
+            }
+            return disposer;
+        },
+        listen(target, type, listener, options) {
+            if (!target?.addEventListener || typeof listener !== 'function') {
+                return () => {};
+            }
+
+            target.addEventListener(type, listener, options);
+            const dispose = () => {
+                if (typeof target.removeEventListener === 'function') {
+                    target.removeEventListener(type, listener, options);
+                }
+            };
+            disposers.push(dispose);
+            return dispose;
+        },
+        dispose() {
+            while (disposers.length) {
+                const dispose = disposers.pop();
+                try {
+                    dispose();
+                } catch (error) {
+                    console.error('Disposer execution failed:', error);
+                }
+            }
+        }
+    };
+}
+
+function createTrustedHtml(html) {
+    return Object.freeze({
+        __hmTrustedHtml: true,
+        value: String(html ?? '')
+    });
+}
+
+function createTrustedHtmlFragment(trustedHtml) {
+    if (!trustedHtml || trustedHtml.__hmTrustedHtml !== true) {
+        throw new Error('createTrustedHtmlFragment requires createTrustedHtml() input.');
+    }
     const template = document.createElement('template');
-    template.innerHTML = String(html ?? '');
+    template.innerHTML = trustedHtml.value;
     return template.content.cloneNode(true);
 }
 
-function replaceElementChildrenWithHtml(element, html) {
+function replaceElementChildrenWithTrustedHtml(element, trustedHtml) {
     if (!element) return element;
-    element.replaceChildren(createHtmlFragment(html));
+    element.replaceChildren(createTrustedHtmlFragment(trustedHtml));
     return element;
 }
 

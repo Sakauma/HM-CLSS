@@ -1,9 +1,14 @@
 function initSyncModule() {
+    const disposables = createDisposables();
     populateSyncConfigInputs();
-    document.getElementById('save-config-btn')?.addEventListener('click', saveSyncConfig);
-    document.getElementById('push-cloud-btn')?.addEventListener('click', handlePushCloud);
-    document.getElementById('pull-cloud-btn')?.addEventListener('click', handlePullCloud);
+    disposables.listen(document.getElementById('save-config-btn'), 'click', saveSyncConfig);
+    disposables.listen(document.getElementById('push-cloud-btn'), 'click', handlePushCloud);
+    disposables.listen(document.getElementById('pull-cloud-btn'), 'click', handlePullCloud);
     autoPullOnStartup();
+    return () => {
+        clearAutoSyncTimer();
+        disposables.dispose();
+    };
 }
 
 registerAppModule({

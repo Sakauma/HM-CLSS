@@ -57,45 +57,62 @@ async function handleLeaveRecordDeletion(event) {
     }
 }
 
+function formatLeaveTimeValue(totalMinutes) {
+    const hours = Math.floor(totalMinutes / 60).toString().padStart(2, '0');
+    const minutes = (totalMinutes % 60).toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+}
+
 function fillLeaveStartFromCurrentTime(event) {
     event.preventDefault();
     const now = new Date();
-    const h = now.getHours();
-    let m = now.getMinutes();
+    const roundedMinutes = now.getMinutes() >= 30 ? 30 : 0;
+    const latestEndMinutes = 23 * 60 + 30;
+    let startMinutes = now.getHours() * 60 + roundedMinutes;
+    let endMinutes = Math.min(startMinutes + 120, latestEndMinutes);
+    let usedFallbackWindow = false;
 
-    m = m >= 30 ? 30 : 0;
+    if (endMinutes <= startMinutes) {
+        startMinutes = latestEndMinutes - 30;
+        endMinutes = latestEndMinutes;
+        usedFallbackWindow = true;
+    }
 
-    const timeStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-    document.getElementById('leave-start-time').value = timeStr;
-
-    let endH = h + 2;
-    if (endH > 23) endH = 23;
-    document.getElementById('leave-end-time').value = `${endH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+    document.getElementById('leave-start-time').value = formatLeaveTimeValue(startMinutes);
+    document.getElementById('leave-end-time').value = formatLeaveTimeValue(endMinutes);
     updateLeaveFormState();
+
+    if (usedFallbackWindow) {
+        showToast('已接近今日结束，已回退到最后一段可选时间，请手动确认。', 'info');
+    }
 }
 
 /**
  * 初始化离舰表单、时间选项和历史记录交互。
  */
 function initLeaveManagement() {
+    const disposables = createDisposables();
     document.getElementById('leave-date').value = getTodayString();
-    document.getElementById('add-leave').addEventListener('click', addLeave);
+    disposables.listen(document.getElementById('add-leave'), 'click', addLeave);
 
     populateLeaveTimeDropdowns();
 
-    document.getElementById('leave-workflow-today')?.addEventListener('click', () => setLeaveWorkflow('today'));
-    document.getElementById('leave-workflow-planned')?.addEventListener('click', () => setLeaveWorkflow('planned'));
-    document.getElementById('leave-workflow-retro')?.addEventListener('click', () => setLeaveWorkflow('retro'));
+    disposables.listen(document.getElementById('leave-workflow-today'), 'click', () => setLeaveWorkflow('today'));
+    disposables.listen(document.getElementById('leave-workflow-planned'), 'click', () => setLeaveWorkflow('planned'));
+    disposables.listen(document.getElementById('leave-workflow-retro'), 'click', () => setLeaveWorkflow('retro'));
 
-    document.getElementById('leave-type').addEventListener('change', updateLeaveFormState);
-    document.getElementById('leave-date').addEventListener('input', updateLeaveFormState);
-    document.getElementById('leave-reason').addEventListener('input', updateLeaveFormState);
-    document.getElementById('leave-correction-note').addEventListener('input', updateLeaveFormState);
-    document.getElementById('btn-current-time').addEventListener('click', fillLeaveStartFromCurrentTime);
-    document.getElementById('leave-records-table').addEventListener('click', handleLeaveRecordDeletion);
+    disposables.listen(document.getElementById('leave-type'), 'change', updateLeaveFormState);
+    disposables.listen(document.getElementById('leave-date'), 'input', updateLeaveFormState);
+    disposables.listen(document.getElementById('leave-reason'), 'input', updateLeaveFormState);
+    disposables.listen(document.getElementById('leave-correction-note'), 'input', updateLeaveFormState);
+    disposables.listen(document.getElementById('btn-current-time'), 'click', fillLeaveStartFromCurrentTime);
+    disposables.listen(document.getElementById('leave-records-table'), 'click', handleLeaveRecordDeletion);
 
     setLeaveWorkflow('today');
     updateLeaveRecordsList();
+    return () => {
+        disposables.dispose();
+    };
 }
 
 /**

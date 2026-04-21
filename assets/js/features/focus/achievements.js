@@ -7,12 +7,16 @@
  * 初始化抗干扰计数区和成就展示区。
  */
 function initPhoneResist() {
+    const disposables = createDisposables();
     const phoneResistState = runtimeSelectors.phoneResistData();
     document.getElementById('phone-resist-count').textContent = phoneResistState.totalCount;
     document.getElementById('today-phone-resist-count').textContent = phoneResistState.records[getTodayString()].count;
     updateTodayPhoneResistTimes();
     updateAchievementsList();
-    document.getElementById('add-phone-resist').addEventListener('click', addPhoneResist);
+    disposables.listen(document.getElementById('add-phone-resist'), 'click', addPhoneResist);
+    return () => {
+        disposables.dispose();
+    };
 }
 
 /**

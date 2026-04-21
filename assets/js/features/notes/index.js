@@ -32,9 +32,13 @@ function saveQuickCapture() {
 }
 
 function initNotesModule() {
-    initQuickCaptureModal();
-    initNotesRendering();
+    const disposables = createDisposables();
+    disposables.add(initQuickCaptureModal());
+    disposables.add(initNotesRendering());
     updateQuickNotesList();
+    return () => {
+        disposables.dispose();
+    };
 }
 
 registerAppModule({

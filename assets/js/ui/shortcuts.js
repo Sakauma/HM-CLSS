@@ -118,9 +118,14 @@ function handleKeyboardShortcuts(event) {
 
 function initKeyboardShortcuts() {
     if (keyboardShortcutsInitialized) return;
+    const disposables = createDisposables();
     keyboardShortcutsInitialized = true;
-    document.addEventListener('keydown', handleKeyboardShortcuts);
+    disposables.listen(document, 'keydown', handleKeyboardShortcuts);
     updateKeyboardShortcutHint();
+    return () => {
+        keyboardShortcutsInitialized = false;
+        disposables.dispose();
+    };
 }
 
 registerAppModule({

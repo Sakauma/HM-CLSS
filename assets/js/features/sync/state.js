@@ -5,10 +5,44 @@
 
 const SYNC_GIST_FILE = 'workspace_data.json';
 const AUTO_SYNC_INTERVAL_MS = 600000;
+const SYNC_TOKEN_STORAGE_KEY = 'githubToken';
+const SYNC_GIST_STORAGE_KEY = 'gistId';
+const SYNC_TIME_STORAGE_KEY = 'localLastSyncTime';
 
-let githubToken = localStorage.getItem('githubToken') || '';
-let gistId = localStorage.getItem('gistId') || '';
-let localLastSyncTime = localStorage.getItem('localLastSyncTime') || '';
+function getSyncTokenStorage() {
+    return typeof sessionStorage !== 'undefined' ? sessionStorage : localStorage;
+}
+
+function readStoredSyncToken() {
+    const tokenStorage = getSyncTokenStorage();
+    const sessionToken = tokenStorage.getItem(SYNC_TOKEN_STORAGE_KEY) || '';
+    const legacyToken = localStorage.getItem(SYNC_TOKEN_STORAGE_KEY) || '';
+
+    if (!sessionToken && legacyToken && tokenStorage !== localStorage) {
+        tokenStorage.setItem(SYNC_TOKEN_STORAGE_KEY, legacyToken);
+        localStorage.removeItem(SYNC_TOKEN_STORAGE_KEY);
+        return legacyToken;
+    }
+
+    if (sessionToken && tokenStorage !== localStorage && legacyToken) {
+        localStorage.removeItem(SYNC_TOKEN_STORAGE_KEY);
+    }
+
+    return sessionToken || legacyToken;
+}
+
+function persistStorageValue(storage, key, value) {
+    if (!storage) return;
+    if (value) {
+        storage.setItem(key, value);
+    } else {
+        storage.removeItem(key);
+    }
+}
+
+let githubToken = readStoredSyncToken();
+let gistId = localStorage.getItem(SYNC_GIST_STORAGE_KEY) || '';
+let localLastSyncTime = localStorage.getItem(SYNC_TIME_STORAGE_KEY) || '';
 let autoSyncTimer = null;
 
 function hasSyncCredentials() {
@@ -19,14 +53,28 @@ function getSyncCredentials() {
     return { githubToken, gistId };
 }
 
+function clearAutoSyncTimer() {
+    if (!autoSyncTimer) return false;
+    clearTimeout(autoSyncTimer);
+    autoSyncTimer = null;
+    return true;
+}
+
 function saveSyncCredentials(nextToken, nextGistId) {
+    if (githubToken !== nextToken || gistId !== nextGistId) {
+        clearAutoSyncTimer();
+    }
     githubToken = nextToken;
     gistId = nextGistId;
-    localStorage.setItem('githubToken', githubToken);
-    localStorage.setItem('gistId', gistId);
+
+    persistStorageValue(getSyncTokenStorage(), SYNC_TOKEN_STORAGE_KEY, githubToken);
+    if (getSyncTokenStorage() !== localStorage) {
+        localStorage.removeItem(SYNC_TOKEN_STORAGE_KEY);
+    }
+    persistStorageValue(localStorage, SYNC_GIST_STORAGE_KEY, gistId);
 }
 
 function updateLocalSyncTime(timeStr) {
     localLastSyncTime = timeStr;
-    localStorage.setItem('localLastSyncTime', timeStr);
+    persistStorageValue(localStorage, SYNC_TIME_STORAGE_KEY, timeStr);
 }

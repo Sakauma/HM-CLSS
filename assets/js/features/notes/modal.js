@@ -105,23 +105,27 @@ function handleQuickCaptureClick(event) {
 }
 
 function initQuickCaptureModal() {
-    document.addEventListener('keydown', handleQuickCaptureKeyboard);
-    document.addEventListener('click', handleQuickCaptureClick);
-
-    quickContent?.addEventListener('click', (event) => {
+    const disposables = createDisposables();
+    const stopContentClick = (event) => {
         event.stopPropagation();
-    });
-
-    quickInput?.addEventListener('input', updateQuickCaptureCount);
-    quickInput?.addEventListener('keydown', (event) => {
+    };
+    const handleQuickInputKeydown = (event) => {
         if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
             event.preventDefault();
             saveQuickCapture();
         }
-    });
+    };
 
-    document.getElementById('quick-capture-close')?.addEventListener('click', closeQuickCaptureModal);
-    document.getElementById('quick-capture-cancel')?.addEventListener('click', closeQuickCaptureModal);
-    quickSaveBtn?.addEventListener('click', saveQuickCapture);
+    disposables.listen(document, 'keydown', handleQuickCaptureKeyboard);
+    disposables.listen(document, 'click', handleQuickCaptureClick);
+    disposables.listen(quickContent, 'click', stopContentClick);
+    disposables.listen(quickInput, 'input', updateQuickCaptureCount);
+    disposables.listen(quickInput, 'keydown', handleQuickInputKeydown);
+    disposables.listen(document.getElementById('quick-capture-close'), 'click', closeQuickCaptureModal);
+    disposables.listen(document.getElementById('quick-capture-cancel'), 'click', closeQuickCaptureModal);
+    disposables.listen(quickSaveBtn, 'click', saveQuickCapture);
     updateQuickCaptureCount();
+    return () => {
+        disposables.dispose();
+    };
 }

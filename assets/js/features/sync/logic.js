@@ -103,7 +103,9 @@ async function handlePushCloud() {
         showToast('✅ 成功同步至云端！', 'success');
     } catch (error) {
         const message = String(error?.message || '');
-        if (message.startsWith('fetch_failed_') || message.startsWith('push_failed_')) {
+        if (message === 'fetch_invalid_payload') {
+            showToast('❌ 云端数据文件内容损坏，请先修复后再同步。', 'error');
+        } else if (message.startsWith('fetch_failed_') || message.startsWith('push_failed_')) {
             showToast('❌ 上传失败，请检查配置信息。', 'error');
         } else {
             showToast(`🌐 网络请求失败：${error.message}`, 'error');
@@ -146,7 +148,9 @@ async function handlePullCloud() {
         }
     } catch (error) {
         const message = String(error?.message || '');
-        if (message.startsWith('fetch_failed_')) {
+        if (message === 'fetch_invalid_payload') {
+            showToast('❌ 云端数据文件内容损坏，当前无法拉取。', 'error');
+        } else if (message.startsWith('fetch_failed_')) {
             showToast('❌ 拉取失败，请检查配置。', 'error');
         } else {
             showToast(`🌐 网络请求失败：${error.message}`, 'error');
@@ -186,6 +190,11 @@ async function autoPullOnStartup() {
             showToast('已自动为您同步云端最新数据 ☁️', 'success');
         }
     } catch (error) {
+        const message = String(error?.message || '');
+        if (message === 'fetch_invalid_payload') {
+            console.error('☁️ [Auto-Sync] 云端数据文件内容损坏，已跳过自动拉取。');
+            return;
+        }
         console.error('☁️ [Auto-Sync] 启动检查失败:', error);
     }
 }

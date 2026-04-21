@@ -162,3 +162,106 @@ test('checkin and dashboard status presentation map internal states to user copy
     assert.equal(excusedPresentation.text, '已离舰');
     assert.match(excusedPresentation.className, /text-blue-500/);
 });
+
+test('dom disposables remove registered listeners during cleanup', () => {
+    const target = {
+        listeners: new Map(),
+        addEventListener(type, listener) {
+            this.listeners.set(type, listener);
+        },
+        removeEventListener(type, listener) {
+            if (this.listeners.get(type) === listener) {
+                this.listeners.delete(type);
+            }
+        }
+    };
+    const context = createBaseContext({
+        document: {
+            createElement() {
+                return {
+                    innerHTML: '',
+                    content: {
+                        cloneNode() {
+                            return {};
+                        }
+                    }
+                };
+            }
+        }
+    });
+
+    loadScript(context, 'assets/js/runtime/dom-utils.js');
+
+    const disposables = context.createDisposables();
+    const handler = () => {};
+    disposables.listen(target, 'click', handler);
+    assert.equal(typeof target.listeners.get('click'), 'function');
+
+    disposables.dispose();
+    assert.equal(target.listeners.has('click'), false);
+});
+
+test('trusted html helpers only accept wrapped content', () => {
+    const context = createBaseContext({
+        document: {
+            createElement() {
+                const template = {
+                    innerHTML: '',
+                    content: {
+                        cloneNode() {
+                            return { trusted: true };
+                        }
+                    }
+                };
+                return template;
+            }
+        }
+    });
+
+    loadScript(context, 'assets/js/runtime/dom-utils.js');
+
+    assert.throws(() => context.createTrustedHtmlFragment('<b>unsafe</b>'), /createTrustedHtml/);
+    const trustedHtml = context.createTrustedHtml('<b>safe</b>');
+    const fragment = context.createTrustedHtmlFragment(trustedHtml);
+    assert.equal(fragment.trusted, true);
+});
+
+test('leave current-time shortcut falls back to the final valid slot near midnight', () => {
+    const elements = {
+        'leave-start-time': { value: '' },
+        'leave-end-time': { value: '' }
+    };
+    const toasts = [];
+    const MockDate = class extends Date {
+        constructor(...args) {
+            super(...(args.length ? args : ['2026-04-21T23:47:00']));
+        }
+        static now() {
+            return new Date('2026-04-21T23:47:00').getTime();
+        }
+    };
+    const context = createBaseContext({
+        Date: MockDate,
+        document: {
+            getElementById(id) {
+                return elements[id] || null;
+            }
+        },
+        showToast(message, tone) {
+            toasts.push({ message, tone });
+        },
+        updateLeaveFormState() {},
+        registerAppModule() {}
+    });
+
+    loadScript(context, 'assets/js/features/leave/index.js');
+
+    context.fillLeaveStartFromCurrentTime({ preventDefault() {} });
+
+    assert.equal(elements['leave-start-time'].value, '23:00');
+    assert.equal(elements['leave-end-time'].value, '23:30');
+    assert.deepEqual(toasts.at(-1), {
+        message: '已接近今日结束，已回退到最后一段可选时间，请手动确认。',
+        tone: 'info'
+    });
+});
