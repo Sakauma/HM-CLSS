@@ -237,6 +237,57 @@ test('sync state clears pending auto-sync timers on demand and on credential cha
     assert.deepEqual(clearedTimers, [scheduledTimers[0], scheduledTimers[1]]);
 });
 
+test('startup auto pull stops applying cloud data after module cleanup deactivates the run', async () => {
+    let resolveFetch = null;
+    const appliedPayloads = [];
+    const toastEvents = [];
+    const context = createBaseContext({
+        localStorage: createStorageMock({
+            gistId: 'gist_test'
+        }),
+        sessionStorage: createStorageMock({
+            githubToken: 'ghp_test'
+        }),
+        fetchCloudWorkspaceData() {
+            return new Promise((resolve) => {
+                resolveFetch = resolve;
+            });
+        },
+        applyImportedData(payload) {
+            appliedPayloads.push(payload);
+        },
+        showToast(message, tone) {
+            toastEvents.push({ message, tone });
+        },
+        runtimeSelectors: {
+            currentTask() {
+                return null;
+            }
+        },
+        countTotalTaskEntries() { return 0; },
+        countQuickNoteEntries() { return 0; },
+        ensureDayRecord(day) { return day; },
+        hasAnyCheckinRecord() { return false; },
+        checkinData: {},
+        phoneResistData: { totalCount: 0, records: {} },
+        leaveData: [],
+        achievements: [],
+        tavernData: []
+    });
+
+    loadScript(context, 'assets/js/features/sync/state.js');
+    loadScript(context, 'assets/js/features/sync/logic.js');
+
+    const runState = { active: true };
+    const pendingPull = context.autoPullOnStartup(runState);
+    runState.active = false;
+    resolveFetch({ lastSyncTime: '2026-04-21T10:00:00.000Z' });
+    await pendingPull;
+
+    assert.deepEqual(appliedPayloads, []);
+    assert.deepEqual(toastEvents, []);
+});
+
 test('sync controller covers conflict confirmation and failure branches', async () => {
     const toastEvents = [];
     let confirmOptions = null;

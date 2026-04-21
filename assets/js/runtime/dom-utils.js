@@ -82,6 +82,26 @@ function createDisposables() {
     };
 }
 
+const bodyScrollLockTokens = new Set();
+
+function syncBodyScrollLockState() {
+    if (!document?.body?.classList) return;
+    document.body.classList.toggle('overflow-hidden', bodyScrollLockTokens.size > 0);
+}
+
+function acquireBodyScrollLock(token = Symbol('body-scroll-lock')) {
+    bodyScrollLockTokens.add(token);
+    syncBodyScrollLockState();
+    return token;
+}
+
+function releaseBodyScrollLock(token) {
+    if (!token) return false;
+    const released = bodyScrollLockTokens.delete(token);
+    syncBodyScrollLockState();
+    return released;
+}
+
 function createTrustedHtml(html) {
     return Object.freeze({
         __hmTrustedHtml: true,

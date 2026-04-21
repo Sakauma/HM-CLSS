@@ -10,6 +10,7 @@ const quickTagSelect = document.getElementById('quick-capture-tag');
 const quickCount = document.getElementById('quick-capture-count');
 const quickSaveBtn = document.getElementById('quick-capture-save');
 let lastQuickCaptureTrigger = null;
+let quickCaptureScrollLockToken = null;
 
 function getQuickCaptureFocusables() {
     if (!quickModal) return [];
@@ -39,22 +40,29 @@ function openQuickCaptureModal(triggerSource = document.activeElement) {
     quickModal.setAttribute('aria-hidden', 'false');
     quickContent?.classList.remove('scale-95');
     quickContent?.classList.add('scale-100');
-    document.body.classList.add('overflow-hidden');
+    if (!quickCaptureScrollLockToken) {
+        quickCaptureScrollLockToken = acquireBodyScrollLock(Symbol('quick-capture'));
+    }
     updateQuickCaptureCount();
     setTimeout(() => quickInput.focus(), 50);
     lucide.createIcons();
 }
 
-function closeQuickCaptureModal() {
+function closeQuickCaptureModal(options = {}) {
     if (!quickModal) return;
+    const { restoreFocus = true } = options;
 
     quickContent?.classList.remove('scale-100');
     quickContent?.classList.add('scale-95');
     quickModal.classList.add('hidden');
     quickModal.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('overflow-hidden');
-    if (lastQuickCaptureTrigger && typeof lastQuickCaptureTrigger.focus === 'function') {
+    releaseBodyScrollLock(quickCaptureScrollLockToken);
+    quickCaptureScrollLockToken = null;
+    if (restoreFocus && lastQuickCaptureTrigger && typeof lastQuickCaptureTrigger.focus === 'function') {
         lastQuickCaptureTrigger.focus();
+    }
+    if (!restoreFocus) {
+        lastQuickCaptureTrigger = null;
     }
 }
 
@@ -126,6 +134,7 @@ function initQuickCaptureModal() {
     disposables.listen(quickSaveBtn, 'click', saveQuickCapture);
     updateQuickCaptureCount();
     return () => {
+        closeQuickCaptureModal({ restoreFocus: false });
         disposables.dispose();
     };
 }

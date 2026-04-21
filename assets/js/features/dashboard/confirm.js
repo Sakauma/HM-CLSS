@@ -7,6 +7,7 @@ let confirmDialogResolver = null;
 let confirmDialogLastTrigger = null;
 let confirmDialogBindingsReady = false;
 let confirmDialogCleanup = null;
+let confirmDialogScrollLockToken = null;
 
 function getConfirmDialogElements() {
     return {
@@ -27,7 +28,8 @@ function closeConfirmDialog(result) {
     elements.modal.classList.add('hidden');
     elements.modal.classList.remove('flex');
     elements.modal.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('overflow-hidden');
+    releaseBodyScrollLock(confirmDialogScrollLockToken);
+    confirmDialogScrollLockToken = null;
 
     if (confirmDialogLastTrigger && typeof confirmDialogLastTrigger.focus === 'function') {
         confirmDialogLastTrigger.focus();
@@ -126,7 +128,9 @@ function showConfirmDialog(options = {}) {
     elements.modal.classList.remove('hidden');
     elements.modal.classList.add('flex');
     elements.modal.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('overflow-hidden');
+    if (!confirmDialogScrollLockToken) {
+        confirmDialogScrollLockToken = acquireBodyScrollLock(Symbol('confirm-dialog'));
+    }
 
     return new Promise((resolve) => {
         confirmDialogResolver = resolve;

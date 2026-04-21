@@ -180,16 +180,18 @@ function triggerAutoSync() {
     }, AUTO_SYNC_INTERVAL_MS);
 }
 
-async function autoPullOnStartup() {
+async function autoPullOnStartup(runState = null) {
     if (!hasSyncCredentials()) return;
 
     try {
         const cloudData = await fetchCloudWorkspaceData();
+        if (runState && runState.active === false) return;
         if (cloudData && shouldAutoApplyCloudData(cloudData)) {
             applyImportedData(cloudData);
             showToast('已自动为您同步云端最新数据 ☁️', 'success');
         }
     } catch (error) {
+        if (runState && runState.active === false) return;
         const message = String(error?.message || '');
         if (message === 'fetch_invalid_payload') {
             console.error('☁️ [Auto-Sync] 云端数据文件内容损坏，已跳过自动拉取。');

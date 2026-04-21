@@ -7,6 +7,74 @@ const {
     createCheckinDay
 } = require('./helpers');
 
+function createClassList(initialValues = []) {
+    const values = new Set(initialValues);
+    return {
+        add(...tokens) {
+            tokens.forEach((token) => values.add(token));
+        },
+        remove(...tokens) {
+            tokens.forEach((token) => values.delete(token));
+        },
+        toggle(token, force) {
+            if (force === true) {
+                values.add(token);
+                return true;
+            }
+            if (force === false) {
+                values.delete(token);
+                return false;
+            }
+            if (values.has(token)) {
+                values.delete(token);
+                return false;
+            }
+            values.add(token);
+            return true;
+        },
+        contains(token) {
+            return values.has(token);
+        }
+    };
+}
+
+function createMockElement(MockHTMLElement, options = {}) {
+    const {
+        classNames = [],
+        value = '',
+        textContent = '',
+        querySelectorAll = () => []
+    } = options;
+
+    const element = new MockHTMLElement();
+    element.value = value;
+    element.textContent = textContent;
+    element.disabled = false;
+    element.attributes = {};
+    element.listeners = new Map();
+    element.classList = createClassList(classNames);
+    element.addEventListener = function addEventListener(type, listener) {
+        this.listeners.set(type, listener);
+    };
+    element.removeEventListener = function removeEventListener(type, listener) {
+        if (this.listeners.get(type) === listener) {
+            this.listeners.delete(type);
+        }
+    };
+    element.setAttribute = function setAttribute(name, nextValue) {
+        this.attributes[name] = String(nextValue);
+    };
+    element.getAttribute = function getAttribute(name) {
+        return this.attributes[name] ?? null;
+    };
+    element.focus = function focus() {
+        this.focused = true;
+    };
+    element.closest = () => null;
+    element.querySelectorAll = querySelectorAll;
+    return element;
+}
+
 test('runtime store subscriptions receive updates and can unsubscribe', () => {
     const context = createBaseContext();
     loadScript(context, 'assets/js/runtime/store.js');
@@ -224,6 +292,105 @@ test('trusted html helpers only accept wrapped content', () => {
     const trustedHtml = context.createTrustedHtml('<b>safe</b>');
     const fragment = context.createTrustedHtmlFragment(trustedHtml);
     assert.equal(fragment.trusted, true);
+});
+
+test('body scroll lock stays active until all overlay tokens are released', () => {
+    const bodyClassList = createClassList();
+    const context = createBaseContext({
+        document: {
+            body: {
+                classList: bodyClassList
+            }
+        }
+    });
+
+    loadScript(context, 'assets/js/runtime/dom-utils.js');
+
+    const firstLock = context.acquireBodyScrollLock(Symbol('first'));
+    const secondLock = context.acquireBodyScrollLock(Symbol('second'));
+    assert.equal(bodyClassList.contains('overflow-hidden'), true);
+
+    context.releaseBodyScrollLock(firstLock);
+    assert.equal(bodyClassList.contains('overflow-hidden'), true);
+
+    context.releaseBodyScrollLock(secondLock);
+    assert.equal(bodyClassList.contains('overflow-hidden'), false);
+});
+
+test('quick capture modal cleanup closes the overlay and releases body scroll lock', () => {
+    class MockHTMLElement {}
+
+    const bodyClassList = createClassList();
+    const quickModal = createMockElement(MockHTMLElement, { classNames: ['hidden'] });
+    const quickContent = createMockElement(MockHTMLElement, { classNames: ['scale-95'] });
+    const quickInput = createMockElement(MockHTMLElement, { value: '记一条' });
+    const quickTag = createMockElement(MockHTMLElement, { value: 'ops' });
+    const quickCount = createMockElement(MockHTMLElement);
+    const quickSave = createMockElement(MockHTMLElement);
+    const quickClose = createMockElement(MockHTMLElement);
+    const quickCancel = createMockElement(MockHTMLElement);
+    const elements = {
+        'quick-capture-modal': quickModal,
+        'quick-capture-content': quickContent,
+        'quick-capture-input': quickInput,
+        'quick-capture-tag': quickTag,
+        'quick-capture-count': quickCount,
+        'quick-capture-save': quickSave,
+        'quick-capture-close': quickClose,
+        'quick-capture-cancel': quickCancel
+    };
+
+    const documentListeners = new Map();
+    const context = createBaseContext({
+        HTMLElement: MockHTMLElement,
+        document: {
+            body: {
+                classList: bodyClassList
+            },
+            activeElement: null,
+            createElement() {
+                return {
+                    innerHTML: '',
+                    content: {
+                        cloneNode() {
+                            return {};
+                        }
+                    }
+                };
+            },
+            getElementById(id) {
+                return elements[id] || null;
+            },
+            addEventListener(type, listener) {
+                documentListeners.set(type, listener);
+            },
+            removeEventListener(type, listener) {
+                if (documentListeners.get(type) === listener) {
+                    documentListeners.delete(type);
+                }
+            }
+        },
+        lucide: { createIcons() {} },
+        saveQuickCapture() {},
+        setTimeout(callback) {
+            callback();
+            return 1;
+        }
+    });
+
+    loadScript(context, 'assets/js/runtime/dom-utils.js');
+    loadScript(context, 'assets/js/features/notes/modal.js');
+
+    const disposeModal = context.initQuickCaptureModal();
+    context.openQuickCaptureModal();
+    assert.equal(bodyClassList.contains('overflow-hidden'), true);
+    assert.equal(quickModal.classList.contains('hidden'), false);
+    assert.equal(quickModal.getAttribute('aria-hidden'), 'false');
+
+    disposeModal();
+    assert.equal(bodyClassList.contains('overflow-hidden'), false);
+    assert.equal(quickModal.classList.contains('hidden'), true);
+    assert.equal(quickModal.getAttribute('aria-hidden'), 'true');
 });
 
 test('leave current-time shortcut falls back to the final valid slot near midnight', () => {
