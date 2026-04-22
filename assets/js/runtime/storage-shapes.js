@@ -97,3 +97,21 @@ function normalizeAmbientPreferences(preferences) {
         easterEggs: normalized.easterEggs !== false
     };
 }
+
+function normalizeCheckinPreferences(preferences) {
+    const defaultPreferences = typeof DEFAULT_CHECKIN_PREFERENCES === 'object' && DEFAULT_CHECKIN_PREFERENCES
+        ? DEFAULT_CHECKIN_PREFERENCES
+        : { lateGraceMins: 30, earlyGraceMins: 30 };
+    const normalized = preferences && typeof preferences === 'object' ? preferences : {};
+    const lateGraceMins = Number(normalized.lateGraceMins);
+    const earlyGraceMins = Number(normalized.earlyGraceMins);
+
+    return {
+        lateGraceMins: Number.isFinite(lateGraceMins)
+            ? Math.min(120, Math.max(0, Math.round(lateGraceMins)))
+            : defaultPreferences.lateGraceMins,
+        earlyGraceMins: Number.isFinite(earlyGraceMins)
+            ? Math.min(120, Math.max(0, Math.round(earlyGraceMins)))
+            : defaultPreferences.earlyGraceMins
+    };
+}

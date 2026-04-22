@@ -127,28 +127,40 @@ test('checkin rules evaluate statuses and write retro records', () => {
             task: { minDurationMins: 30 }
         },
         checkinData: {},
+        normalizeCheckinPreferences(preferences) {
+            return {
+                lateGraceMins: Number.isFinite(Number(preferences?.lateGraceMins)) ? Number(preferences.lateGraceMins) : 30,
+                earlyGraceMins: Number.isFinite(Number(preferences?.earlyGraceMins)) ? Number(preferences.earlyGraceMins) : 30
+            };
+        },
         createEmptyDayRecord: () => createCheckinDay(),
         ensureDayRecord: (day) => createCheckinDay(day),
         formatLocalDate: (date) => date.toISOString().slice(0, 10)
     });
 
     loadScript(context, 'assets/js/runtime/store.js');
+    context.runtimeActions.setCheckinPreferences({ lateGraceMins: 30, earlyGraceMins: 30 });
     loadScript(context, 'assets/js/features/checkin/rules.js');
 
     assert.equal(context.getNormalizedCheckInStatus(true), 'success');
     assert.equal(context.getNormalizedCheckInStatus(false), 'warning');
     assert.equal(context.timeStrToMins('08:30'), 510);
 
-    const normalResult = context.evaluateShiftRecord('2026-04-19', 'morning', '09:20', '10:10');
+    const normalResult = context.evaluateShiftRecord('2026-04-19', 'morning', '09:20', '11:40');
     assert.equal(normalResult.valid, true);
-    assert.equal(normalResult.inStatus, 'warning');
+    assert.equal(normalResult.inStatus, 'success');
     assert.equal(normalResult.outStatus, 'success');
+
+    const warningResult = context.evaluateShiftRecord('2026-04-19', 'morning', '09:35', '11:20');
+    assert.equal(warningResult.valid, true);
+    assert.equal(warningResult.inStatus, 'warning');
+    assert.equal(warningResult.outStatus, 'warning');
 
     context.checkinData['2026-04-18'] = createCheckinDay({
         partialLeaves: [{ startTime: '08:45', endTime: '12:30' }]
     });
     const excusedResult = context.evaluateShiftRecord('2026-04-18', 'morning', '09:10', '11:30');
-    assert.equal(excusedResult.inStatus, 'excused');
+    assert.equal(excusedResult.inStatus, 'success');
     assert.equal(excusedResult.outStatus, 'excused');
 
     context.applyShiftRecord('2026-04-17', 'afternoon', {
@@ -183,6 +195,9 @@ test('checkin and dashboard status presentation map internal states to user copy
             }
         },
         checkinData: {},
+        normalizeCheckinPreferences() {
+            return { lateGraceMins: 30, earlyGraceMins: 30 };
+        },
         createEmptyDayRecord: () => createCheckinDay(),
         ensureDayRecord: (day) => createCheckinDay(day),
         formatLocalDate: (date) => date.toISOString().slice(0, 10)

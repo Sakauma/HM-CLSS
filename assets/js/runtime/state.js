@@ -5,6 +5,11 @@
 
 const CURRENT_TASK_STORAGE_KEY = 'currentTask';
 const AMBIENT_PREFS_STORAGE_KEY = 'hmclss_ambient_preferences';
+const CHECKIN_PREFS_STORAGE_KEY = 'hmclss_checkin_preferences';
+const DEFAULT_CHECKIN_PREFERENCES = Object.freeze({
+    lateGraceMins: 30,
+    earlyGraceMins: 30
+});
 
 const tagMap = {
     paper: '文献阅读',

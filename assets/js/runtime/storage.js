@@ -24,6 +24,7 @@ function initData() {
     runtimeActions.set('achievements', payload.achievements);
     runtimeActions.set('tavernData', payload.tavernData);
     runtimeActions.setAmbientPreferences(payload.ambientPreferences);
+    runtimeActions.setCheckinPreferences(payload.checkinPreferences);
     runtimeActions.setCurrentTask(payload.currentTask);
 
     if (!isValidCurrentTaskRecord(runtimeSelectors.currentTask())) {
@@ -65,6 +66,8 @@ function normalizeWorkspaceRuntimeState(options = {}) {
         setRuntimeValue('ambientPreferences', normalizeAmbientPreferences(ambientPreferences));
     }
 
+    setRuntimeValue('checkinPreferences', normalizeCheckinPreferences(checkinPreferences));
+
     if (!ensureTodayDefaults) return;
 
     const today = getTodayString();
@@ -84,6 +87,7 @@ function saveData(preventAutoSync = false) {
     localStorage.setItem('quickNotesData', JSON.stringify(quickNotesData));
     localStorage.setItem('tavernData', JSON.stringify(tavernData));
     localStorage.setItem(AMBIENT_PREFS_STORAGE_KEY, JSON.stringify(normalizeAmbientPreferences(ambientPreferences)));
+    localStorage.setItem(CHECKIN_PREFS_STORAGE_KEY, JSON.stringify(normalizeCheckinPreferences(checkinPreferences)));
 
     if (typeof refreshStatisticsView === 'function') {
         refreshStatisticsView();

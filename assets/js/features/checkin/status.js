@@ -38,7 +38,7 @@ function getCheckoutStatusPresentation(status, hasRecord) {
         return { text: '合格', className: 'py-3 px-4 font-medium text-success' };
     }
     if (status === 'warning') {
-        return { text: '超时', className: 'py-3 px-4 font-medium text-warning' };
+        return { text: '警告', className: 'py-3 px-4 font-medium text-warning' };
     }
 
     return { text: '异常', className: 'py-3 px-4 font-medium text-danger' };

@@ -5,6 +5,17 @@
 
 const CHECKIN_PERIODS = ['morning', 'afternoon', 'evening'];
 
+function getCheckinPreferenceSnapshot() {
+    if (typeof normalizeCheckinPreferences === 'function') {
+        return normalizeCheckinPreferences(runtimeSelectors?.checkinPreferences?.());
+    }
+
+    return {
+        lateGraceMins: 30,
+        earlyGraceMins: 30
+    };
+}
+
 /**
  * 兼容旧版本使用布尔值表示打卡状态的情况，统一转换成字符串枚举。
  * @param {boolean|string|null} status
@@ -60,7 +71,8 @@ function timeStrToMins(timeStr) {
  */
 function getCheckInStatusForTime(dayData, period, currentMins) {
     const cfg = CONFIG.schedule[period];
-    const thresholdMins = cfg.okCheckInBefore * 60;
+    const preferences = getCheckinPreferenceSnapshot();
+    const thresholdMins = (cfg.okCheckInBefore * 60) + preferences.lateGraceMins;
     let inStatus = currentMins <= thresholdMins ? 'success' : 'warning';
 
     if (inStatus === 'warning' && Array.isArray(dayData.partialLeaves)) {
@@ -91,7 +103,9 @@ function getCheckInStatusForTime(dayData, period, currentMins) {
  */
 function getCheckOutStatusForTimes(dayData, period, inMins, outMins) {
     const cfg = CONFIG.schedule[period];
+    const preferences = getCheckinPreferenceSnapshot();
     const thresholdMins = cfg.okCheckOutBefore * 60;
+    const earlyThresholdMins = Math.max(0, thresholdMins - preferences.earlyGraceMins);
     const durationMins = outMins - inMins;
 
     let isExcusedEarlyLeave = false;
@@ -109,6 +123,7 @@ function getCheckOutStatusForTimes(dayData, period, inMins, outMins) {
 
     if (isExcusedEarlyLeave) return 'excused';
     if (durationMins < CONFIG.task.minDurationMins) return 'danger';
+    if (outMins < earlyThresholdMins) return 'warning';
     return outMins <= thresholdMins ? 'success' : 'warning';
 }
 
@@ -151,7 +166,7 @@ function summarizeShiftStatuses(inStatus, outStatus) {
     }
 
     if (inStatus === 'warning' || outStatus === 'warning') {
-        return { text: '警告', tone: 'warning', detail: '会保留记录，但会按警告计入今日与统计口径。' };
+        return { text: '警告', tone: 'warning', detail: '会保留记录，但会按警告计入今日与统计口径。超出弹性窗口的迟到、早退或晚退都会落到这里。' };
     }
 
     if (inStatus === 'excused' || outStatus === 'excused') {

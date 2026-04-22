@@ -6,6 +6,75 @@
 /**
  * 初始化三段班次的按钮监听、今日表格和补打卡面板。
  */
+function getCheckinPreferenceFormElements() {
+    return {
+        lateInput: document.getElementById('checkin-late-grace-input'),
+        earlyInput: document.getElementById('checkin-early-grace-input'),
+        badge: document.getElementById('checkin-flex-badge'),
+        pill: document.getElementById('checkin-flex-policy-pill'),
+        copy: document.getElementById('checkin-flex-policy-copy')
+    };
+}
+
+function readDraftCheckinPreferences() {
+    const { lateInput, earlyInput } = getCheckinPreferenceFormElements();
+    return normalizeCheckinPreferences({
+        lateGraceMins: lateInput?.value,
+        earlyGraceMins: earlyInput?.value
+    });
+}
+
+function renderCheckinPreferenceSummary(preferences) {
+    const { badge, pill, copy } = getCheckinPreferenceFormElements();
+    if (badge) {
+        badge.textContent = `${preferences.lateGraceMins} / ${preferences.earlyGraceMins}`;
+    }
+    if (pill) {
+        pill.textContent = preferences.lateGraceMins === 0 && preferences.earlyGraceMins === 0
+            ? '严格判定'
+            : '弹性已启用';
+        pill.className = preferences.lateGraceMins === 0 && preferences.earlyGraceMins === 0
+            ? 'semantic-tag semantic-tag-neutral semantic-tag-tight'
+            : 'semantic-tag semantic-tag-primary semantic-tag-tight';
+    }
+    if (copy) {
+        copy.textContent = `当前按上班延后 ${preferences.lateGraceMins} 分钟、下班提前 ${preferences.earlyGraceMins} 分钟的弹性窗口判定。`;
+    }
+}
+
+function renderCheckinPreferenceForm(preferences = normalizeCheckinPreferences(runtimeSelectors.checkinPreferences())) {
+    const { lateInput, earlyInput } = getCheckinPreferenceFormElements();
+    if (lateInput) lateInput.value = String(preferences.lateGraceMins);
+    if (earlyInput) earlyInput.value = String(preferences.earlyGraceMins);
+    renderCheckinPreferenceSummary(preferences);
+}
+
+function updateCheckinPreferenceDraftPreview() {
+    const { lateInput, earlyInput } = getCheckinPreferenceFormElements();
+    if (!lateInput || !earlyInput) return;
+    renderCheckinPreferenceSummary(readDraftCheckinPreferences());
+}
+
+function saveCheckinPreferences() {
+    const preferences = readDraftCheckinPreferences();
+    runtimeActions.setCheckinPreferences(preferences);
+    renderCheckinPreferenceForm(preferences);
+    saveData(true);
+    updateRetroCheckinPanel();
+    showToast(`弹性打卡已更新：上班 +${preferences.lateGraceMins} 分钟，下班 -${preferences.earlyGraceMins} 分钟`, 'success');
+}
+
+function resetCheckinPreferences() {
+    const defaults = normalizeCheckinPreferences(
+        typeof DEFAULT_CHECKIN_PREFERENCES === 'object' ? DEFAULT_CHECKIN_PREFERENCES : null
+    );
+    runtimeActions.setCheckinPreferences(defaults);
+    renderCheckinPreferenceForm(defaults);
+    saveData(true);
+    updateRetroCheckinPanel();
+    showToast('已恢复默认弹性窗口。', 'info');
+}
+
 function initCheckin() {
     const disposables = createDisposables();
     CHECKIN_PERIODS.forEach((period) => {
@@ -19,8 +88,13 @@ function initCheckin() {
     disposables.listen(document.getElementById('retro-checkin-end'), 'input', updateRetroCheckinPanel);
     disposables.listen(document.getElementById('retro-checkin-reason'), 'input', updateRetroCheckinPanel);
     disposables.listen(document.getElementById('retro-checkin-submit'), 'click', submitRetroCheckin);
+    disposables.listen(document.getElementById('checkin-late-grace-input'), 'input', updateCheckinPreferenceDraftPreview);
+    disposables.listen(document.getElementById('checkin-early-grace-input'), 'input', updateCheckinPreferenceDraftPreview);
+    disposables.listen(document.getElementById('checkin-flex-save-btn'), 'click', saveCheckinPreferences);
+    disposables.listen(document.getElementById('checkin-flex-reset-btn'), 'click', resetCheckinPreferences);
 
     refreshCheckinViews();
+    renderCheckinPreferenceForm();
     return () => {
         disposables.dispose();
     };

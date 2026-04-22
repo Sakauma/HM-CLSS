@@ -35,9 +35,11 @@ function buildWorkspaceDatasetSnapshot() {
 function buildWorkspaceStateSnapshot() {
     const activeTask = runtimeSelectors.currentTask();
     const preferences = runtimeSelectors.ambientPreferences();
+    const checkinPreferences = runtimeSelectors.checkinPreferences();
     return {
         currentTask: activeTask ? cloneWorkspaceValue(activeTask) : null,
         ambientPreferences: cloneWorkspaceValue(normalizeAmbientPreferences(preferences)),
+        checkinPreferences: cloneWorkspaceValue(normalizeCheckinPreferences(checkinPreferences)),
         lastSyncTime: typeof localLastSyncTime === 'string' && localLastSyncTime ? localLastSyncTime : null
     };
 }

@@ -119,7 +119,8 @@ function migrateStorageSchemaV1(payload) {
         achievements: Array.isArray(payload.achievements) ? payload.achievements.filter((entry) => typeof entry === 'string') : [],
         tavernData: Array.isArray(payload.tavernData) ? payload.tavernData : [],
         currentTask: isValidCurrentTaskRecord(payload.currentTask) ? payload.currentTask : null,
-        ambientPreferences: normalizeAmbientPreferences(payload.ambientPreferences)
+        ambientPreferences: normalizeAmbientPreferences(payload.ambientPreferences),
+        checkinPreferences: normalizeCheckinPreferences(payload.checkinPreferences)
     };
 }
 

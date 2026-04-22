@@ -38,6 +38,7 @@ function readStoredWorkspacePayload() {
         quickNotesData: safeParseStoredJson(localStorage.getItem('quickNotesData'), {}),
         tavernData: safeParseStoredJson(localStorage.getItem('tavernData'), []),
         currentTask: safeParseStoredJson(localStorage.getItem(CURRENT_TASK_STORAGE_KEY), null),
-        ambientPreferences: safeParseStoredJson(localStorage.getItem(AMBIENT_PREFS_STORAGE_KEY), null)
+        ambientPreferences: safeParseStoredJson(localStorage.getItem(AMBIENT_PREFS_STORAGE_KEY), null),
+        checkinPreferences: safeParseStoredJson(localStorage.getItem(CHECKIN_PREFS_STORAGE_KEY), null)
     };
 }

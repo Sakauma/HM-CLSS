@@ -155,7 +155,12 @@ test('export data keeps empty monthly fixtures stable', () => {
         noteTagConfig: {
             idea: { label: '灵感' }
         },
-        buildWorkspaceStateSnapshot: () => ({ currentTask: null, ambientPreferences: { enabled: true }, lastSyncTime: null }),
+        buildWorkspaceStateSnapshot: () => ({
+            currentTask: null,
+            ambientPreferences: { enabled: true },
+            checkinPreferences: { lateGraceMins: 30, earlyGraceMins: 30 },
+            lastSyncTime: null
+        }),
         buildWorkspaceDatasetSnapshot: () => ({ snapshot: true }),
         countCheckinDays: () => 0,
         countQuickNoteEntries: () => 0,

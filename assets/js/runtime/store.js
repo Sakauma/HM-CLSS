@@ -16,6 +16,7 @@ const runtimeState = {
     tavernData: [],
     currentDrinkInfo: null,
     ambientPreferences: null,
+    checkinPreferences: null,
     selectedEmotions: []
 };
 
@@ -159,6 +160,7 @@ const runtimeSelectors = Object.freeze({
     currentTask: () => selectRuntimeValue('currentTask'),
     taskTimer: () => selectRuntimeValue('taskTimer'),
     ambientPreferences: () => selectRuntimeValue('ambientPreferences'),
+    checkinPreferences: () => selectRuntimeValue('checkinPreferences'),
     currentDrinkInfo: () => selectRuntimeValue('currentDrinkInfo'),
     selectedEmotions: () => selectRuntimeValue('selectedEmotions')
 });
@@ -238,6 +240,9 @@ const runtimeActions = Object.freeze({
     },
     setAmbientPreferences(preferences) {
         return setRuntimeValue('ambientPreferences', preferences);
+    },
+    setCheckinPreferences(preferences) {
+        return setRuntimeValue('checkinPreferences', preferences);
     },
     setCurrentDrinkInfo(drinkInfo) {
         return setRuntimeValue('currentDrinkInfo', drinkInfo);

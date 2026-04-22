@@ -16,7 +16,12 @@ test('export data builds stable monthly snapshot summaries', () => {
             idea: { label: '灵感' },
             todo: { label: '待办' }
         },
-        buildWorkspaceStateSnapshot: () => ({ currentTask: null, ambientPreferences: { enabled: true }, lastSyncTime: null }),
+        buildWorkspaceStateSnapshot: () => ({
+            currentTask: null,
+            ambientPreferences: { enabled: true },
+            checkinPreferences: { lateGraceMins: 30, earlyGraceMins: 30 },
+            lastSyncTime: null
+        }),
         buildWorkspaceDatasetSnapshot: () => ({ snapshot: true }),
         countCheckinDays: () => 12,
         countQuickNoteEntries: () => 3,
@@ -217,7 +222,8 @@ test('storage migration normalizes legacy payloads and saveData persists schema 
         }),
         tavernData: JSON.stringify([{ name: 'Drift Glass' }]),
         currentTask: JSON.stringify({ name: 'Broken Task' }),
-        ambientPrefs: JSON.stringify({ enabled: false, easterEggs: false })
+        ambientPrefs: JSON.stringify({ enabled: false, easterEggs: false }),
+        checkinPrefs: JSON.stringify({ lateGraceMins: 45, earlyGraceMins: 20 })
     });
 
     let refreshStatisticsCalls = 0;
@@ -229,6 +235,7 @@ test('storage migration normalizes legacy payloads and saveData persists schema 
         localStorage,
         CURRENT_TASK_STORAGE_KEY: 'currentTask',
         AMBIENT_PREFS_STORAGE_KEY: 'ambientPrefs',
+        CHECKIN_PREFS_STORAGE_KEY: 'checkinPrefs',
         getNoteText: (note) => (note && typeof note.text === 'string' ? note.text : ''),
         ensureDayRecord: (day) => createCheckinDay(day),
         getNormalizedCheckInStatus: (status) => {
@@ -254,6 +261,10 @@ test('storage migration normalizes legacy payloads and saveData persists schema 
             intensity: 'subtle',
             easterEggs: prefs?.easterEggs !== false
         }),
+        normalizeCheckinPreferences: (prefs) => ({
+            lateGraceMins: Number.isFinite(Number(prefs?.lateGraceMins)) ? Number(prefs.lateGraceMins) : 30,
+            earlyGraceMins: Number.isFinite(Number(prefs?.earlyGraceMins)) ? Number(prefs.earlyGraceMins) : 30
+        }),
         refreshStatisticsView: () => { refreshStatisticsCalls += 1; },
         refreshExportPreview: () => { refreshExportCalls += 1; },
         updateVoyageAmbientPresentation: () => { ambientCalls += 1; },
@@ -266,6 +277,7 @@ test('storage migration normalizes legacy payloads and saveData persists schema 
         quickNotesData: {},
         tavernData: [],
         ambientPreferences: null,
+        checkinPreferences: null,
         currentTask: null
     });
 
@@ -297,6 +309,8 @@ test('storage migration normalizes legacy payloads and saveData persists schema 
     assert.equal(context.taskData['2026-04-19'][0].duration, 45);
     assert.equal(context.achievements.length, 1);
     assert.equal(context.ambientPreferences.enabled, false);
+    assert.equal(context.checkinPreferences.lateGraceMins, 45);
+    assert.equal(context.checkinPreferences.earlyGraceMins, 20);
     assert.equal(context.checkinData['2026-04-20'].leave, false);
     assert.equal(autoSyncCalls, 0);
 
