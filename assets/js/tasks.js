@@ -29,6 +29,7 @@ function startTask() {
         id: 'task_' + Date.now(),
         name,
         tag: tagValue,
+        startDate: getTodayString(),
         startTime: getCurrentTimeString(),
         startTimestamp: Date.now()
     };
@@ -62,11 +63,20 @@ function endTask() {
     clearInterval(taskTimer);
     taskTimer = null;
     const duration = Math.floor((Date.now() - currentTask.startTimestamp) / 60000);
-    if (!taskData[getTodayString()]) taskData[getTodayString()] = [];
-    taskData[getTodayString()].push({ ...currentTask, endTime: getCurrentTimeString(), duration, completed: true });
+    const taskStartDate = currentTask.startDate || getTodayString();
+    const taskEndDate = getTodayString();
+    if (!taskData[taskStartDate]) taskData[taskStartDate] = [];
+    taskData[taskStartDate].push({
+        ...currentTask,
+        startDate: taskStartDate,
+        endDate: taskEndDate,
+        endTime: getCurrentTimeString(),
+        duration,
+        completed: true
+    });
     currentTask = null;
     persistCurrentTask();
-    saveData(true);
+    saveData();
     renderCurrentTaskState();
     updateTodayTasksList();
     updateSchedule();
@@ -91,17 +101,15 @@ function updateTodayTasksList() {
         return;
     }
 
-    tbody.innerHTML = '';
-
-    tasks.forEach((task) => {
+    tbody.innerHTML = tasks.map((task) => {
         const durationMins = Number.isFinite(task.duration) ? task.duration : 0;
         const h = Math.floor(durationMins / 60);
         const m = durationMins % 60;
-        const tagName = tagMap[task.tag || 'other'];
+        const tagName = tagMap[task.tag || 'other'] || tagMap.other;
         const startTime = typeof task.startTime === 'string' ? task.startTime : '-';
         const endTime = typeof task.endTime === 'string' ? task.endTime : '-';
 
-        tbody.innerHTML += `
+        return `
             <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
                 <td class="py-3 px-4 font-medium flex items-center">
                     <span class="text-[11px] bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 px-2 py-0.5 rounded mr-2 border border-slate-200 dark:border-slate-600 whitespace-nowrap">
@@ -115,7 +123,7 @@ function updateTodayTasksList() {
                 <td class="py-3 px-4"><span class="px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-md text-xs font-bold">已完成</span></td>
             </tr>
         `;
-    });
+    }).join('');
 }
 
 /**
@@ -130,17 +138,21 @@ function updateSchedule() {
         return;
     }
 
-    container.innerHTML = '';
     const hourHeight = 384 / 18;
 
-    tasks.forEach((task) => {
-        if (typeof task.startTime !== 'string' || typeof task.endTime !== 'string') return;
+    const blocks = tasks.map((task) => {
+        if (typeof task.startTime !== 'string' || typeof task.endTime !== 'string') return '';
 
         const [sh, sm] = task.startTime.split(':').map(Number);
         const [eh, em] = task.endTime.split(':').map(Number);
+        if (![sh, sm, eh, em].every(Number.isFinite)) return '';
 
         let startHour = sh + (sm / 60);
         let endHour = eh + (em / 60);
+        if (task.endDate && task.startDate && task.endDate !== task.startDate && endHour < startHour) {
+            endHour = 24;
+        }
+        if (endHour <= startHour) return '';
         if (endHour <= 6) return;
         if (startHour < 6) startHour = 6;
         if (endHour > 24) endHour = 24;
@@ -149,11 +161,13 @@ function updateSchedule() {
         const top = (startHour - 6) * hourHeight;
         const height = (endHour - startHour) * hourHeight;
 
-        container.innerHTML += `
+        return `
             <div class="absolute left-4 right-4 bg-primary/90 text-white p-2 rounded-xl shadow-sm hover:bg-primary transition-all overflow-hidden border border-white/20" style="top: ${top}px; height: ${Math.max(height, 30)}px;">
                 <div class="font-bold text-xs truncate">${escapeHtml(task.name)}</div>
-                <div class="text-[10px] opacity-90 font-mono mt-0.5">${task.startTime} - ${task.endTime}</div>
+                <div class="text-[10px] opacity-90 font-mono mt-0.5">${escapeHtml(task.startTime)} - ${escapeHtml(task.endTime)}</div>
             </div>
         `;
-    });
+    }).filter(Boolean).join('');
+
+    container.innerHTML = blocks || '<div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">今日暂无可映射时间轴的数据</div>';
 }

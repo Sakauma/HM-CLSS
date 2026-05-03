@@ -12,7 +12,6 @@ let leaveData = [];
 let achievements = [];
 let currentTask = null;
 let taskTimer = null;
-let taskStartTime = null;
 let quickNotesData = {};
 let tavernData = [];
 let currentDrinkInfo = null;
@@ -39,6 +38,272 @@ const CONFIG = {
         minDurationMins: 30
     }
 };
+
+/**
+ * 生成一份完整的单日打卡默认结构。
+ * @returns {object}
+ */
+function createDefaultCheckinDay() {
+    return {
+        morning: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+        afternoon: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+        evening: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
+        leave: false,
+        leaveReason: ''
+    };
+}
+
+/**
+ * 判断值是否为普通对象。
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+function isPlainObject(value) {
+    return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+/**
+ * 安全读取本地 JSON。单个 key 损坏时只回退该 key，并记录下来避免立即覆盖原始值。
+ * @param {string} key
+ * @param {Function} fallbackFactory
+ * @param {Set<string>} corruptedKeys
+ * @returns {unknown}
+ */
+function parseStoredJson(key, fallbackFactory, corruptedKeys) {
+    const rawValue = localStorage.getItem(key);
+    if (rawValue === null) return fallbackFactory();
+
+    try {
+        return JSON.parse(rawValue);
+    } catch (error) {
+        corruptedKeys.add(key);
+        return fallbackFactory();
+    }
+}
+
+/**
+ * 把任意班次记录补齐为稳定结构。
+ * @param {object} periodData
+ * @returns {object}
+ */
+function normalizeCheckinPeriod(periodData) {
+    const source = isPlainObject(periodData) ? periodData : {};
+    const status = isPlainObject(source.status) ? source.status : {};
+
+    return {
+        checkIn: typeof source.checkIn === 'string' ? source.checkIn : null,
+        checkOut: typeof source.checkOut === 'string' ? source.checkOut : null,
+        status: {
+            checkIn: status.checkIn ?? null,
+            checkOut: status.checkOut ?? null
+        }
+    };
+}
+
+/**
+ * 把任意单日打卡记录补齐为稳定结构。
+ * @param {object} dayData
+ * @returns {object}
+ */
+function normalizeCheckinDay(dayData) {
+    const source = isPlainObject(dayData) ? dayData : {};
+    const normalized = {
+        morning: normalizeCheckinPeriod(source.morning),
+        afternoon: normalizeCheckinPeriod(source.afternoon),
+        evening: normalizeCheckinPeriod(source.evening),
+        leave: source.leave === true,
+        leaveReason: typeof source.leaveReason === 'string' ? source.leaveReason : ''
+    };
+
+    if (Array.isArray(source.partialLeaves)) {
+        normalized.partialLeaves = source.partialLeaves
+            .filter(isPlainObject)
+            .map((leave) => ({
+                id: typeof leave.id === 'string' ? leave.id : '',
+                reason: typeof leave.reason === 'string' ? leave.reason : '',
+                startTime: typeof leave.startTime === 'string' ? leave.startTime : '',
+                endTime: typeof leave.endTime === 'string' ? leave.endTime : ''
+            }))
+            .filter((leave) => leave.startTime && leave.endTime);
+    }
+
+    return normalized;
+}
+
+/**
+ * 归一化所有打卡数据。
+ * @param {unknown} value
+ * @returns {object}
+ */
+function normalizeCheckinData(value) {
+    if (!isPlainObject(value)) return {};
+
+    return Object.entries(value).reduce((acc, [date, dayData]) => {
+        acc[date] = normalizeCheckinDay(dayData);
+        return acc;
+    }, {});
+}
+
+/**
+ * 归一化抗干扰计数数据。
+ * @param {unknown} value
+ * @returns {{ totalCount: number, records: object }}
+ */
+function normalizePhoneResistData(value) {
+    const source = isPlainObject(value) ? value : {};
+    const sourceRecords = isPlainObject(source.records) ? source.records : {};
+    const records = {};
+    let countedRecordsTotal = 0;
+
+    Object.entries(sourceRecords).forEach(([date, record]) => {
+        const dayRecord = isPlainObject(record) ? record : {};
+        const times = Array.isArray(dayRecord.times)
+            ? dayRecord.times.filter((time) => typeof time === 'string')
+            : [];
+        const count = Number.isFinite(dayRecord.count)
+            ? Math.max(0, Math.floor(dayRecord.count))
+            : times.length;
+
+        records[date] = { count, times };
+        countedRecordsTotal += count;
+    });
+
+    return {
+        totalCount: Number.isFinite(source.totalCount) ? Math.max(0, Math.floor(source.totalCount)) : countedRecordsTotal,
+        records
+    };
+}
+
+/**
+ * 归一化任务记录集合。
+ * @param {unknown} value
+ * @returns {object}
+ */
+function normalizeTaskData(value) {
+    if (!isPlainObject(value)) return {};
+
+    return Object.entries(value).reduce((acc, [date, tasks]) => {
+        if (!Array.isArray(tasks)) {
+            acc[date] = [];
+            return acc;
+        }
+
+        acc[date] = tasks
+            .filter(isPlainObject)
+            .map((task, index) => ({
+                ...task,
+                id: typeof task.id === 'string' ? task.id : `task_${date}_${index}`,
+                name: typeof task.name === 'string' ? task.name : '未命名任务',
+                tag: typeof task.tag === 'string' ? task.tag : 'other',
+                startTime: typeof task.startTime === 'string' ? task.startTime : '-',
+                endTime: typeof task.endTime === 'string' ? task.endTime : '-',
+                startDate: typeof task.startDate === 'string' ? task.startDate : date,
+                endDate: typeof task.endDate === 'string' ? task.endDate : date,
+                duration: Number.isFinite(task.duration) ? Math.max(0, Math.floor(task.duration)) : 0,
+                completed: task.completed !== false
+            }));
+        return acc;
+    }, {});
+}
+
+/**
+ * 归一化离舰记录集合。
+ * @param {unknown} value
+ * @returns {object[]}
+ */
+function normalizeLeaveData(value) {
+    if (!Array.isArray(value)) return [];
+
+    return value
+        .filter(isPlainObject)
+        .map((leave, index) => ({
+            id: typeof leave.id === 'string' ? leave.id : `leave_${typeof leave.date === 'string' ? leave.date : getTodayString()}_${index}`,
+            date: typeof leave.date === 'string' ? leave.date : getTodayString(),
+            reason: typeof leave.reason === 'string' ? leave.reason : '',
+            type: leave.type === 'partial' ? 'partial' : 'full',
+            startTime: typeof leave.startTime === 'string' ? leave.startTime : null,
+            endTime: typeof leave.endTime === 'string' ? leave.endTime : null
+        }));
+}
+
+/**
+ * 归一化速记记录集合。
+ * @param {unknown} value
+ * @returns {object}
+ */
+function normalizeQuickNotesData(value) {
+    if (!isPlainObject(value)) return {};
+
+    return Object.entries(value).reduce((acc, [date, notes]) => {
+        acc[date] = Array.isArray(notes)
+            ? notes.filter(isPlainObject).map((note) => ({
+                ...note,
+                time: typeof note.time === 'string' ? note.time : '--:--',
+                text: typeof note.text === 'string' ? note.text : '',
+                tag: typeof note.tag === 'string' ? note.tag : 'idea'
+            }))
+            : [];
+        return acc;
+    }, {});
+}
+
+/**
+ * 归一化成就 id 列表。
+ * @param {unknown} value
+ * @returns {string[]}
+ */
+function normalizeAchievements(value) {
+    return Array.isArray(value) ? value.filter((id) => typeof id === 'string') : [];
+}
+
+/**
+ * 归一化酒馆历史记录。
+ * @param {unknown} value
+ * @returns {object[]}
+ */
+function normalizeTavernData(value) {
+    return Array.isArray(value) ? value.filter(isPlainObject) : [];
+}
+
+/**
+ * 归一化当前进行中的任务，并为旧结构补齐 startDate。
+ * @param {unknown} value
+ * @returns {object|null}
+ */
+function normalizeCurrentTask(value) {
+    if (
+        !isPlainObject(value) ||
+        typeof value.name !== 'string' ||
+        !Number.isFinite(value.startTimestamp) ||
+        typeof value.startTime !== 'string'
+    ) {
+        return null;
+    }
+
+    const startDateFromTimestamp = new Date(value.startTimestamp);
+
+    return {
+        ...value,
+        id: typeof value.id === 'string' ? value.id : `task_${value.startTimestamp}`,
+        tag: typeof value.tag === 'string' ? value.tag : 'other',
+        startDate: typeof value.startDate === 'string'
+            ? value.startDate
+            : Number.isFinite(startDateFromTimestamp.getTime())
+                ? formatLocalDate(startDateFromTimestamp)
+                : getTodayString()
+    };
+}
+
+/**
+ * 确保今天的各模块数据桶存在。
+ */
+function ensureTodayDataDefaults() {
+    const today = getTodayString();
+    if (!checkinData[today]) checkinData[today] = createDefaultCheckinDay();
+    if (!phoneResistData.records[today]) phoneResistData.records[today] = { count: 0, times: [] };
+    if (!taskData[today]) taskData[today] = [];
+    if (!quickNotesData[today]) quickNotesData[today] = [];
+}
 
 // 速记标签的图标、文案和视觉风格配置。
 const noteTagConfig = {
@@ -84,8 +349,6 @@ const emotionDictionary = [
     { id: 'emo_12', label: '成就感', efi: 0.9, eii: 0.6, style: 'text-rose-600 bg-rose-50 border-rose-200 dark:text-rose-400 dark:bg-rose-900/20 dark:border-rose-900/50' }
 ];
 
-let selectedEmotions = [];
-
 // 页面入口：先恢复数据，再依次挂载各个业务面板。
 document.addEventListener('DOMContentLoaded', function() {
     initData();
@@ -110,80 +373,52 @@ document.addEventListener('DOMContentLoaded', function() {
  * 同时校验“当前任务”这类可能因旧版本残留而损坏的字段。
  */
 function initData() {
-    const savedCheckinData = localStorage.getItem('checkinData');
-    const savedPhoneResistData = localStorage.getItem('phoneResistData');
-    const savedTaskData = localStorage.getItem('taskData');
-    const savedLeaveData = localStorage.getItem('leaveData');
-    const savedAchievements = localStorage.getItem('achievements');
-    const savedNotes = localStorage.getItem('quickNotesData');
-    const savedTavernData = localStorage.getItem('tavernData');
-    const savedCurrentTask = localStorage.getItem(CURRENT_TASK_STORAGE_KEY);
+    const corruptedStorageKeys = new Set();
 
-    try {
-        quickNotesData = savedNotes ? JSON.parse(savedNotes) : {};
-        checkinData = savedCheckinData ? JSON.parse(savedCheckinData) : {};
-        phoneResistData = savedPhoneResistData ? JSON.parse(savedPhoneResistData) : { totalCount: 0, records: {} };
-        taskData = savedTaskData ? JSON.parse(savedTaskData) : {};
-        leaveData = savedLeaveData ? JSON.parse(savedLeaveData) : [];
-        achievements = savedAchievements ? JSON.parse(savedAchievements) : [];
-        tavernData = savedTavernData ? JSON.parse(savedTavernData) : [];
-    } catch (error) {
-        quickNotesData = {};
-        checkinData = {};
-        phoneResistData = { totalCount: 0, records: {} };
-        taskData = {};
-        leaveData = [];
-        achievements = [];
-        tavernData = [];
-    }
+    quickNotesData = normalizeQuickNotesData(parseStoredJson('quickNotesData', () => ({}), corruptedStorageKeys));
+    checkinData = normalizeCheckinData(parseStoredJson('checkinData', () => ({}), corruptedStorageKeys));
+    phoneResistData = normalizePhoneResistData(parseStoredJson('phoneResistData', () => ({ totalCount: 0, records: {} }), corruptedStorageKeys));
+    taskData = normalizeTaskData(parseStoredJson('taskData', () => ({}), corruptedStorageKeys));
+    leaveData = normalizeLeaveData(parseStoredJson('leaveData', () => [], corruptedStorageKeys));
+    achievements = normalizeAchievements(parseStoredJson('achievements', () => [], corruptedStorageKeys));
+    tavernData = normalizeTavernData(parseStoredJson('tavernData', () => [], corruptedStorageKeys));
 
-    try {
-        currentTask = savedCurrentTask ? JSON.parse(savedCurrentTask) : null;
-    } catch (error) {
-        currentTask = null;
-    }
+    const parsedCurrentTask = parseStoredJson(CURRENT_TASK_STORAGE_KEY, () => null, corruptedStorageKeys);
+    currentTask = normalizeCurrentTask(parsedCurrentTask);
 
-    if (
-        !currentTask ||
-        typeof currentTask !== 'object' ||
-        typeof currentTask.name !== 'string' ||
-        typeof currentTask.startTimestamp !== 'number' ||
-        typeof currentTask.startTime !== 'string'
-    ) {
+    if (!currentTask && !corruptedStorageKeys.has(CURRENT_TASK_STORAGE_KEY)) {
         currentTask = null;
         localStorage.removeItem(CURRENT_TASK_STORAGE_KEY);
     }
 
-    if (!phoneResistData.records) phoneResistData.records = {};
+    ensureTodayDataDefaults();
+    saveData(true, { skipKeys: [...corruptedStorageKeys] });
 
-    const today = getTodayString();
-    if (!checkinData[today]) {
-        checkinData[today] = {
-            morning: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
-            afternoon: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
-            evening: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
-            leave: false,
-            leaveReason: ''
-        };
+    if (corruptedStorageKeys.size && typeof showToast === 'function') {
+        setTimeout(() => {
+            showToast(`检测到本地缓存损坏，已临时回退：${[...corruptedStorageKeys].join(', ')}`, 'warning');
+        }, 0);
     }
-    if (!phoneResistData.records[today]) phoneResistData.records[today] = { count: 0, times: [] };
-    if (!taskData[today]) taskData[today] = [];
-
-    saveData(true);
 }
 
 /**
  * 将当前内存态统一落盘到 localStorage。
  * @param {boolean} preventAutoSync 为 true 时仅保存本地，不触发自动云同步。
+ * @param {{ skipKeys?: string[] }} options 可跳过写回的存储 key。
  */
-function saveData(preventAutoSync = false) {
-    localStorage.setItem('checkinData', JSON.stringify(checkinData));
-    localStorage.setItem('phoneResistData', JSON.stringify(phoneResistData));
-    localStorage.setItem('taskData', JSON.stringify(taskData));
-    localStorage.setItem('leaveData', JSON.stringify(leaveData));
-    localStorage.setItem('achievements', JSON.stringify(achievements));
-    localStorage.setItem('quickNotesData', JSON.stringify(quickNotesData));
-    localStorage.setItem('tavernData', JSON.stringify(tavernData));
+function saveData(preventAutoSync = false, options = {}) {
+    const skipKeys = new Set(options.skipKeys || []);
+    const writeStorage = (key, value) => {
+        if (!skipKeys.has(key)) localStorage.setItem(key, JSON.stringify(value));
+    };
+
+    writeStorage('checkinData', checkinData);
+    writeStorage('phoneResistData', phoneResistData);
+    writeStorage('taskData', taskData);
+    writeStorage('leaveData', leaveData);
+    writeStorage('achievements', achievements);
+    writeStorage('quickNotesData', quickNotesData);
+    writeStorage('tavernData', tavernData);
 
     if (typeof updateSummaryStatistics === 'function') {
         updateSummaryStatistics();

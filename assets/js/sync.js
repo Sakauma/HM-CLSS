@@ -7,6 +7,7 @@ let githubToken = localStorage.getItem('githubToken') || '';
 let gistId = localStorage.getItem('gistId') || '';
 let localLastSyncTime = localStorage.getItem('localLastSyncTime') || '';
 let autoSyncTimer = null;
+const LOCAL_BACKUP_BEFORE_CLOUD_APPLY_KEY = 'lastLocalBackupBeforeCloudApply';
 
 /**
  * 记录最近一次成功同步时间，作为后续冲突判断依据。
@@ -48,35 +49,64 @@ function hasMeaningfulLocalData() {
 }
 
 /**
+ * 把外部导入数据归一化为本地可安全应用的结构。
+ * @param {unknown} cloudData
+ * @returns {object}
+ */
+function normalizeImportedData(cloudData) {
+    const source = isPlainObject(cloudData) ? cloudData : {};
+
+    return {
+        checkinData: normalizeCheckinData(source.checkinData),
+        phoneResistData: normalizePhoneResistData(source.phoneResistData),
+        taskData: normalizeTaskData(source.taskData),
+        leaveData: normalizeLeaveData(source.leaveData),
+        achievements: normalizeAchievements(source.achievements),
+        quickNotesData: normalizeQuickNotesData(source.quickNotesData),
+        tavernData: normalizeTavernData(source.tavernData),
+        lastSyncTime: typeof source.lastSyncTime === 'string' ? source.lastSyncTime : new Date().toISOString()
+    };
+}
+
+/**
+ * 在云端覆盖本地前保存一份可人工恢复的本地快照。
+ * @param {string} reason
+ */
+function backupLocalDataBeforeCloudApply(reason) {
+    try {
+        localStorage.setItem(LOCAL_BACKUP_BEFORE_CLOUD_APPLY_KEY, JSON.stringify({
+            ...buildExportData(),
+            currentTask,
+            backupReason: reason,
+            backupTime: new Date().toISOString()
+        }));
+    } catch (error) {
+        console.error('本地覆盖前备份失败:', error);
+    }
+}
+
+/**
  * 把云端数据完整覆盖到本地内存态，并刷新所有受影响视图。
  * @param {object} cloudData
  */
 function applyImportedData(cloudData) {
-    checkinData = cloudData.checkinData || {};
-    phoneResistData = cloudData.phoneResistData || { totalCount: 0, records: {} };
-    taskData = cloudData.taskData || {};
-    leaveData = cloudData.leaveData || [];
-    achievements = cloudData.achievements || [];
-    tavernData = cloudData.tavernData || [];
-    if (cloudData.quickNotesData) quickNotesData = cloudData.quickNotesData;
+    const normalizedData = normalizeImportedData(cloudData);
+    backupLocalDataBeforeCloudApply('cloud-apply');
 
-    const today = getTodayString();
-    if (!checkinData[today]) {
-        checkinData[today] = {
-            morning: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
-            afternoon: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
-            evening: { checkIn: null, checkOut: null, status: { checkIn: null, checkOut: null } },
-            leave: false,
-            leaveReason: ''
-        };
-    }
-    if (!phoneResistData.records[today]) phoneResistData.records[today] = { count: 0, times: [] };
-    if (!taskData[today]) taskData[today] = [];
-    if (!quickNotesData[today]) quickNotesData[today] = [];
+    checkinData = normalizedData.checkinData;
+    phoneResistData = normalizedData.phoneResistData;
+    taskData = normalizedData.taskData;
+    leaveData = normalizedData.leaveData;
+    achievements = normalizedData.achievements;
+    quickNotesData = normalizedData.quickNotesData;
+    tavernData = normalizedData.tavernData;
+
+    ensureTodayDataDefaults();
 
     saveData(true);
-    updateLocalSyncTime(cloudData.lastSyncTime || new Date().toISOString());
+    updateLocalSyncTime(normalizedData.lastSyncTime);
 
+    const today = getTodayString();
     updateCheckinButtons();
     updateTodayCheckinTable();
     document.getElementById('phone-resist-count').textContent = phoneResistData.totalCount;
@@ -99,7 +129,7 @@ function applyImportedData(cloudData) {
  * @returns {boolean}
  */
 function shouldAutoApplyCloudData(cloudData) {
-    if (!cloudData.lastSyncTime) return false;
+    if (!isPlainObject(cloudData) || !cloudData.lastSyncTime) return false;
     if (!localLastSyncTime) return !hasMeaningfulLocalData();
     return new Date(cloudData.lastSyncTime) > new Date(localLastSyncTime);
 }
@@ -253,6 +283,25 @@ function triggerAutoSync() {
     console.log('☁️ 检测到数据变动，开始10分钟同步倒计时...');
     autoSyncTimer = setTimeout(async () => {
         try {
+            const getRes = await fetch(`https://api.github.com/gists/${gistId}`, {
+                headers: { Authorization: `token ${githubToken}`, Accept: 'application/vnd.github.v3+json' }
+            });
+
+            if (!getRes.ok) {
+                showToast('无法验证云端版本，已取消自动上传。请稍后手动同步。', 'warning');
+                return;
+            }
+
+            const data = await getRes.json();
+            const file = data.files['workspace_data.json'];
+            if (file && file.content) {
+                const cloudData = JSON.parse(file.content);
+                if (cloudData.lastSyncTime && (!localLastSyncTime || new Date(cloudData.lastSyncTime) > new Date(localLastSyncTime))) {
+                    showToast('检测到云端已有更新，已取消自动上传。请先手动拉取确认。', 'warning');
+                    return;
+                }
+            }
+
             const currentSyncTime = new Date().toISOString();
             const exportData = buildExportData();
             exportData.lastSyncTime = currentSyncTime;
@@ -274,6 +323,7 @@ function triggerAutoSync() {
             }
         } catch (error) {
             console.error('☁️ 后台同步失败:', error);
+            showToast('自动同步失败，未覆盖云端数据。请稍后手动同步。', 'warning');
         } finally {
             autoSyncTimer = null;
         }

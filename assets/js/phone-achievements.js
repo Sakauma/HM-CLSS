@@ -46,10 +46,8 @@ function updateTodayPhoneResistTimes() {
  */
 function updateAchievementsList() {
     const list = document.getElementById('achievements-list');
-    list.innerHTML = '';
-
-    achievementList.forEach((achievement) => {
-        if (achievement.type && achievement.type !== 'phone') return;
+    list.innerHTML = achievementList.map((achievement) => {
+        if (achievement.type && achievement.type !== 'phone') return '';
 
         const isAchieved = achievements.includes(achievement.id);
         const bgClass = isAchieved
@@ -58,18 +56,18 @@ function updateAchievementsList() {
         const icon = isAchieved ? 'check' : 'lock';
         const textClass = isAchieved ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500';
 
-        list.innerHTML += `
+        return `
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl ${bgClass} flex items-center justify-center shrink-0">
                     <i data-lucide="${icon}" class="w-5 h-5"></i>
                 </div>
                 <div>
-                    <div class="font-bold text-sm ${textClass}">${achievement.name}</div>
-                    <div class="text-xs text-slate-500">${achievement.description}</div>
+                    <div class="font-bold text-sm ${textClass}">${escapeHtml(achievement.name)}</div>
+                    <div class="text-xs text-slate-500">${escapeHtml(achievement.description)}</div>
                 </div>
             </div>
         `;
-    });
+    }).filter(Boolean).join('');
 
     lucide.createIcons();
 }
