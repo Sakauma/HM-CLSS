@@ -11,6 +11,10 @@ function buildSyncHeaders() {
     };
 }
 
+function getResponseEtag(response) {
+    return response?.headers?.get?.('ETag') || response?.headers?.get?.('etag') || null;
+}
+
 async function fetchWorkspaceGistResponse() {
     const { gistId: currentGistId } = getSyncCredentials();
     return fetch(`https://api.github.com/gists/${currentGistId}`, {
@@ -28,21 +32,34 @@ function parseWorkspaceGistContent(gistResponseData) {
     }
 }
 
-async function fetchCloudWorkspaceData() {
+async function fetchCloudWorkspaceSnapshot() {
     const response = await fetchWorkspaceGistResponse();
     if (!response.ok) {
         throw new Error(`fetch_failed_${response.status}`);
     }
 
     const gistResponseData = await response.json();
-    return parseWorkspaceGistContent(gistResponseData);
+    return {
+        data: parseWorkspaceGistContent(gistResponseData),
+        etag: getResponseEtag(response)
+    };
 }
 
-async function pushCloudWorkspaceData(payload) {
+async function fetchCloudWorkspaceData() {
+    const snapshot = await fetchCloudWorkspaceSnapshot();
+    return snapshot.data;
+}
+
+async function pushCloudWorkspaceData(payload, options = {}) {
     const { gistId: currentGistId } = getSyncCredentials();
+    const headers = buildSyncHeaders();
+    if (options.etag) {
+        headers['If-Match'] = options.etag;
+    }
+
     const response = await fetch(`https://api.github.com/gists/${currentGistId}`, {
         method: 'PATCH',
-        headers: buildSyncHeaders(),
+        headers,
         body: JSON.stringify({
             files: {
                 [SYNC_GIST_FILE]: {

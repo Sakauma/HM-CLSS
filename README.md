@@ -8,7 +8,7 @@
 本项目当前采用 **纯前端、零构建** 架构：
 
 - 页面外壳：`index.html`
-- 样式渲染：Tailwind CDN + 自定义 CSS
+- 样式渲染：本地 `assets/vendor/` Tailwind 浏览器脚本 + 自定义 CSS
 - 行为逻辑：Vanilla JavaScript
 - 数据存储：浏览器 `localStorage`
 - 云端同步：GitHub Gist API

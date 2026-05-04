@@ -69,6 +69,24 @@ check_script_order() {
   done < <(read_manifest "$MANIFEST_DIR/script-order.txt")
 }
 
+check_script_manifest_exact() {
+  local expected_scripts
+  local actual_scripts
+
+  expected_scripts="$(read_manifest "$MANIFEST_DIR/script-order.txt")"
+  actual_scripts="$(awk '
+    /HM_CLSS_SCRIPT_BLOCK_START/ { capture = 1; next }
+    /HM_CLSS_SCRIPT_BLOCK_END/ { capture = 0 }
+    capture { print }
+  ' index.html | sed -nE 's/.*<script src="([^"]+)"><\/script>.*/\1/p')"
+
+  if [[ "$expected_scripts" != "$actual_scripts" ]]; then
+    printf 'index.html script block does not match scripts/smoke_manifest/script-order.txt\n' >&2
+    diff -u <(printf '%s\n' "$expected_scripts") <(printf '%s\n' "$actual_scripts") >&2 || true
+    exit 1
+  fi
+}
+
 check_js_syntax
 node --test tests/unit/*.test.js
 python3 -m py_compile scripts/browser-smoke.py
@@ -79,6 +97,7 @@ bash -n scripts/browser-smoke.sh
 bash -n scripts/setup-browser-test.sh
 
 check_script_order
+check_script_manifest_exact
 check_index_references "$MANIFEST_DIR/script-order.txt"
 check_index_references "$MANIFEST_DIR/required-stylesheets.txt"
 check_existing_paths "$MANIFEST_DIR/required-files.txt"

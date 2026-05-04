@@ -7,45 +7,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@0.514.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-    
-    <script>
-        // Tailwind 运行时配置：统一维护主题色、阴影和字体令牌。
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: 'rgb(var(--color-primary) / <alpha-value>)',
-                        primaryHover: 'rgb(var(--color-primary-hover) / <alpha-value>)',
-                        accent: 'rgb(var(--color-accent) / <alpha-value>)',
-                        success: 'rgb(var(--color-success) / <alpha-value>)',
-                        warning: 'rgb(var(--color-warning) / <alpha-value>)',
-                        danger: 'rgb(var(--color-danger) / <alpha-value>)',
-                        bgLight: 'rgb(var(--color-bg-light) / <alpha-value>)',
-                        bgDark: 'rgb(var(--color-bg-dark) / <alpha-value>)',
-                        cardLight: 'rgb(var(--color-card-light) / <alpha-value>)',
-                        cardDark: 'rgb(var(--color-card-dark) / <alpha-value>)',
-                    },
-                    boxShadow: {
-                        'soft': '0 24px 60px rgba(15, 23, 42, 0.08)',
-                        'soft-dark': '0 24px 60px rgba(2, 12, 27, 0.45)',
-                    },
-                    fontFamily: {
-                        sans: ['IBM Plex Sans', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', 'system-ui', 'sans-serif'],
-                        serif: ['IBM Plex Sans', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', 'system-ui', 'sans-serif'],
-                        mono: ['IBM Plex Mono', 'Noto Sans SC', 'ui-monospace', 'monospace'],
-                        display: ['IBM Plex Sans', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', 'system-ui', 'sans-serif'],
-                        label: ['IBM Plex Sans Condensed', 'IBM Plex Sans', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', 'system-ui', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- HM_CLSS_SCRIPT_BLOCK_START -->
+    <script src="assets/vendor/tailwindcss-3.4.17.js"></script>
+    <script src="assets/vendor/lucide-0.514.0.min.js"></script>
+    <script src="assets/vendor/chart.umd-4.4.8.min.js"></script>
+    <script src="assets/vendor/marked-12.0.2.min.js"></script>
+    <script src="assets/vendor/purify-3.0.6.min.js"></script>
+    <script src="assets/js/runtime/tailwind-config.js"></script>
     <link rel="stylesheet" href="assets/css/theme.css">
     <link rel="stylesheet" href="assets/css/shell.css">
     <link rel="stylesheet" href="assets/css/shell-navigation.css">
@@ -1409,6 +1377,29 @@
                     <div class="system-panel-card mb-6">
                         <div class="system-card-head">
                             <div class="max-w-2xl">
+                                <div class="module-eyebrow mb-2">LOCAL FAILSAFE</div>
+                                <h3 class="system-panel-title">覆盖前本地备份</h3>
+                                <p id="local-backup-summary" class="system-card-copy">
+                                    暂无可恢复的覆盖前备份。
+                                </p>
+                            </div>
+                            <div class="system-chip-row">
+                                <span class="status-chip status-chip-info">仅本机保存</span>
+                            </div>
+                        </div>
+                        <div class="system-panel-actions">
+                            <button id="restore-local-backup-btn" class="action-btn action-btn-secondary !w-auto !min-h-[2.75rem] px-6 flex items-center gap-2" disabled>
+                                <i data-lucide="rotate-ccw" class="w-4 h-4"></i> 恢复本地备份
+                            </button>
+                            <button id="clear-local-backup-btn" class="action-btn action-btn-ghost !w-auto !min-h-[2.75rem] px-6 flex items-center gap-2" disabled>
+                                <i data-lucide="trash-2" class="w-4 h-4"></i> 清除备份
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="system-panel-card mb-6">
+                        <div class="system-card-head">
+                            <div class="max-w-2xl">
                                 <div class="module-eyebrow mb-2">SHIFT RULES</div>
                                 <h3 class="system-panel-title">弹性打卡窗口</h3>
                                 <p class="system-card-copy">
@@ -1739,6 +1730,7 @@
     <script src="assets/js/features/export/ui.js"></script>
     <script src="assets/js/features/export/index.js"></script>
     <script src="assets/js/ui/shortcuts.js"></script>
+    <!-- HM_CLSS_SCRIPT_BLOCK_END -->
     <!-- 每日/每周总结弹窗。 -->
     <div id="daily-summary-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-md z-[70] hidden hidden-flex-col items-center justify-center transition-opacity">
         <div class="surface-modal-card modal-popup w-full max-w-md border border-primary/30 p-8 text-center transform transition-all">

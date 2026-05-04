@@ -10,6 +10,45 @@ function migrateStoredWorkspacePayload(payload, fromVersion) {
     return applyRegisteredStorageMigrations(payload, fromVersion, CURRENT_STORAGE_SCHEMA_VERSION);
 }
 
+function createStorageOperationResult() {
+    return {
+        ok: true,
+        failedKeys: []
+    };
+}
+
+function recordStorageFailure(result, key, error) {
+    result.ok = false;
+    if (!result.failedKeys.includes(key)) {
+        result.failedKeys.push(key);
+    }
+    console.error(`localStorage write failed for "${key}":`, error);
+    return false;
+}
+
+function safeSetStorageItem(key, value, result = createStorageOperationResult()) {
+    try {
+        localStorage.setItem(key, value);
+        return true;
+    } catch (error) {
+        return recordStorageFailure(result, key, error);
+    }
+}
+
+function safeRemoveStorageItem(key, result = createStorageOperationResult()) {
+    try {
+        localStorage.removeItem(key);
+        return true;
+    } catch (error) {
+        return recordStorageFailure(result, key, error);
+    }
+}
+
+function notifyStorageWriteFailure(result) {
+    if (result.ok || typeof showToast !== 'function') return;
+    showToast(`本地保存失败，已暂停自动同步：${result.failedKeys.join(', ')}`, 'error');
+}
+
 function initData() {
     const storedVersion = getStoredSchemaVersion();
     const payload = storedVersion < CURRENT_STORAGE_SCHEMA_VERSION
@@ -33,7 +72,7 @@ function initData() {
         persistCurrentTask();
     } else if (!isCorruptedStorageKey(CURRENT_TASK_STORAGE_KEY)) {
         runtimeActions.clearCurrentTask();
-        localStorage.removeItem(CURRENT_TASK_STORAGE_KEY);
+        safeRemoveStorageItem(CURRENT_TASK_STORAGE_KEY);
     }
 
     normalizeWorkspaceRuntimeState({
@@ -91,9 +130,10 @@ function normalizeWorkspaceRuntimeState(options = {}) {
 
 function saveData(preventAutoSync = false, options = {}) {
     const skipKeys = new Set(options.skipKeys || []);
+    const result = createStorageOperationResult();
     const writeStorageValue = (key, value) => {
         if (skipKeys.has(key)) return;
-        localStorage.setItem(key, value);
+        safeSetStorageItem(key, value, result);
     };
 
     writeStorageValue(STORAGE_SCHEMA_VERSION_KEY, String(CURRENT_STORAGE_SCHEMA_VERSION));
@@ -121,16 +161,23 @@ function saveData(preventAutoSync = false, options = {}) {
         updateVoyageAmbientPresentation();
     }
 
-    if (!preventAutoSync && typeof triggerAutoSync === 'function') {
+    notifyStorageWriteFailure(result);
+
+    if (!preventAutoSync && result.ok && typeof triggerAutoSync === 'function') {
         triggerAutoSync();
     }
+
+    return result;
 }
 
 function persistCurrentTask() {
+    const result = createStorageOperationResult();
     const activeTask = runtimeSelectors.currentTask();
     if (activeTask) {
-        localStorage.setItem(CURRENT_TASK_STORAGE_KEY, JSON.stringify(activeTask));
+        safeSetStorageItem(CURRENT_TASK_STORAGE_KEY, JSON.stringify(activeTask), result);
     } else {
-        localStorage.removeItem(CURRENT_TASK_STORAGE_KEY);
+        safeRemoveStorageItem(CURRENT_TASK_STORAGE_KEY, result);
     }
+    notifyStorageWriteFailure(result);
+    return result;
 }

@@ -232,6 +232,7 @@ test('storage migration normalizes legacy payloads and saveData persists schema 
     let autoSyncCalls = 0;
 
     const context = createBaseContext({
+        console: { ...console, error() {} },
         localStorage,
         CURRENT_TASK_STORAGE_KEY: 'currentTask',
         AMBIENT_PREFS_STORAGE_KEY: 'ambientPrefs',
@@ -369,4 +370,56 @@ test('initData preserves corrupted localStorage keys instead of overwriting them
     assert.equal(corruptedKeys[0], 'taskData');
     assert.equal(context.localStorage.getItem('taskData'), '{broken');
     assert.equal(context.taskData['2026-04-20'].length, 0);
+});
+
+test('saveData reports storage write failures and skips auto sync', () => {
+    let autoSyncCalls = 0;
+    const toastEvents = [];
+    const localStorage = {
+        getItem() {
+            return null;
+        },
+        setItem(key) {
+            if (key === 'taskData') {
+                throw new Error('quota exceeded');
+            }
+        },
+        removeItem() {}
+    };
+
+    const context = createBaseContext({
+        console: { ...console, error() {} },
+        localStorage,
+        AMBIENT_PREFS_STORAGE_KEY: 'ambientPrefs',
+        CHECKIN_PREFS_STORAGE_KEY: 'checkinPrefs',
+        normalizeAmbientPreferences: (prefs) => prefs || { enabled: true },
+        normalizeCheckinPreferences: (prefs) => prefs || { lateGraceMins: 30, earlyGraceMins: 30 },
+        refreshStatisticsView() {},
+        refreshExportPreview() {},
+        updateVoyageAmbientPresentation() {},
+        triggerAutoSync() {
+            autoSyncCalls += 1;
+        },
+        showToast(message, tone) {
+            toastEvents.push({ message, tone });
+        },
+        checkinData: {},
+        phoneResistData: { totalCount: 0, records: {} },
+        taskData: { '2026-04-20': [] },
+        leaveData: [],
+        achievements: [],
+        quickNotesData: {},
+        tavernData: [],
+        ambientPreferences: null,
+        checkinPreferences: null
+    });
+
+    loadScript(context, 'assets/js/runtime/storage.js');
+
+    const result = context.saveData();
+    assert.equal(result.ok, false);
+    assert.equal(result.failedKeys.length, 1);
+    assert.equal(result.failedKeys[0], 'taskData');
+    assert.equal(autoSyncCalls, 0);
+    assert.equal(toastEvents.at(-1).tone, 'error');
 });

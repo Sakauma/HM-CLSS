@@ -21,13 +21,22 @@ const runtimeState = {
 };
 
 const runtimeStateKeys = Object.keys(runtimeState);
+const runtimeStateKeySet = new Set(runtimeStateKeys);
 const runtimeStateSubscribers = new Map();
+
+function assertRuntimeStateKey(key) {
+    if (!runtimeStateKeySet.has(key)) {
+        throw new Error(`Unknown runtime state key: ${key}`);
+    }
+    return key;
+}
 
 function getRuntimeState() {
     return runtimeState;
 }
 
 function getRuntimeValue(key) {
+    assertRuntimeStateKey(key);
     return runtimeState[key];
 }
 
@@ -44,6 +53,7 @@ function selectRuntimeSlice(selector) {
 }
 
 function notifyRuntimeSubscribers(key, value, previousValue) {
+    assertRuntimeStateKey(key);
     const subscribers = runtimeStateSubscribers.get(key);
     if (!subscribers || subscribers.size === 0) return;
 
@@ -57,6 +67,7 @@ function notifyRuntimeSubscribers(key, value, previousValue) {
 }
 
 function setRuntimeValue(key, value) {
+    assertRuntimeStateKey(key);
     const previousValue = runtimeState[key];
     runtimeState[key] = value;
     notifyRuntimeSubscribers(key, value, previousValue);
@@ -124,6 +135,7 @@ function removeRuntimeObjectEntry(key, entryKey) {
 }
 
 function subscribeRuntimeValue(key, listener, options = {}) {
+    assertRuntimeStateKey(key);
     if (typeof listener !== 'function') {
         throw new Error(`subscribeRuntimeValue("${key}") requires a listener function.`);
     }

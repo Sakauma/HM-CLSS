@@ -1,4 +1,5 @@
 assets/js/runtime/theme.js
+assets/js/runtime/tailwind-config.js
 assets/js/runtime/store.js
 assets/js/runtime/state.js
 assets/js/runtime/storage-migrations.js

@@ -116,6 +116,15 @@ test('runtime store object entry helpers update checkin days and daily records s
     assert.deepEqual(context.runtimeSelectors.phoneResistData().records['2026-04-20'].times, ['09:00']);
 });
 
+test('runtime store rejects unknown state keys', () => {
+    const context = createBaseContext();
+    loadScript(context, 'assets/js/runtime/store.js');
+
+    assert.throws(() => context.getRuntimeValue('unknownState'), /Unknown runtime state key/);
+    assert.throws(() => context.runtimeActions.set('unknownState', true), /Unknown runtime state key/);
+    assert.throws(() => context.subscribeRuntimeValue('unknownState', () => {}), /Unknown runtime state key/);
+});
+
 test('checkin rules evaluate statuses and write retro records', () => {
     const context = createBaseContext({
         CONFIG: {

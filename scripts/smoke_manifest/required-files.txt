@@ -7,6 +7,12 @@ assets/css/features.css
 assets/css/features-notes.css
 assets/css/features-tavern.css
 assets/css/motion.css
+assets/vendor/tailwindcss-3.4.17.js
+assets/vendor/lucide-0.514.0.min.js
+assets/vendor/chart.umd-4.4.8.min.js
+assets/vendor/marked-12.0.2.min.js
+assets/vendor/purify-3.0.6.min.js
+assets/js/runtime/tailwind-config.js
 .github/workflows/ci.yml
 environment.browser-test.yml
 scripts/smoke-check.sh

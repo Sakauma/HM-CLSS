@@ -54,24 +54,117 @@ function refreshWorkspaceUiAfterSync() {
 }
 
 function backupLocalDataBeforeCloudApply(reason) {
+    const result = createStorageOperationResult();
+    safeSetStorageItem(LOCAL_BACKUP_BEFORE_CLOUD_APPLY_KEY, JSON.stringify({
+        datasets: buildWorkspaceDatasetSnapshot(),
+        state: buildWorkspaceStateSnapshot(),
+        backupReason: reason,
+        backupTime: new Date().toISOString()
+    }), result);
+    if (!result.ok) console.error('本地覆盖前备份失败');
+}
+
+function readLocalBackupBeforeCloudApply() {
+    const rawBackup = localStorage.getItem(LOCAL_BACKUP_BEFORE_CLOUD_APPLY_KEY);
+    if (!rawBackup) return null;
+
     try {
-        localStorage.setItem(LOCAL_BACKUP_BEFORE_CLOUD_APPLY_KEY, JSON.stringify({
-            datasets: buildWorkspaceDatasetSnapshot(),
-            state: buildWorkspaceStateSnapshot(),
-            backupReason: reason,
-            backupTime: new Date().toISOString()
-        }));
+        const backup = JSON.parse(rawBackup);
+        if (!backup || typeof backup !== 'object' || !backup.datasets || typeof backup.datasets !== 'object') {
+            return null;
+        }
+        return backup;
     } catch (error) {
-        console.error('本地覆盖前备份失败:', error);
+        console.error('覆盖前备份读取失败:', error);
+        return null;
+    }
+}
+
+function getLocalBackupSummary(backup = readLocalBackupBeforeCloudApply()) {
+    if (!backup) return '暂无可恢复的覆盖前备份。';
+
+    const backupTime = backup.backupTime
+        ? new Date(backup.backupTime).toLocaleString('zh-CN')
+        : '未知时间';
+    const taskCount = countTotalTaskEntries(backup.datasets.taskData || {});
+    const noteCount = countQuickNoteEntries(backup.datasets.quickNotesData || {});
+    return `最近备份：${backupTime}，含 ${taskCount} 条任务、${noteCount} 条速记。`;
+}
+
+function refreshLocalBackupRestoreState() {
+    const summaryEl = document.getElementById('local-backup-summary');
+    const restoreBtn = document.getElementById('restore-local-backup-btn');
+    const clearBtn = document.getElementById('clear-local-backup-btn');
+    const backup = readLocalBackupBeforeCloudApply();
+
+    if (summaryEl) summaryEl.textContent = getLocalBackupSummary(backup);
+    if (restoreBtn) restoreBtn.disabled = !backup;
+    if (clearBtn) clearBtn.disabled = !backup;
+}
+
+function applyWorkspaceStateSnapshot(snapshot = {}) {
+    const normalizedCurrentTask = normalizeCurrentTaskRecord(snapshot.currentTask);
+    runtimeActions.setCurrentTask(normalizedCurrentTask);
+    persistCurrentTask();
+
+    runtimeActions.setAmbientPreferences(normalizeAmbientPreferences(snapshot.ambientPreferences));
+    runtimeActions.setCheckinPreferences(normalizeCheckinPreferences(snapshot.checkinPreferences));
+    updateLocalSyncTime(snapshot.lastSyncTime || '');
+
+    if (typeof renderCheckinPreferenceForm === 'function') {
+        renderCheckinPreferenceForm(runtimeSelectors.checkinPreferences());
+    }
+    if (typeof renderCheckinPreferenceSummary === 'function') {
+        renderCheckinPreferenceSummary(runtimeSelectors.checkinPreferences());
+    }
+}
+
+async function restoreLocalBackupBeforeCloudApply() {
+    const backup = readLocalBackupBeforeCloudApply();
+    if (!backup) {
+        showToast('没有可恢复的覆盖前备份。', 'warning');
+        refreshLocalBackupRestoreState();
+        return;
+    }
+
+    const confirmed = await showConfirmDialog({
+        title: '恢复覆盖前本地备份？',
+        message: '确认后会用最近一次云端覆盖前的本地备份替换当前工作区。建议恢复后先检查数据，再决定是否上传云端。',
+        badge: 'LOCAL BACKUP',
+        confirmLabel: '恢复备份',
+        cancelLabel: '暂不恢复',
+        tone: 'warning'
+    });
+    if (!confirmed) return;
+
+    applyWorkspaceDatasetSnapshot(backup.datasets);
+    applyWorkspaceStateSnapshot(backup.state || {});
+    const saveResult = saveData(true) || { ok: true };
+    refreshWorkspaceUiAfterSync();
+    refreshLocalBackupRestoreState();
+    if (saveResult.ok) {
+        showToast('已恢复覆盖前本地备份，请检查后再同步。', 'success');
+    }
+}
+
+function clearLocalBackupBeforeCloudApply() {
+    const result = createStorageOperationResult();
+    safeRemoveStorageItem(LOCAL_BACKUP_BEFORE_CLOUD_APPLY_KEY, result);
+    refreshLocalBackupRestoreState();
+    if (result.ok) {
+        showToast('已清除覆盖前本地备份。', 'success');
     }
 }
 
 function applyImportedData(cloudData) {
     backupLocalDataBeforeCloudApply('cloud-apply');
     applyWorkspaceDatasetSnapshot(cloudData);
-    saveData(true);
-    updateLocalSyncTime(cloudData.lastSyncTime || new Date().toISOString());
+    const saveResult = saveData(true) || { ok: true };
+    if (saveResult.ok) {
+        updateLocalSyncTime(cloudData.lastSyncTime || new Date().toISOString());
+    }
     refreshWorkspaceUiAfterSync();
+    refreshLocalBackupRestoreState();
 }
 
 function shouldAutoApplyCloudData(cloudData) {
@@ -81,11 +174,22 @@ function shouldAutoApplyCloudData(cloudData) {
 }
 
 async function maybeConfirmCloudOverwrite() {
-    const cloudData = await fetchCloudWorkspaceData();
-    if (!cloudData?.lastSyncTime) return true;
+    const uploadGuard = await inspectCloudBeforeUpload();
+    return uploadGuard.confirmed;
+}
+
+async function inspectCloudBeforeUpload() {
+    const cloudSnapshot = await fetchCloudWorkspaceSnapshot();
+    const cloudData = cloudSnapshot.data;
+    if (!cloudData?.lastSyncTime) {
+        return {
+            confirmed: true,
+            etag: cloudSnapshot.etag
+        };
+    }
 
     if (isCloudSyncNewerThanLocal(cloudData.lastSyncTime)) {
-        return showConfirmDialog({
+        const confirmed = await showConfirmDialog({
             title: '云端版本更新于本地之后',
             message: '如果继续上传，云端较新的数据会被本地版本覆盖。更稳妥的做法是先拉取云端数据再决定。',
             badge: 'SYNC OVERRIDE',
@@ -93,9 +197,16 @@ async function maybeConfirmCloudOverwrite() {
             cancelLabel: '先去拉取',
             tone: 'danger'
         });
+        return {
+            confirmed,
+            etag: cloudSnapshot.etag
+        };
     }
 
-    return true;
+    return {
+        confirmed: true,
+        etag: cloudSnapshot.etag
+    };
 }
 
 async function handlePushCloud() {
@@ -112,8 +223,8 @@ async function handlePushCloud() {
     setSyncButtonLoading(btn, '检查冲突...');
 
     try {
-        const confirmed = await maybeConfirmCloudOverwrite();
-        if (!confirmed) {
+        const uploadGuard = await inspectCloudBeforeUpload();
+        if (!uploadGuard.confirmed) {
             showToast('已拦截上传操作，保护了云端数据', 'warning');
             return;
         }
@@ -121,13 +232,15 @@ async function handlePushCloud() {
         setSyncButtonLoading(btn, '上传中...');
 
         const currentSyncTime = new Date().toISOString();
-        await pushCloudWorkspaceData(buildCloudSyncPayload(currentSyncTime));
+        await pushCloudWorkspaceData(buildCloudSyncPayload(currentSyncTime), { etag: uploadGuard.etag });
         updateLocalSyncTime(currentSyncTime);
         showToast('✅ 成功同步至云端！', 'success');
     } catch (error) {
         const message = String(error?.message || '');
         if (message === 'fetch_invalid_payload') {
             showToast('❌ 云端数据文件内容损坏，请先修复后再同步。', 'error');
+        } else if (message === 'push_failed_412') {
+            showToast('❌ 云端数据已变化，本次上传已取消。请先拉取确认。', 'warning');
         } else if (message.startsWith('fetch_failed_') || message.startsWith('push_failed_')) {
             showToast('❌ 上传失败，请检查配置信息。', 'error');
         } else {
@@ -191,7 +304,8 @@ function triggerAutoSync() {
     console.log('☁️ 检测到数据变动，开始10分钟同步倒计时...');
     autoSyncTimer = setTimeout(async () => {
         try {
-            const cloudData = await fetchCloudWorkspaceData();
+            const cloudSnapshot = await fetchCloudWorkspaceSnapshot();
+            const cloudData = cloudSnapshot.data;
             if (isCloudSyncNewerThanLocal(cloudData?.lastSyncTime)) {
                 if (typeof showToast === 'function') {
                     showToast('检测到云端已有更新，已取消自动上传。请先手动拉取确认。', 'warning');
@@ -200,13 +314,19 @@ function triggerAutoSync() {
             }
 
             const currentSyncTime = new Date().toISOString();
-            await pushCloudWorkspaceData(buildCloudSyncPayload(currentSyncTime));
+            await pushCloudWorkspaceData(buildCloudSyncPayload(currentSyncTime), { etag: cloudSnapshot.etag });
             updateLocalSyncTime(currentSyncTime);
             console.log('☁️ 后台节流自动同步成功：', new Date().toLocaleTimeString());
         } catch (error) {
             console.error('☁️ 后台同步失败:', error);
             if (typeof showToast === 'function') {
-                showToast('自动同步失败，未覆盖云端数据。请稍后手动同步。', 'warning');
+                const message = String(error?.message || '');
+                showToast(
+                    message === 'push_failed_412'
+                        ? '自动同步检测到云端已变化，已取消上传。请先手动拉取确认。'
+                        : '自动同步失败，未覆盖云端数据。请稍后手动同步。',
+                    'warning'
+                );
             }
         } finally {
             autoSyncTimer = null;

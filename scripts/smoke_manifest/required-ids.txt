@@ -7,3 +7,6 @@ confirm-dialog-modal
 export-month-input
 export-profile-select
 export-trigger-btn
+local-backup-summary
+restore-local-backup-btn
+clear-local-backup-btn
