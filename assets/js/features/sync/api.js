@@ -53,8 +53,13 @@ async function fetchCloudWorkspaceData() {
 async function pushCloudWorkspaceData(payload, options = {}) {
     const { gistId: currentGistId } = getSyncCredentials();
     const headers = buildSyncHeaders();
-    if (options.etag) {
-        headers['If-Match'] = options.etag;
+    const etag = typeof options.etag === 'string' ? options.etag.trim() : '';
+    const requireEtag = options.requireEtag !== false;
+    if (requireEtag && !etag) {
+        throw new Error('push_missing_etag');
+    }
+    if (etag) {
+        headers['If-Match'] = etag;
     }
 
     const response = await fetch(`https://api.github.com/gists/${currentGistId}`, {

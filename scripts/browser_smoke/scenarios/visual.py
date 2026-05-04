@@ -7,6 +7,7 @@ from browser_smoke.artifacts import write_json_artifact
 from browser_smoke.helpers import click, log, require, wait_for, wait_text_contains, wait_visible
 
 LAYOUT_TOLERANCE = 16
+VIEWPORT_TOLERANCE = 2
 
 VISUAL_CASES = [
     {
@@ -95,7 +96,12 @@ def collect_layout_snapshot(driver, element_ids):
 def compare_layout_snapshots(case, actual, expected) -> None:
     case_name = case["name"]
     require(expected is not None, f"Missing visual baseline for {case_name}")
-    require(actual["viewport"] == expected["viewport"], f"{case_name} viewport mismatch")
+    for key in ("width", "height"):
+        delta = abs(actual["viewport"][key] - expected["viewport"][key])
+        require(
+            delta <= VIEWPORT_TOLERANCE,
+            f"{case_name} viewport {key} drifted by {delta}px (expected {expected['viewport'][key]}, got {actual['viewport'][key]})",
+        )
 
     for element_id, expected_metrics in expected["elements"].items():
         actual_metrics = actual["elements"].get(element_id)

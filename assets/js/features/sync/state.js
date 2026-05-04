@@ -76,6 +76,31 @@ function saveSyncCredentials(nextToken, nextGistId) {
 }
 
 function updateLocalSyncTime(timeStr) {
-    localLastSyncTime = timeStr;
-    persistStorageValue(localStorage, SYNC_TIME_STORAGE_KEY, timeStr);
+    const result = typeof createStorageOperationResult === 'function'
+        ? createStorageOperationResult()
+        : { ok: true, failedKeys: [] };
+    try {
+        if (typeof safeSetStorageItem === 'function' && typeof safeRemoveStorageItem === 'function') {
+            if (timeStr) {
+                safeSetStorageItem(SYNC_TIME_STORAGE_KEY, timeStr, result);
+            } else {
+                safeRemoveStorageItem(SYNC_TIME_STORAGE_KEY, result);
+            }
+        } else {
+            persistStorageValue(localStorage, SYNC_TIME_STORAGE_KEY, timeStr);
+        }
+    } catch (error) {
+        result.ok = false;
+        if (!result.failedKeys.includes(SYNC_TIME_STORAGE_KEY)) {
+            result.failedKeys.push(SYNC_TIME_STORAGE_KEY);
+        }
+        console.error(`localStorage write failed for "${SYNC_TIME_STORAGE_KEY}":`, error);
+    }
+    if (!result.ok && typeof notifyStorageWriteFailure === 'function') {
+        notifyStorageWriteFailure(result);
+    }
+    if (result.ok) {
+        localLastSyncTime = timeStr;
+    }
+    return result;
 }

@@ -47,6 +47,22 @@ check_required_ids() {
   done < <(read_manifest "$MANIFEST_DIR/required-ids.txt")
 }
 
+check_vendor_checksums() {
+  while read -r expected_hash file_path; do
+    [[ -n "$expected_hash" && -n "$file_path" ]] || continue
+    test -f "$file_path" || {
+      printf '%s is missing from the repository\n' "$file_path" >&2
+      exit 1
+    }
+    local actual_hash
+    actual_hash="$(shasum -a 256 "$file_path" | awk '{print $1}')"
+    if [[ "$actual_hash" != "$expected_hash" ]]; then
+      printf '%s checksum mismatch\nexpected: %s\nactual:   %s\n' "$file_path" "$expected_hash" "$actual_hash" >&2
+      exit 1
+    fi
+  done < <(read_manifest "$MANIFEST_DIR/vendor-checksums.txt")
+}
+
 check_script_order() {
   local previous_script=""
   local previous_line=0
@@ -103,5 +119,6 @@ check_index_references "$MANIFEST_DIR/required-stylesheets.txt"
 check_existing_paths "$MANIFEST_DIR/required-files.txt"
 check_existing_paths "$MANIFEST_DIR/required-docs.txt"
 check_required_ids
+check_vendor_checksums
 
 printf 'Smoke check passed.\n'

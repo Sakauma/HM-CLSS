@@ -13,6 +13,8 @@
 - 数据存储：浏览器 `localStorage`
 - 云端同步：GitHub Gist API
 
+本地第三方脚本的来源与版本记录在 `assets/vendor/README.md`，完整性由 `scripts/smoke_manifest/vendor-checksums.txt` 和 smoke check 校验。
+
 
 ## 🚀 核心维生模块
 
@@ -107,6 +109,8 @@ node --check assets/js/features/dashboard/ui.js
 node --check assets/js/features/sync/state.js
 node --check assets/js/features/sync/api.js
 node --check assets/js/features/sync/ui.js
+node --check assets/js/features/sync/backup.js
+node --check assets/js/features/sync/conflict.js
 node --check assets/js/features/sync/logic.js
 node --check assets/js/features/sync/index.js
 node --check assets/js/features/export/profiles.js
@@ -333,8 +337,12 @@ bash scripts/browser-smoke.sh
   GitHub Gist 请求与响应解析。
 - `assets/js/features/sync/ui.js`
   同步按钮态、配置表单读写和本地提示。
+- `assets/js/features/sync/backup.js`
+  云端覆盖前备份、恢复和数据替换回滚边界。
+- `assets/js/features/sync/conflict.js`
+  上传前云端版本检查、ETag 保护和冲突确认。
 - `assets/js/features/sync/logic.js`
-  冲突判断、拉取/推送流程和自动同步调度。
+  拉取/推送流程和自动同步调度。
 - `assets/js/features/sync/index.js`
   云同步入口，只负责挂载按钮事件并注册模块。
 - `assets/js/features/export/profiles.js`
@@ -573,15 +581,17 @@ const CONFIG = {
 57. `features/sync/state.js`
 58. `features/sync/api.js`
 59. `features/sync/ui.js`
-60. `features/sync/logic.js`
-61. `features/sync/index.js`
-62. `features/export/profiles.js`
-63. `features/export/monthly.js`
-64. `features/export/data.js`
-65. `features/export/formats.js`
-66. `features/export/ui.js`
-67. `features/export/index.js`
-68. `ui/shortcuts.js`
+60. `features/sync/backup.js`
+61. `features/sync/conflict.js`
+62. `features/sync/logic.js`
+63. `features/sync/index.js`
+64. `features/export/profiles.js`
+65. `features/export/monthly.js`
+66. `features/export/data.js`
+67. `features/export/formats.js`
+68. `features/export/ui.js`
+69. `features/export/index.js`
+70. `ui/shortcuts.js`
 
 现在目录按 `runtime / workspace / ui / features` 分层：`runtime` 负责启动、模块注册、共享运行时和可变状态容器，`workspace` 负责跨模块共享的数据与口径，`ui` 负责导航和快捷键这类外层交互，`features` 按值班、酒馆、离舰、统计、同步、导出等功能继续拆分。`app-init.js` 现在只负责 `initData()` 和触发模块注册中心，具体功能模块各自向注册中心报到。顺序错乱会导致飞船在启动时失压。
 

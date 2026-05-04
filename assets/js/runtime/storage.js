@@ -5,6 +5,8 @@
 
 const STORAGE_SCHEMA_VERSION_KEY = 'hmclss_storage_schema_version';
 const CURRENT_STORAGE_SCHEMA_VERSION = 1;
+const STORAGE_FAILURE_TOAST_COOLDOWN_MS = 5000;
+let lastStorageFailureToast = { signature: '', time: 0 };
 
 function migrateStoredWorkspacePayload(payload, fromVersion) {
     return applyRegisteredStorageMigrations(payload, fromVersion, CURRENT_STORAGE_SCHEMA_VERSION);
@@ -46,6 +48,15 @@ function safeRemoveStorageItem(key, result = createStorageOperationResult()) {
 
 function notifyStorageWriteFailure(result) {
     if (result.ok || typeof showToast !== 'function') return;
+    const signature = result.failedKeys.join(',');
+    const now = Date.now();
+    if (
+        lastStorageFailureToast.signature === signature &&
+        now - lastStorageFailureToast.time < STORAGE_FAILURE_TOAST_COOLDOWN_MS
+    ) {
+        return;
+    }
+    lastStorageFailureToast = { signature, time: now };
     showToast(`本地保存失败，已暂停自动同步：${result.failedKeys.join(', ')}`, 'error');
 }
 

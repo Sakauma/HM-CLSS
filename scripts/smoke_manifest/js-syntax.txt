@@ -57,6 +57,8 @@ assets/js/features/dashboard/ui.js
 assets/js/features/sync/state.js
 assets/js/features/sync/api.js
 assets/js/features/sync/ui.js
+assets/js/features/sync/backup.js
+assets/js/features/sync/conflict.js
 assets/js/features/sync/logic.js
 assets/js/features/sync/index.js
 assets/js/features/export/profiles.js

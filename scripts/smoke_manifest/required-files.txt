@@ -12,6 +12,7 @@ assets/vendor/lucide-0.514.0.min.js
 assets/vendor/chart.umd-4.4.8.min.js
 assets/vendor/marked-12.0.2.min.js
 assets/vendor/purify-3.0.6.min.js
+assets/vendor/README.md
 assets/js/runtime/tailwind-config.js
 .github/workflows/ci.yml
 environment.browser-test.yml
@@ -35,6 +36,7 @@ scripts/smoke_manifest/required-stylesheets.txt
 scripts/smoke_manifest/required-files.txt
 scripts/smoke_manifest/required-ids.txt
 scripts/smoke_manifest/required-docs.txt
+scripts/smoke_manifest/vendor-checksums.txt
 tests/unit/helpers.js
 tests/unit/runtime-store-and-checkin.test.js
 tests/unit/export-storage-workspace.test.js

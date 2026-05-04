@@ -422,4 +422,7 @@ test('saveData reports storage write failures and skips auto sync', () => {
     assert.equal(result.failedKeys[0], 'taskData');
     assert.equal(autoSyncCalls, 0);
     assert.equal(toastEvents.at(-1).tone, 'error');
+
+    context.saveData();
+    assert.equal(toastEvents.length, 1);
 });

@@ -79,32 +79,37 @@ function updateRuntimeValue(key, updater) {
 }
 
 function patchRuntimeValue(key, patch) {
-    const currentValue = runtimeState[key];
+    const runtimeKey = assertRuntimeStateKey(key);
+    const currentValue = runtimeState[runtimeKey];
     if (!currentValue || typeof currentValue !== 'object' || Array.isArray(currentValue)) {
-        return setRuntimeValue(key, patch);
+        return setRuntimeValue(runtimeKey, patch);
     }
 
-    return setRuntimeValue(key, { ...currentValue, ...patch });
+    return setRuntimeValue(runtimeKey, { ...currentValue, ...patch });
 }
 
 function appendRuntimeItem(key, item) {
-    const currentValue = Array.isArray(getRuntimeValue(key)) ? getRuntimeValue(key) : [];
-    return setRuntimeValue(key, [...currentValue, item]);
+    const currentValue = getRuntimeValue(key);
+    const entries = Array.isArray(currentValue) ? currentValue : [];
+    return setRuntimeValue(key, [...entries, item]);
 }
 
 function prependRuntimeItem(key, item) {
-    const currentValue = Array.isArray(getRuntimeValue(key)) ? getRuntimeValue(key) : [];
-    return setRuntimeValue(key, [item, ...currentValue]);
+    const currentValue = getRuntimeValue(key);
+    const entries = Array.isArray(currentValue) ? currentValue : [];
+    return setRuntimeValue(key, [item, ...entries]);
 }
 
 function mapRuntimeItems(key, mapper) {
-    const currentValue = Array.isArray(getRuntimeValue(key)) ? getRuntimeValue(key) : [];
-    return setRuntimeValue(key, currentValue.map(mapper));
+    const currentValue = getRuntimeValue(key);
+    const entries = Array.isArray(currentValue) ? currentValue : [];
+    return setRuntimeValue(key, entries.map(mapper));
 }
 
 function filterRuntimeItems(key, predicate) {
-    const currentValue = Array.isArray(getRuntimeValue(key)) ? getRuntimeValue(key) : [];
-    return setRuntimeValue(key, currentValue.filter(predicate));
+    const currentValue = getRuntimeValue(key);
+    const entries = Array.isArray(currentValue) ? currentValue : [];
+    return setRuntimeValue(key, entries.filter(predicate));
 }
 
 function updateRuntimeObjectEntry(key, entryKey, updater, defaultValue = {}) {

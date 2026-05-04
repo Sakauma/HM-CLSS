@@ -122,6 +122,9 @@ test('runtime store rejects unknown state keys', () => {
 
     assert.throws(() => context.getRuntimeValue('unknownState'), /Unknown runtime state key/);
     assert.throws(() => context.runtimeActions.set('unknownState', true), /Unknown runtime state key/);
+    assert.throws(() => context.runtimeActions.patch('unknownState', {}), /Unknown runtime state key/);
+    assert.throws(() => context.runtimeActions.append('unknownState', {}), /Unknown runtime state key/);
+    assert.throws(() => context.runtimeActions.updateObjectEntry('unknownState', 'entry', {}), /Unknown runtime state key/);
     assert.throws(() => context.subscribeRuntimeValue('unknownState', () => {}), /Unknown runtime state key/);
 });
 
