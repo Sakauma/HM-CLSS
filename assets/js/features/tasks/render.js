@@ -126,9 +126,13 @@ function updateSchedule() {
 
         let startHour = sh + (sm / 60);
         let endHour = eh + (em / 60);
+        if (task.startDate && task.endDate && task.startDate !== task.endDate && endHour <= startHour) {
+            endHour = 24;
+        }
         if (endHour <= 6) return;
         if (startHour < 6) startHour = 6;
         if (endHour > 24) endHour = 24;
+        if (endHour <= startHour) return;
 
         const top = (startHour - 6) * hourHeight;
         const height = (endHour - startHour) * hourHeight;

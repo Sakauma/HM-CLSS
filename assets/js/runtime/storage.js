@@ -27,7 +27,11 @@ function initData() {
     runtimeActions.setCheckinPreferences(payload.checkinPreferences);
     runtimeActions.setCurrentTask(payload.currentTask);
 
-    if (!isValidCurrentTaskRecord(runtimeSelectors.currentTask())) {
+    const normalizedCurrentTask = normalizeCurrentTaskRecord(runtimeSelectors.currentTask());
+    if (normalizedCurrentTask) {
+        runtimeActions.setCurrentTask(normalizedCurrentTask);
+        persistCurrentTask();
+    } else if (!isCorruptedStorageKey(CURRENT_TASK_STORAGE_KEY)) {
         runtimeActions.clearCurrentTask();
         localStorage.removeItem(CURRENT_TASK_STORAGE_KEY);
     }
@@ -37,7 +41,14 @@ function initData() {
         normalizeAmbient: true
     });
 
-    saveData(true);
+    const corruptedKeys = getCorruptedStorageKeys();
+    saveData(true, { skipKeys: corruptedKeys });
+
+    if (corruptedKeys.length && typeof showToast === 'function') {
+        setTimeout(() => {
+            showToast(`检测到本地缓存损坏，已临时回退：${corruptedKeys.join(', ')}`, 'warning');
+        }, 0);
+    }
 }
 
 function normalizeWorkspaceRuntimeState(options = {}) {
@@ -46,16 +57,17 @@ function normalizeWorkspaceRuntimeState(options = {}) {
         normalizeAmbient = false
     } = options;
 
-    if (!phoneResistData || typeof phoneResistData !== 'object') {
-        setRuntimeValue('phoneResistData', { totalCount: 0, records: {} });
-    }
-    if (!phoneResistData.records) phoneResistData.records = {};
+    setRuntimeValue('phoneResistData', normalizePhoneResistDataShape(phoneResistData));
     if (!Array.isArray(leaveData)) setRuntimeValue('leaveData', []);
-    if (!Array.isArray(achievements)) setRuntimeValue('achievements', []);
-    if (!Array.isArray(tavernData)) setRuntimeValue('tavernData', []);
-    if (!quickNotesData || typeof quickNotesData !== 'object') setRuntimeValue('quickNotesData', {});
-    if (!taskData || typeof taskData !== 'object') setRuntimeValue('taskData', {});
-    if (!checkinData || typeof checkinData !== 'object') setRuntimeValue('checkinData', {});
+    setRuntimeValue('achievements', Array.isArray(achievements)
+        ? achievements.filter((achievementId) => typeof achievementId === 'string')
+        : []);
+    setRuntimeValue('tavernData', Array.isArray(tavernData)
+        ? tavernData.filter((drink) => drink && typeof drink === 'object')
+        : []);
+    if (!quickNotesData || typeof quickNotesData !== 'object' || Array.isArray(quickNotesData)) setRuntimeValue('quickNotesData', {});
+    setRuntimeValue('taskData', normalizeTaskDataByDate(taskData));
+    if (!checkinData || typeof checkinData !== 'object' || Array.isArray(checkinData)) setRuntimeValue('checkinData', {});
 
     mapRuntimeItems('leaveData', (leave) => normalizeLeaveRecord(leave));
     Object.keys(checkinData).forEach((date) => {
@@ -77,17 +89,23 @@ function normalizeWorkspaceRuntimeState(options = {}) {
     if (!quickNotesData[today]) quickNotesData[today] = [];
 }
 
-function saveData(preventAutoSync = false) {
-    localStorage.setItem(STORAGE_SCHEMA_VERSION_KEY, String(CURRENT_STORAGE_SCHEMA_VERSION));
-    localStorage.setItem('checkinData', JSON.stringify(checkinData));
-    localStorage.setItem('phoneResistData', JSON.stringify(phoneResistData));
-    localStorage.setItem('taskData', JSON.stringify(taskData));
-    localStorage.setItem('leaveData', JSON.stringify(leaveData));
-    localStorage.setItem('achievements', JSON.stringify(achievements));
-    localStorage.setItem('quickNotesData', JSON.stringify(quickNotesData));
-    localStorage.setItem('tavernData', JSON.stringify(tavernData));
-    localStorage.setItem(AMBIENT_PREFS_STORAGE_KEY, JSON.stringify(normalizeAmbientPreferences(ambientPreferences)));
-    localStorage.setItem(CHECKIN_PREFS_STORAGE_KEY, JSON.stringify(normalizeCheckinPreferences(checkinPreferences)));
+function saveData(preventAutoSync = false, options = {}) {
+    const skipKeys = new Set(options.skipKeys || []);
+    const writeStorageValue = (key, value) => {
+        if (skipKeys.has(key)) return;
+        localStorage.setItem(key, value);
+    };
+
+    writeStorageValue(STORAGE_SCHEMA_VERSION_KEY, String(CURRENT_STORAGE_SCHEMA_VERSION));
+    writeStorageValue('checkinData', JSON.stringify(checkinData));
+    writeStorageValue('phoneResistData', JSON.stringify(phoneResistData));
+    writeStorageValue('taskData', JSON.stringify(taskData));
+    writeStorageValue('leaveData', JSON.stringify(leaveData));
+    writeStorageValue('achievements', JSON.stringify(achievements));
+    writeStorageValue('quickNotesData', JSON.stringify(quickNotesData));
+    writeStorageValue('tavernData', JSON.stringify(tavernData));
+    writeStorageValue(AMBIENT_PREFS_STORAGE_KEY, JSON.stringify(normalizeAmbientPreferences(ambientPreferences)));
+    writeStorageValue(CHECKIN_PREFS_STORAGE_KEY, JSON.stringify(normalizeCheckinPreferences(checkinPreferences)));
 
     if (typeof refreshStatisticsView === 'function') {
         refreshStatisticsView();

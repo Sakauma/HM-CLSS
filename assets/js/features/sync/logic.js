@@ -23,6 +23,15 @@ function hasMeaningfulLocalData() {
     });
 }
 
+function isCloudSyncNewerThanLocal(cloudSyncTime) {
+    if (!cloudSyncTime) return false;
+    const cloudTimestamp = new Date(cloudSyncTime).getTime();
+    const localTimestamp = localLastSyncTime ? new Date(localLastSyncTime).getTime() : NaN;
+
+    if (!Number.isFinite(cloudTimestamp)) return false;
+    return !Number.isFinite(localTimestamp) || cloudTimestamp > localTimestamp;
+}
+
 function refreshWorkspaceUiAfterSync() {
     const today = getTodayString();
     refreshCheckinViews();
@@ -44,7 +53,21 @@ function refreshWorkspaceUiAfterSync() {
     if (typeof renderTavernHistory === 'function') renderTavernHistory();
 }
 
+function backupLocalDataBeforeCloudApply(reason) {
+    try {
+        localStorage.setItem(LOCAL_BACKUP_BEFORE_CLOUD_APPLY_KEY, JSON.stringify({
+            datasets: buildWorkspaceDatasetSnapshot(),
+            state: buildWorkspaceStateSnapshot(),
+            backupReason: reason,
+            backupTime: new Date().toISOString()
+        }));
+    } catch (error) {
+        console.error('本地覆盖前备份失败:', error);
+    }
+}
+
 function applyImportedData(cloudData) {
+    backupLocalDataBeforeCloudApply('cloud-apply');
     applyWorkspaceDatasetSnapshot(cloudData);
     saveData(true);
     updateLocalSyncTime(cloudData.lastSyncTime || new Date().toISOString());
@@ -54,14 +77,14 @@ function applyImportedData(cloudData) {
 function shouldAutoApplyCloudData(cloudData) {
     if (!cloudData?.lastSyncTime) return false;
     if (!localLastSyncTime) return !hasMeaningfulLocalData();
-    return new Date(cloudData.lastSyncTime) > new Date(localLastSyncTime);
+    return isCloudSyncNewerThanLocal(cloudData.lastSyncTime);
 }
 
 async function maybeConfirmCloudOverwrite() {
     const cloudData = await fetchCloudWorkspaceData();
     if (!cloudData?.lastSyncTime) return true;
 
-    if (!localLastSyncTime || new Date(cloudData.lastSyncTime) > new Date(localLastSyncTime)) {
+    if (isCloudSyncNewerThanLocal(cloudData.lastSyncTime)) {
         return showConfirmDialog({
             title: '云端版本更新于本地之后',
             message: '如果继续上传，云端较新的数据会被本地版本覆盖。更稳妥的做法是先拉取云端数据再决定。',
@@ -168,12 +191,23 @@ function triggerAutoSync() {
     console.log('☁️ 检测到数据变动，开始10分钟同步倒计时...');
     autoSyncTimer = setTimeout(async () => {
         try {
+            const cloudData = await fetchCloudWorkspaceData();
+            if (isCloudSyncNewerThanLocal(cloudData?.lastSyncTime)) {
+                if (typeof showToast === 'function') {
+                    showToast('检测到云端已有更新，已取消自动上传。请先手动拉取确认。', 'warning');
+                }
+                return;
+            }
+
             const currentSyncTime = new Date().toISOString();
             await pushCloudWorkspaceData(buildCloudSyncPayload(currentSyncTime));
             updateLocalSyncTime(currentSyncTime);
             console.log('☁️ 后台节流自动同步成功：', new Date().toLocaleTimeString());
         } catch (error) {
             console.error('☁️ 后台同步失败:', error);
+            if (typeof showToast === 'function') {
+                showToast('自动同步失败，未覆盖云端数据。请稍后手动同步。', 'warning');
+            }
         } finally {
             autoSyncTimer = null;
         }

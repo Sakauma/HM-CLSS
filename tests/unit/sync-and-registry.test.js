@@ -237,6 +237,60 @@ test('sync state clears pending auto-sync timers on demand and on credential cha
     assert.deepEqual(clearedTimers, [scheduledTimers[0], scheduledTimers[1]]);
 });
 
+test('auto sync cancels upload when cloud data is newer than local state', async () => {
+    const scheduledTimers = [];
+    const toastEvents = [];
+    let pushCalls = 0;
+    const context = createBaseContext({
+        localStorage: createStorageMock({
+            gistId: 'gist_test',
+            localLastSyncTime: '2026-04-20T10:00:00.000Z'
+        }),
+        sessionStorage: createStorageMock({
+            githubToken: 'ghp_test'
+        }),
+        setTimeout(callback, delay) {
+            const timer = { callback, delay };
+            scheduledTimers.push(timer);
+            return timer;
+        },
+        fetchCloudWorkspaceData: async () => ({
+            lastSyncTime: '2026-04-21T10:00:00.000Z'
+        }),
+        pushCloudWorkspaceData: async () => {
+            pushCalls += 1;
+        },
+        buildCloudSyncPayload: () => ({ ok: true }),
+        showToast(message, tone) {
+            toastEvents.push({ message, tone });
+        },
+        countTotalTaskEntries() { return 0; },
+        countQuickNoteEntries() { return 0; },
+        ensureDayRecord(day) { return day; },
+        hasAnyCheckinRecord() { return false; },
+        checkinData: {},
+        phoneResistData: { totalCount: 0, records: {} },
+        leaveData: [],
+        achievements: [],
+        tavernData: [],
+        currentTask: null
+    });
+
+    loadScript(context, 'assets/js/features/sync/state.js');
+    loadScript(context, 'assets/js/features/sync/logic.js');
+
+    context.triggerAutoSync();
+    assert.equal(scheduledTimers.length, 1);
+
+    await scheduledTimers[0].callback();
+
+    assert.equal(pushCalls, 0);
+    assert.deepEqual(toastEvents.at(-1), {
+        message: '检测到云端已有更新，已取消自动上传。请先手动拉取确认。',
+        tone: 'warning'
+    });
+});
+
 test('startup auto pull stops applying cloud data after module cleanup deactivates the run', async () => {
     let resolveFetch = null;
     const appliedPayloads = [];

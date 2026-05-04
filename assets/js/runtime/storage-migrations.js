@@ -61,26 +61,7 @@ function normalizeLegacyQuickNotes(rawNotes) {
 }
 
 function normalizeLegacyPhoneResist(rawPhoneResistData) {
-    const normalized = rawPhoneResistData && typeof rawPhoneResistData === 'object'
-        ? rawPhoneResistData
-        : { totalCount: 0, records: {} };
-
-    const records = normalized.records && typeof normalized.records === 'object' && !Array.isArray(normalized.records)
-        ? normalized.records
-        : {};
-
-    return {
-        totalCount: Number(normalized.totalCount) || 0,
-        records: Object.fromEntries(
-            Object.entries(records).map(([dateKey, record]) => {
-                const normalizedRecord = record && typeof record === 'object' ? record : {};
-                return [dateKey, {
-                    count: Number(normalizedRecord.count) || 0,
-                    times: Array.isArray(normalizedRecord.times) ? normalizedRecord.times.filter((time) => typeof time === 'string') : []
-                }];
-            })
-        )
-    };
+    return normalizePhoneResistDataShape(rawPhoneResistData);
 }
 
 function normalizeLegacyTaskData(rawTaskData) {
@@ -92,10 +73,7 @@ function normalizeLegacyTaskData(rawTaskData) {
 
             return [dateKey, entries
                 .filter((entry) => entry && typeof entry === 'object')
-                .map((entry) => ({
-                    ...entry,
-                    duration: Number(entry.duration) || 0
-                }))];
+                .map((entry, index) => normalizeTaskRecord(entry, dateKey, index))];
         })
     );
 }
@@ -118,7 +96,7 @@ function migrateStorageSchemaV1(payload) {
         leaveData: Array.isArray(payload.leaveData) ? payload.leaveData.map((leave) => normalizeLeaveRecord(leave)) : [],
         achievements: Array.isArray(payload.achievements) ? payload.achievements.filter((entry) => typeof entry === 'string') : [],
         tavernData: Array.isArray(payload.tavernData) ? payload.tavernData : [],
-        currentTask: isValidCurrentTaskRecord(payload.currentTask) ? payload.currentTask : null,
+        currentTask: normalizeCurrentTaskRecord(payload.currentTask),
         ambientPreferences: normalizeAmbientPreferences(payload.ambientPreferences),
         checkinPreferences: normalizeCheckinPreferences(payload.checkinPreferences)
     };

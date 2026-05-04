@@ -245,6 +245,7 @@ test('storage migration normalizes legacy payloads and saveData persists schema 
         },
         createEmptyDayRecord: () => createCheckinDay(),
         getTodayString: () => '2026-04-20',
+        formatLocalDate: (date) => date.toISOString().slice(0, 10),
         normalizeLeaveRecord: (leave) => ({
             id: leave.id || 'leave_1',
             date: leave.date || '2026-04-20',
@@ -307,6 +308,8 @@ test('storage migration normalizes legacy payloads and saveData persists schema 
     assert.equal(context.quickNotesData['2026-04-19'][1].tag, 'todo');
     assert.equal(context.phoneResistData.records['2026-04-19'].count, 1);
     assert.equal(context.taskData['2026-04-19'][0].duration, 45);
+    assert.equal(context.taskData['2026-04-19'][0].startDate, '2026-04-19');
+    assert.equal(context.taskData['2026-04-19'][0].endDate, '2026-04-19');
     assert.equal(context.achievements.length, 1);
     assert.equal(context.ambientPreferences.enabled, false);
     assert.equal(context.checkinPreferences.lateGraceMins, 45);
@@ -320,4 +323,50 @@ test('storage migration normalizes legacy payloads and saveData persists schema 
     assert.ok(refreshExportCalls > 0);
     assert.ok(ambientCalls > 0);
     assert.equal(autoSyncCalls, 1);
+});
+
+test('initData preserves corrupted localStorage keys instead of overwriting them', () => {
+    const localStorage = createStorageMock({
+        taskData: '{broken',
+        checkinData: JSON.stringify({}),
+        phoneResistData: JSON.stringify({ totalCount: 0, records: {} })
+    });
+
+    const context = createBaseContext({
+        localStorage,
+        CURRENT_TASK_STORAGE_KEY: 'currentTask',
+        AMBIENT_PREFS_STORAGE_KEY: 'ambientPrefs',
+        CHECKIN_PREFS_STORAGE_KEY: 'checkinPrefs',
+        getNoteText: (note) => (note && typeof note.text === 'string' ? note.text : ''),
+        getNormalizedCheckInStatus: (status) => status,
+        getTodayString: () => '2026-04-20',
+        formatLocalDate: (date) => date.toISOString().slice(0, 10),
+        refreshStatisticsView() {},
+        refreshExportPreview() {},
+        updateVoyageAmbientPresentation() {},
+        checkinData: {},
+        phoneResistData: { totalCount: 0, records: {} },
+        taskData: {},
+        leaveData: [],
+        achievements: [],
+        quickNotesData: {},
+        tavernData: [],
+        ambientPreferences: null,
+        checkinPreferences: null,
+        currentTask: null
+    });
+
+    loadScript(context, 'assets/js/runtime/store.js');
+    loadScript(context, 'assets/js/runtime/storage-migrations.js');
+    loadScript(context, 'assets/js/runtime/storage-payload.js');
+    loadScript(context, 'assets/js/runtime/storage-shapes.js');
+    loadScript(context, 'assets/js/runtime/storage.js');
+
+    context.initData();
+
+    const corruptedKeys = context.getCorruptedStorageKeys();
+    assert.equal(corruptedKeys.length, 1);
+    assert.equal(corruptedKeys[0], 'taskData');
+    assert.equal(context.localStorage.getItem('taskData'), '{broken');
+    assert.equal(context.taskData['2026-04-20'].length, 0);
 });

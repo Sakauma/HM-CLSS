@@ -33,6 +33,7 @@ function startTask() {
         name,
         tag: tagValue,
         startTime: getCurrentTimeString(),
+        startDate: getTodayString(),
         startTimestamp: Date.now()
     });
 
@@ -66,15 +67,19 @@ function endTask() {
     clearInterval(runtimeSelectors.taskTimer());
     runtimeActions.setTaskTimer(null);
     const duration = Math.floor((Date.now() - activeTask.startTimestamp) / 60000);
-    appendDailyEntry(taskData, getTodayString(), {
+    const taskStartDate = activeTask.startDate || getTodayString();
+    const taskEndDate = getTodayString();
+    appendDailyEntry(taskData, taskStartDate, {
         ...activeTask,
+        startDate: taskStartDate,
+        endDate: taskEndDate,
         endTime: getCurrentTimeString(),
         duration,
         completed: true
     });
     runtimeActions.clearCurrentTask();
     persistCurrentTask();
-    saveData(true);
+    saveData();
     updateTodayTasksList();
     updateSchedule();
     updateTodayStatus();

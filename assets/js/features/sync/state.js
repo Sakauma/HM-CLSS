@@ -8,6 +8,7 @@ const AUTO_SYNC_INTERVAL_MS = 600000;
 const SYNC_TOKEN_STORAGE_KEY = 'githubToken';
 const SYNC_GIST_STORAGE_KEY = 'gistId';
 const SYNC_TIME_STORAGE_KEY = 'localLastSyncTime';
+const LOCAL_BACKUP_BEFORE_CLOUD_APPLY_KEY = 'lastLocalBackupBeforeCloudApply';
 
 function getSyncTokenStorage() {
     return typeof sessionStorage !== 'undefined' ? sessionStorage : localStorage;

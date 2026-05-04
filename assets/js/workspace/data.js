@@ -60,13 +60,23 @@ function ensureWorkspaceTodayDefaults() {
 
 function applyWorkspaceDatasetSnapshot(snapshot) {
     const source = extractWorkspaceDatasetSource(snapshot);
-    runtimeActions.setCheckinData(source.checkinData || {});
-    runtimeActions.setPhoneResistData(source.phoneResistData || { totalCount: 0, records: {} });
-    runtimeActions.setTaskData(source.taskData || {});
-    runtimeActions.setLeaveData(source.leaveData || []);
-    runtimeActions.setAchievements(source.achievements || []);
-    runtimeActions.setQuickNotesData(source.quickNotesData || {});
-    runtimeActions.setTavernData(source.tavernData || []);
+    runtimeActions.setCheckinData(source.checkinData && typeof source.checkinData === 'object' && !Array.isArray(source.checkinData)
+        ? source.checkinData
+        : {});
+    runtimeActions.setPhoneResistData(normalizePhoneResistDataShape(source.phoneResistData));
+    runtimeActions.setTaskData(normalizeTaskDataByDate(source.taskData));
+    runtimeActions.setLeaveData(Array.isArray(source.leaveData)
+        ? source.leaveData.map((leave) => normalizeLeaveRecord(leave))
+        : []);
+    runtimeActions.setAchievements(Array.isArray(source.achievements)
+        ? source.achievements.filter((achievementId) => typeof achievementId === 'string')
+        : []);
+    runtimeActions.setQuickNotesData(source.quickNotesData && typeof source.quickNotesData === 'object' && !Array.isArray(source.quickNotesData)
+        ? source.quickNotesData
+        : {});
+    runtimeActions.setTavernData(Array.isArray(source.tavernData)
+        ? source.tavernData.filter((drink) => drink && typeof drink === 'object')
+        : []);
     ensureWorkspaceTodayDefaults();
 }
 

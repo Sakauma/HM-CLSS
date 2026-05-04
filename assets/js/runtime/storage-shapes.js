@@ -89,6 +89,81 @@ function normalizeLeaveRecord(leave, forPartialOnly = false) {
     };
 }
 
+function normalizePhoneResistDataShape(source) {
+    const normalized = source && typeof source === 'object' && !Array.isArray(source)
+        ? source
+        : {};
+    const records = normalized.records && typeof normalized.records === 'object' && !Array.isArray(normalized.records)
+        ? normalized.records
+        : {};
+
+    return {
+        totalCount: Math.max(0, Math.floor(Number(normalized.totalCount) || 0)),
+        records: Object.fromEntries(
+            Object.entries(records).map(([dateKey, record]) => {
+                const normalizedRecord = record && typeof record === 'object' && !Array.isArray(record)
+                    ? record
+                    : {};
+                return [dateKey, {
+                    count: Math.max(0, Math.floor(Number(normalizedRecord.count) || 0)),
+                    times: Array.isArray(normalizedRecord.times)
+                        ? normalizedRecord.times.filter((time) => typeof time === 'string')
+                        : []
+                }];
+            })
+        )
+    };
+}
+
+function normalizeTaskRecord(task, dateKey, index = 0) {
+    const normalized = task && typeof task === 'object' ? task : {};
+    const duration = Number(normalized.duration);
+
+    return {
+        ...normalized,
+        id: typeof normalized.id === 'string' ? normalized.id : `task_${dateKey}_${index}`,
+        name: typeof normalized.name === 'string' ? normalized.name : '未命名任务',
+        tag: typeof normalized.tag === 'string' ? normalized.tag : 'other',
+        startTime: typeof normalized.startTime === 'string' ? normalized.startTime : '-',
+        endTime: typeof normalized.endTime === 'string' ? normalized.endTime : '-',
+        startDate: typeof normalized.startDate === 'string' ? normalized.startDate : dateKey,
+        endDate: typeof normalized.endDate === 'string' ? normalized.endDate : dateKey,
+        duration: Number.isFinite(duration) ? Math.max(0, Math.floor(duration)) : 0,
+        completed: normalized.completed !== false
+    };
+}
+
+function normalizeTaskDataByDate(source) {
+    if (!source || typeof source !== 'object' || Array.isArray(source)) return {};
+
+    return Object.fromEntries(
+        Object.entries(source).map(([dateKey, entries]) => [
+            dateKey,
+            Array.isArray(entries)
+                ? entries
+                    .filter((entry) => entry && typeof entry === 'object')
+                    .map((entry, index) => normalizeTaskRecord(entry, dateKey, index))
+                : []
+        ])
+    );
+}
+
+function normalizeCurrentTaskRecord(task) {
+    if (!isValidCurrentTaskRecord(task)) return null;
+
+    const startDateFromTimestamp = new Date(task.startTimestamp);
+    return {
+        ...task,
+        id: typeof task.id === 'string' ? task.id : `task_${task.startTimestamp}`,
+        tag: typeof task.tag === 'string' ? task.tag : 'other',
+        startDate: typeof task.startDate === 'string'
+            ? task.startDate
+            : Number.isFinite(startDateFromTimestamp.getTime())
+                ? formatLocalDate(startDateFromTimestamp)
+                : getTodayString()
+    };
+}
+
 function normalizeAmbientPreferences(preferences) {
     const normalized = preferences && typeof preferences === 'object' ? preferences : {};
     return {
