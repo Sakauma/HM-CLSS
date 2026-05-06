@@ -1,61 +1,11 @@
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const vm = require('node:vm');
 const test = require('node:test');
 
-const ROOT_DIR = path.resolve(__dirname, '..', '..');
-
-function loadScript(context, relativePath) {
-    const absolutePath = path.join(ROOT_DIR, relativePath);
-    const source = fs.readFileSync(absolutePath, 'utf8');
-    vm.runInContext(source, context, { filename: absolutePath });
-}
-
-function createBaseContext(overrides = {}) {
-    const context = vm.createContext({
-        console,
-        setTimeout,
-        clearTimeout,
-        setInterval,
-        clearInterval,
-        JSON,
-        Math,
-        Number,
-        String,
-        Boolean,
-        Array,
-        Object,
-        Date,
-        Map,
-        Set,
-        Promise,
-        Error,
-        ...overrides
-    });
-
-    context.globalThis = context;
-    context.window = context;
-    return context;
-}
-
-function createStorageMock(initialEntries = {}) {
-    const store = new Map(
-        Object.entries(initialEntries).map(([key, value]) => [key, String(value)])
-    );
-
-    return {
-        getItem(key) {
-            return store.has(key) ? store.get(key) : null;
-        },
-        setItem(key, value) {
-            store.set(key, String(value));
-        },
-        removeItem(key) {
-            store.delete(key);
-        }
-    };
-}
+const {
+    loadScript,
+    createBaseContext,
+    createStorageMock
+} = require('./helpers');
 
 function createButtonElement() {
     return {
@@ -72,6 +22,157 @@ function createButtonElement() {
             return this[name] ?? null;
         }
     };
+}
+
+function createClassList(initialValues = []) {
+    const values = new Set(initialValues);
+    return {
+        add(...tokens) {
+            tokens.forEach((token) => values.add(token));
+        },
+        remove(...tokens) {
+            tokens.forEach((token) => values.delete(token));
+        },
+        toggle(token, force) {
+            if (force === true) {
+                values.add(token);
+                return true;
+            }
+            if (force === false) {
+                values.delete(token);
+                return false;
+            }
+            if (values.has(token)) {
+                values.delete(token);
+                return false;
+            }
+            values.add(token);
+            return true;
+        },
+        contains(token) {
+            return values.has(token);
+        }
+    };
+}
+
+function createSyncApplyContext(options = {}) {
+    const localStorage = options.localStorage || createStorageMock({
+        gistId: 'gist_test',
+        localLastSyncTime: options.localLastSyncTime || '2026-04-20T08:00:00.000Z'
+    });
+    const toastEvents = [];
+    const context = createBaseContext({
+        console: { ...console, error() {} },
+        localStorage,
+        sessionStorage: createStorageMock({ githubToken: 'ghp_test' }),
+        document: {
+            getElementById() {
+                return null;
+            }
+        },
+        showToast(message, tone) {
+            toastEvents.push({ message, tone });
+        },
+        createStorageOperationResult: () => ({ ok: true, failedKeys: [] }),
+        safeSetStorageItem(key, value, result) {
+            localStorage.setItem(key, value);
+            return result.ok;
+        },
+        safeRemoveStorageItem(key, result) {
+            localStorage.removeItem(key);
+            return result.ok;
+        },
+        countTotalTaskEntries() { return 0; },
+        countQuickNoteEntries() { return 0; },
+        normalizeCurrentTaskRecord(task) {
+            return task && typeof task.name === 'string' && Number.isFinite(task.startTimestamp) && typeof task.startTime === 'string'
+                ? { id: task.id || `task_${task.startTimestamp}`, tag: task.tag || 'other', ...task }
+                : null;
+        },
+        normalizeAmbientPreferences(prefs) {
+            return {
+                enabled: prefs?.enabled !== false,
+                intensity: 'subtle',
+                easterEggs: prefs?.easterEggs !== false
+            };
+        },
+        normalizeCheckinPreferences(prefs) {
+            return {
+                lateGraceMins: Number.isFinite(Number(prefs?.lateGraceMins)) ? Number(prefs.lateGraceMins) : 30,
+                earlyGraceMins: Number.isFinite(Number(prefs?.earlyGraceMins)) ? Number(prefs.earlyGraceMins) : 30
+            };
+        },
+        refreshWorkspaceUiAfterSync() {},
+        taskData: options.taskData || { '2026-04-19': [{ name: 'Original Task' }] },
+        quickNotesData: options.quickNotesData || {},
+        currentTask: options.currentTask || { name: 'Original Active', startTimestamp: 1769990000000, startTime: '08:00' },
+        ambientPreferences: options.ambientPreferences || { enabled: true, easterEggs: true },
+        checkinPreferences: options.checkinPreferences || { lateGraceMins: 30, earlyGraceMins: 30 }
+    });
+
+    Object.assign(context, {
+        runtimeActions: {
+            setCurrentTask(task) {
+                context.currentTask = task;
+            },
+            setAmbientPreferences(preferences) {
+                context.ambientPreferences = preferences;
+            },
+            setCheckinPreferences(preferences) {
+                context.checkinPreferences = preferences;
+            }
+        },
+        runtimeSelectors: {
+            checkinPreferences() {
+                return context.checkinPreferences;
+            }
+        },
+        buildWorkspaceDatasetSnapshot() {
+            return {
+                taskData: JSON.parse(JSON.stringify(context.taskData)),
+                quickNotesData: JSON.parse(JSON.stringify(context.quickNotesData))
+            };
+        },
+        buildWorkspaceStateSnapshot() {
+            return {
+                currentTask: context.currentTask ? JSON.parse(JSON.stringify(context.currentTask)) : null,
+                ambientPreferences: JSON.parse(JSON.stringify(context.ambientPreferences)),
+                checkinPreferences: JSON.parse(JSON.stringify(context.checkinPreferences)),
+                lastSyncTime: localStorage.getItem('localLastSyncTime')
+            };
+        },
+        applyWorkspaceDatasetSnapshot(datasets) {
+            context.taskData = datasets.taskData || {};
+            context.quickNotesData = datasets.quickNotesData || {};
+        },
+        persistCurrentTask() {
+            if (typeof options.persistCurrentTask === 'function') {
+                return options.persistCurrentTask(context, localStorage);
+            }
+            if (context.currentTask) {
+                localStorage.setItem('currentTask', JSON.stringify(context.currentTask));
+            } else {
+                localStorage.removeItem('currentTask');
+            }
+            return { ok: true, failedKeys: [] };
+        },
+        saveData() {
+            if (typeof options.saveData === 'function') {
+                return options.saveData(context, localStorage);
+            }
+            localStorage.setItem('taskData', JSON.stringify(context.taskData));
+            localStorage.setItem('quickNotesData', JSON.stringify(context.quickNotesData));
+            localStorage.setItem('ambientPreferences', JSON.stringify(context.ambientPreferences));
+            localStorage.setItem('checkinPreferences', JSON.stringify(context.checkinPreferences));
+            return { ok: true, failedKeys: [] };
+        }
+    });
+
+    loadScript(context, 'assets/js/features/sync/state.js');
+    loadScript(context, 'assets/js/features/sync/backup.js');
+    context.refreshWorkspaceUiAfterSync = () => {};
+
+    return { context, localStorage, toastEvents };
 }
 
 test('module registry disposes cleanups in reverse order and allows reinitialization', () => {
@@ -123,6 +224,55 @@ test('module registry flushes deferred module registrars registered before the r
     assert.deepEqual(moduleIds, ['deferred-theme']);
     context.initializeAppModules();
     assert.equal(context.__deferredInitialized, true);
+});
+
+test('theme module tolerates unavailable localStorage', () => {
+    const htmlClassList = createClassList();
+    const themeToggle = createButtonElement();
+    let registeredModule = null;
+    const context = createBaseContext({
+        console: { ...console, error() {} },
+        localStorage: {
+            getItem() {
+                throw new Error('storage disabled');
+            },
+            setItem() {
+                throw new Error('storage disabled');
+            }
+        },
+        document: {
+            documentElement: { classList: htmlClassList },
+            getElementById(id) {
+                if (id === 'theme-toggle') return themeToggle;
+                if (id === 'theme-icon-dark' || id === 'theme-icon-light') {
+                    return { classList: createClassList(['hidden']) };
+                }
+                return null;
+            },
+            querySelector() {
+                return null;
+            }
+        },
+        matchMedia: () => ({
+            matches: true,
+            addEventListener() {},
+            removeEventListener() {}
+        }),
+        lucide: { createIcons() {} },
+        createDisposables: () => ({
+            listen() { return () => {}; },
+            dispose() {}
+        }),
+        registerAppModule(module) {
+            registeredModule = module;
+        }
+    });
+
+    loadScript(context, 'assets/js/runtime/theme.js');
+
+    assert.equal(htmlClassList.contains('dark'), true);
+    assert.equal(registeredModule.id, 'runtime-theme');
+    assert.doesNotThrow(() => context.handleThemeToggleClick());
 });
 
 test('sync api surfaces fetch and push status codes', async () => {
@@ -240,6 +390,46 @@ test('sync state migrates legacy token storage into session scope', () => {
     const credentials = context.getSyncCredentials();
     assert.equal(credentials.githubToken, 'legacy_token');
     assert.equal(credentials.gistId, 'gist_test');
+});
+
+test('sync state tolerates storage read and migration failures', () => {
+    const localStorage = {
+        getItem(key) {
+            if (key === 'githubToken') return 'legacy_token';
+            throw new Error('read blocked');
+        },
+        setItem() {
+            throw new Error('write blocked');
+        },
+        removeItem() {
+            throw new Error('remove blocked');
+        }
+    };
+    const sessionStorage = {
+        getItem() {
+            return null;
+        },
+        setItem() {
+            throw new Error('session write blocked');
+        },
+        removeItem() {
+            throw new Error('session remove blocked');
+        }
+    };
+    const context = createBaseContext({
+        console: { ...console, error() {} },
+        localStorage,
+        sessionStorage
+    });
+
+    assert.doesNotThrow(() => loadScript(context, 'assets/js/features/sync/state.js'));
+    assert.equal(context.getSyncCredentials().githubToken, 'legacy_token');
+    assert.equal(context.getSyncCredentials().gistId, '');
+
+    const result = context.updateLocalSyncTime('2026-04-20T10:00:00.000Z');
+    assert.equal(result.ok, false);
+    assert.equal(result.failedKeys.length, 1);
+    assert.equal(result.failedKeys[0], 'localLastSyncTime');
 });
 
 test('sync config save fails without mutating credentials when storage write fails', () => {
@@ -950,6 +1140,81 @@ test('cloud import rolls back memory when workspace save fails', () => {
     assert.equal(applied, false);
     assert.equal(context.taskData['2026-04-19'][0].name, 'Original Task');
     assert.equal(context.localStorage.getItem('localLastSyncTime'), '2026-04-20T08:00:00.000Z');
+    assert.equal(toastEvents.at(-1).tone, 'error');
+    assert.match(toastEvents.at(-1).message, /回滚当前工作区/);
+});
+
+test('cloud import applies workspace state when payload includes state', () => {
+    const { context, localStorage } = createSyncApplyContext();
+
+    const applied = context.applyImportedData({
+        taskData: { '2026-04-20': [{ name: 'Cloud Task' }] },
+        quickNotesData: {},
+        state: {
+            currentTask: { name: 'Cloud Active', startTimestamp: 1770000000000, startTime: '09:00', tag: 'code' },
+            ambientPreferences: { enabled: false, easterEggs: false },
+            checkinPreferences: { lateGraceMins: 45, earlyGraceMins: 10 }
+        },
+        lastSyncTime: '2026-04-20T10:00:00.000Z'
+    });
+
+    assert.equal(applied, true);
+    assert.equal(context.taskData['2026-04-20'][0].name, 'Cloud Task');
+    assert.equal(context.currentTask.name, 'Cloud Active');
+    assert.equal(context.ambientPreferences.enabled, false);
+    assert.equal(context.checkinPreferences.lateGraceMins, 45);
+    assert.match(localStorage.getItem('currentTask'), /Cloud Active/);
+    assert.equal(localStorage.getItem('localLastSyncTime'), '2026-04-20T10:00:00.000Z');
+});
+
+test('legacy cloud import keeps local workspace state when payload has no state', () => {
+    const { context, localStorage } = createSyncApplyContext();
+
+    const applied = context.applyImportedData({
+        taskData: { '2026-04-20': [{ name: 'Legacy Cloud Task' }] },
+        quickNotesData: {},
+        lastSyncTime: '2026-04-20T10:00:00.000Z'
+    });
+
+    assert.equal(applied, true);
+    assert.equal(context.taskData['2026-04-20'][0].name, 'Legacy Cloud Task');
+    assert.equal(context.currentTask.name, 'Original Active');
+    assert.equal(context.ambientPreferences.enabled, true);
+    assert.equal(context.checkinPreferences.lateGraceMins, 30);
+    assert.equal(localStorage.getItem('localLastSyncTime'), '2026-04-20T10:00:00.000Z');
+});
+
+test('cloud import rolls back datasets and state when state persistence fails', () => {
+    let persistCalls = 0;
+    const { context, localStorage, toastEvents } = createSyncApplyContext({
+        persistCurrentTask() {
+            persistCalls += 1;
+            if (persistCalls === 1) {
+                return { ok: false, failedKeys: ['currentTask'] };
+            }
+            localStorage.setItem('currentTask', JSON.stringify(context.currentTask));
+            return { ok: true, failedKeys: [] };
+        }
+    });
+
+    const applied = context.applyImportedData({
+        taskData: { '2026-04-20': [{ name: 'Cloud Task' }] },
+        quickNotesData: {},
+        state: {
+            currentTask: { name: 'Cloud Active', startTimestamp: 1770000000000, startTime: '09:00' },
+            ambientPreferences: { enabled: false },
+            checkinPreferences: { lateGraceMins: 45, earlyGraceMins: 10 }
+        },
+        lastSyncTime: '2026-04-20T10:00:00.000Z'
+    });
+
+    assert.equal(applied, false);
+    assert.equal(context.taskData['2026-04-19'][0].name, 'Original Task');
+    assert.equal(context.currentTask.name, 'Original Active');
+    assert.equal(context.ambientPreferences.enabled, true);
+    assert.equal(context.checkinPreferences.lateGraceMins, 30);
+    assert.match(localStorage.getItem('taskData'), /Original Task/);
+    assert.equal(localStorage.getItem('localLastSyncTime'), '2026-04-20T08:00:00.000Z');
     assert.equal(toastEvents.at(-1).tone, 'error');
     assert.match(toastEvents.at(-1).message, /已回滚当前工作区/);
 });

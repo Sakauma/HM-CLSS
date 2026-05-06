@@ -14,19 +14,38 @@ function getSyncTokenStorage() {
     return typeof sessionStorage !== 'undefined' ? sessionStorage : localStorage;
 }
 
+function readSyncStorageValue(storage, key) {
+    try {
+        return storage?.getItem(key) || '';
+    } catch (error) {
+        console.error(`storage read failed for "${key}":`, error);
+        return '';
+    }
+}
+
 function readStoredSyncToken() {
     const tokenStorage = getSyncTokenStorage();
-    const sessionToken = tokenStorage.getItem(SYNC_TOKEN_STORAGE_KEY) || '';
-    const legacyToken = localStorage.getItem(SYNC_TOKEN_STORAGE_KEY) || '';
+    const sessionToken = readSyncStorageValue(tokenStorage, SYNC_TOKEN_STORAGE_KEY);
+    const legacyToken = readSyncStorageValue(localStorage, SYNC_TOKEN_STORAGE_KEY);
 
     if (!sessionToken && legacyToken && tokenStorage !== localStorage) {
-        tokenStorage.setItem(SYNC_TOKEN_STORAGE_KEY, legacyToken);
-        localStorage.removeItem(SYNC_TOKEN_STORAGE_KEY);
+        const migrateResult = createSyncStorageOperationResult();
+        const copied = persistSyncStorageValue(tokenStorage, SYNC_TOKEN_STORAGE_KEY, legacyToken, migrateResult);
+        if (copied) {
+            persistSyncStorageValue(localStorage, SYNC_TOKEN_STORAGE_KEY, '', migrateResult);
+        }
+        if (!migrateResult.ok && typeof notifyStorageWriteFailure === 'function') {
+            notifyStorageWriteFailure(migrateResult);
+        }
         return legacyToken;
     }
 
     if (sessionToken && tokenStorage !== localStorage && legacyToken) {
-        localStorage.removeItem(SYNC_TOKEN_STORAGE_KEY);
+        const cleanupResult = createSyncStorageOperationResult();
+        persistSyncStorageValue(localStorage, SYNC_TOKEN_STORAGE_KEY, '', cleanupResult);
+        if (!cleanupResult.ok && typeof notifyStorageWriteFailure === 'function') {
+            notifyStorageWriteFailure(cleanupResult);
+        }
     }
 
     return sessionToken || legacyToken;
@@ -66,8 +85,8 @@ function persistSyncStorageValue(storage, key, value, result) {
 }
 
 let githubToken = readStoredSyncToken();
-let gistId = localStorage.getItem(SYNC_GIST_STORAGE_KEY) || '';
-let localLastSyncTime = localStorage.getItem(SYNC_TIME_STORAGE_KEY) || '';
+let gistId = readSyncStorageValue(localStorage, SYNC_GIST_STORAGE_KEY);
+let localLastSyncTime = readSyncStorageValue(localStorage, SYNC_TIME_STORAGE_KEY);
 let autoSyncTimer = null;
 
 function hasSyncCredentials() {

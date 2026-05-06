@@ -43,6 +43,19 @@ function rollbackWorkspaceApplySnapshot(snapshot) {
     return commitWorkspaceStatePersistence(snapshot.state || {});
 }
 
+function rollbackFailedWorkspaceApply(beforeSnapshot, failurePrefix, failureResult) {
+    const rollbackResult = rollbackWorkspaceApplySnapshot(beforeSnapshot);
+    refreshWorkspaceUiAfterSync();
+    refreshLocalBackupRestoreState();
+    if (!rollbackResult.ok) {
+        showToast(getWorkspaceSaveFailureMessage(`${failurePrefix}，且回滚当前工作区保存失败`, rollbackResult), 'error');
+        return false;
+    }
+
+    showToast(getWorkspaceSaveFailureMessage(`${failurePrefix}，已回滚当前工作区`, failureResult), 'error');
+    return false;
+}
+
 function commitWorkspaceStatePersistence(snapshot = {}) {
     const taskResult = persistCurrentTask() || { ok: true, failedKeys: [] };
     if (!taskResult.ok) return taskResult;
@@ -74,6 +87,22 @@ function getWorkspaceSaveFailureMessage(prefix, result) {
         ? `：${result.failedKeys.join(', ')}`
         : '';
     return `${prefix}，本地保存失败${failedKeys}`;
+}
+
+function hasCloudWorkspaceState(cloudData) {
+    return Boolean(cloudData?.state && typeof cloudData.state === 'object' && !Array.isArray(cloudData.state));
+}
+
+function getCloudWorkspaceSyncTime(cloudData) {
+    return cloudData?.lastSyncTime || new Date().toISOString();
+}
+
+function buildCloudWorkspaceApplyState(cloudData) {
+    if (!hasCloudWorkspaceState(cloudData)) return null;
+    return {
+        ...cloudData.state,
+        lastSyncTime: getCloudWorkspaceSyncTime(cloudData)
+    };
 }
 
 function backupLocalDataBeforeCloudApply(reason) {
@@ -195,23 +224,26 @@ function applyImportedData(cloudData) {
         return false;
     }
 
+    const cloudState = buildCloudWorkspaceApplyState(cloudData);
     applyWorkspaceDatasetSnapshot(cloudData);
+    if (cloudState) {
+        applyWorkspaceStateSnapshot(cloudState, { persist: false });
+    }
+
     const saveResult = saveData(true) || { ok: true, failedKeys: [] };
 
     if (!saveResult.ok) {
-        restoreWorkspaceApplySnapshot(beforeSnapshot);
-        refreshWorkspaceUiAfterSync();
-        refreshLocalBackupRestoreState();
-        showToast(getWorkspaceSaveFailureMessage('云端数据未应用，已回滚当前工作区', saveResult), 'error');
-        return false;
+        return rollbackFailedWorkspaceApply(beforeSnapshot, '云端数据未应用', saveResult);
     }
 
-    const syncTimeResult = updateLocalSyncTime(cloudData.lastSyncTime || new Date().toISOString());
+    const stateResult = cloudState
+        ? commitWorkspaceStatePersistence(cloudState)
+        : updateLocalSyncTime(getCloudWorkspaceSyncTime(cloudData));
+    if (!stateResult.ok) {
+        return rollbackFailedWorkspaceApply(beforeSnapshot, '云端数据未应用', stateResult);
+    }
+
     refreshWorkspaceUiAfterSync();
     refreshLocalBackupRestoreState();
-    if (!syncTimeResult.ok) {
-        showToast(getWorkspaceSaveFailureMessage('云端数据已应用，但同步时间保存失败', syncTimeResult), 'error');
-        return false;
-    }
     return true;
 }

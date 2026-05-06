@@ -44,6 +44,11 @@ function buildWorkspaceStateSnapshot() {
     };
 }
 
+function buildCloudSyncStateSnapshot() {
+    const { lastSyncTime, ...cloudState } = buildWorkspaceStateSnapshot();
+    return cloudState;
+}
+
 function extractWorkspaceDatasetSource(source) {
     if (source?.datasets && typeof source.datasets === 'object') {
         return source.datasets;
@@ -83,6 +88,7 @@ function applyWorkspaceDatasetSnapshot(snapshot) {
 function buildCloudSyncPayload(syncTime = new Date().toISOString()) {
     return {
         ...buildWorkspaceDatasetSnapshot(),
+        state: buildCloudSyncStateSnapshot(),
         lastSyncTime: syncTime
     };
 }

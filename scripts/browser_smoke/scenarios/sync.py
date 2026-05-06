@@ -8,6 +8,7 @@ def test_sync_error_states(driver) -> None:
 
     driver.execute_script(
         """
+        window.__syncSmokeOriginalSnapshot = window.fetchCloudWorkspaceSnapshot;
         window.__syncSmokeOriginalFetch = window.fetchCloudWorkspaceData;
         window.__syncSmokeOriginalPush = window.pushCloudWorkspaceData;
         """
@@ -16,7 +17,7 @@ def test_sync_error_states(driver) -> None:
     try:
         driver.execute_script(
             """
-            window.fetchCloudWorkspaceData = async () => { throw new Error('fetch_failed_401'); };
+            window.fetchCloudWorkspaceSnapshot = async () => { throw new Error('fetch_failed_401'); };
             """
         )
         click(driver, "push-cloud-btn")
@@ -43,8 +44,10 @@ def test_sync_error_states(driver) -> None:
     finally:
         driver.execute_script(
             """
+            window.fetchCloudWorkspaceSnapshot = window.__syncSmokeOriginalSnapshot;
             window.fetchCloudWorkspaceData = window.__syncSmokeOriginalFetch;
             window.pushCloudWorkspaceData = window.__syncSmokeOriginalPush;
+            delete window.__syncSmokeOriginalSnapshot;
             delete window.__syncSmokeOriginalFetch;
             delete window.__syncSmokeOriginalPush;
             """

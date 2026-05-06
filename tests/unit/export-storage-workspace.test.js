@@ -128,6 +128,52 @@ test('workspace cloning prefers structuredClone and falls back safely', () => {
     assert.equal(fallbackContext.cloneWorkspaceValue(undefined), undefined);
 });
 
+test('cloud sync payload includes workspace state without leaking sync credentials', () => {
+    const context = createBaseContext({
+        localLastSyncTime: '2026-04-20T08:00:00.000Z',
+        normalizeAmbientPreferences: (prefs) => ({
+            enabled: prefs?.enabled !== false,
+            intensity: 'subtle',
+            easterEggs: prefs?.easterEggs !== false
+        }),
+        normalizeCheckinPreferences: (prefs) => ({
+            lateGraceMins: Number.isFinite(Number(prefs?.lateGraceMins)) ? Number(prefs.lateGraceMins) : 30,
+            earlyGraceMins: Number.isFinite(Number(prefs?.earlyGraceMins)) ? Number(prefs.earlyGraceMins) : 30
+        })
+    });
+    const state = {
+        checkinData: {},
+        phoneResistData: { totalCount: 1, records: {} },
+        taskData: { '2026-04-20': [{ name: 'Task' }] },
+        leaveData: [],
+        achievements: ['first'],
+        quickNotesData: {},
+        tavernData: [],
+        currentTask: { id: 'task_active', name: 'Active Task', startTimestamp: 1770000000000, startTime: '09:00' },
+        ambientPreferences: { enabled: false, easterEggs: false },
+        checkinPreferences: { lateGraceMins: 45, earlyGraceMins: 10 }
+    };
+
+    context.runtimeSelectors = {
+        state: () => state,
+        currentTask: () => state.currentTask,
+        ambientPreferences: () => state.ambientPreferences,
+        checkinPreferences: () => state.checkinPreferences
+    };
+
+    loadScript(context, 'assets/js/workspace/data.js');
+
+    const payload = context.buildCloudSyncPayload('2026-04-20T10:00:00.000Z');
+    assert.equal(payload.lastSyncTime, '2026-04-20T10:00:00.000Z');
+    assert.equal(payload.taskData['2026-04-20'][0].name, 'Task');
+    assert.equal(payload.state.currentTask.name, 'Active Task');
+    assert.equal(payload.state.ambientPreferences.enabled, false);
+    assert.equal(payload.state.checkinPreferences.lateGraceMins, 45);
+    assert.equal(payload.state.lastSyncTime, undefined);
+    assert.equal(JSON.stringify(payload).includes('githubToken'), false);
+    assert.equal(JSON.stringify(payload).includes('gistId'), false);
+});
+
 test('export formats serialize markdown, csv and file descriptors', () => {
     const snapshot = {
         meta: {

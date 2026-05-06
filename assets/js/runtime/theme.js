@@ -9,6 +9,26 @@ const themeToggleBtn = document.getElementById('theme-toggle');
 const htmlElement = document.documentElement;
 const systemThemeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
+function readStoredThemePreference() {
+    try {
+        const value = localStorage.getItem('theme');
+        return value === 'dark' || value === 'light' ? value : null;
+    } catch (error) {
+        console.error('localStorage read failed for "theme":', error);
+        return null;
+    }
+}
+
+function writeStoredThemePreference(value) {
+    try {
+        localStorage.setItem('theme', value);
+        return true;
+    } catch (error) {
+        console.error('localStorage write failed for "theme":', error);
+        return false;
+    }
+}
+
 function refreshThemeDependentCharts() {
     if (!window.checkinRateChart) return;
     const activePeriodBtn = document.querySelector('.stats-period-btn-active');
@@ -44,7 +64,7 @@ function syncThemeToggleAccessibility() {
 }
 
 // 首次进入页面时优先恢复用户显式选择，否则退回系统主题偏好。
-if (localStorage.theme === 'dark' || (!('theme' in localStorage) && systemThemeMediaQuery.matches)) {
+if ((readStoredThemePreference() || (systemThemeMediaQuery.matches ? 'dark' : 'light')) === 'dark') {
     htmlElement.classList.add('dark');
 } else {
     htmlElement.classList.remove('dark');
@@ -55,14 +75,14 @@ syncThemeToggleAccessibility();
 
 function handleThemeToggleClick() {
     htmlElement.classList.toggle('dark');
-    localStorage.theme = htmlElement.classList.contains('dark') ? 'dark' : 'light';
+    writeStoredThemePreference(htmlElement.classList.contains('dark') ? 'dark' : 'light');
     updateThemeIcon();
     syncThemeToggleAccessibility();
     refreshThemeDependentCharts();
 }
 
 function handleSystemThemeChange(event) {
-    if (!('theme' in localStorage)) {
+    if (!readStoredThemePreference()) {
         if (event.matches) {
             htmlElement.classList.add('dark');
         } else {
