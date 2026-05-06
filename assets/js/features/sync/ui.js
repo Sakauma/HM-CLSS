@@ -25,11 +25,17 @@ function readSyncConfigForm() {
 
 function saveSyncConfig() {
     const { token, nextGistId } = readSyncConfigForm();
-    saveSyncCredentials(token, nextGistId);
+    const result = saveSyncCredentials(token, nextGistId) || { ok: true, failedKeys: [] };
+    if (!result.ok) {
+        showToast(`同步配置保存失败：${result.failedKeys.join(', ')}`, 'error');
+        populateSyncConfigInputs();
+        return false;
+    }
     const tokenStorageCopy = getSyncTokenStorage() === localStorage
         ? 'Token 与 Gist ID 已保存到本地。'
         : 'Token 仅保存在当前会话，Gist ID 已保存到本地。';
     showToast(`⚙️ ${tokenStorageCopy}`, 'success');
+    return true;
 }
 
 function showSyncMissingConfigToast() {

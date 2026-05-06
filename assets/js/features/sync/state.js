@@ -41,6 +41,30 @@ function persistStorageValue(storage, key, value) {
     }
 }
 
+function createSyncStorageOperationResult() {
+    return typeof createStorageOperationResult === 'function'
+        ? createStorageOperationResult()
+        : { ok: true, failedKeys: [] };
+}
+
+function recordSyncStorageFailure(result, key, error) {
+    result.ok = false;
+    if (!result.failedKeys.includes(key)) {
+        result.failedKeys.push(key);
+    }
+    console.error(`storage write failed for "${key}":`, error);
+}
+
+function persistSyncStorageValue(storage, key, value, result) {
+    try {
+        persistStorageValue(storage, key, value);
+        return true;
+    } catch (error) {
+        recordSyncStorageFailure(result, key, error);
+        return false;
+    }
+}
+
 let githubToken = readStoredSyncToken();
 let gistId = localStorage.getItem(SYNC_GIST_STORAGE_KEY) || '';
 let localLastSyncTime = localStorage.getItem(SYNC_TIME_STORAGE_KEY) || '';
@@ -62,17 +86,36 @@ function clearAutoSyncTimer() {
 }
 
 function saveSyncCredentials(nextToken, nextGistId) {
-    if (githubToken !== nextToken || gistId !== nextGistId) {
+    const result = createSyncStorageOperationResult();
+    const tokenStorage = getSyncTokenStorage();
+    const credentialsChanged = githubToken !== nextToken || gistId !== nextGistId;
+    const previousToken = githubToken;
+    const previousGistId = gistId;
+
+    persistSyncStorageValue(tokenStorage, SYNC_TOKEN_STORAGE_KEY, nextToken, result);
+    if (tokenStorage !== localStorage) {
+        persistSyncStorageValue(localStorage, SYNC_TOKEN_STORAGE_KEY, '', result);
+    }
+    persistSyncStorageValue(localStorage, SYNC_GIST_STORAGE_KEY, nextGistId, result);
+
+    if (!result.ok) {
+        persistSyncStorageValue(tokenStorage, SYNC_TOKEN_STORAGE_KEY, previousToken, createSyncStorageOperationResult());
+        if (tokenStorage !== localStorage) {
+            persistSyncStorageValue(localStorage, SYNC_TOKEN_STORAGE_KEY, '', createSyncStorageOperationResult());
+        }
+        persistSyncStorageValue(localStorage, SYNC_GIST_STORAGE_KEY, previousGistId, createSyncStorageOperationResult());
+        if (typeof notifyStorageWriteFailure === 'function') {
+            notifyStorageWriteFailure(result);
+        }
+        return result;
+    }
+
+    if (credentialsChanged) {
         clearAutoSyncTimer();
     }
     githubToken = nextToken;
     gistId = nextGistId;
-
-    persistStorageValue(getSyncTokenStorage(), SYNC_TOKEN_STORAGE_KEY, githubToken);
-    if (getSyncTokenStorage() !== localStorage) {
-        localStorage.removeItem(SYNC_TOKEN_STORAGE_KEY);
-    }
-    persistStorageValue(localStorage, SYNC_GIST_STORAGE_KEY, gistId);
+    return result;
 }
 
 function updateLocalSyncTime(timeStr) {

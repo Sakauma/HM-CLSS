@@ -116,6 +116,14 @@ def compare_layout_snapshots(case, actual, expected) -> None:
                 f"{case_name} {element_id} {key} drifted by {delta}px (expected {expected_metrics[key]}, got {actual_metrics[key]})",
             )
 
+        actual_document_y = actual_metrics["y"] + actual["scrollTop"]
+        expected_document_y = expected_metrics["y"] + expected["scrollTop"]
+        document_y_delta = abs(actual_document_y - expected_document_y)
+        require(
+            document_y_delta <= LAYOUT_TOLERANCE,
+            f"{case_name} {element_id} document y drifted by {document_y_delta}px (expected {expected_document_y}, got {actual_document_y})",
+        )
+
 
 def capture_visual_case(driver, case, artifact_dir: Path | None):
     click(driver, case["nav"])

@@ -4,26 +4,26 @@
     "elements": {
       "checkin-section": {
         "childCount": 3,
-        "height": 1401,
+        "height": 1405,
         "visible": true,
         "width": 1152,
-        "x": 394,
+        "x": 400,
         "y": 0
       },
       "retro-recent-log": {
         "childCount": 1,
-        "height": 395,
+        "height": 406,
         "visible": true,
-        "width": 486,
-        "x": 1035,
-        "y": 980
+        "width": 494,
+        "x": 1037,
+        "y": 977
       },
       "shift-ops-grid": {
         "childCount": 3,
-        "height": 422,
+        "height": 421,
         "visible": true,
         "width": 1152,
-        "x": 394,
+        "x": 400,
         "y": 0
       },
       "today-checkin-log": {
@@ -31,13 +31,13 @@
         "height": 300,
         "visible": true,
         "width": 1152,
-        "x": 394,
-        "y": 454
+        "x": 400,
+        "y": 453
       }
     },
-    "scrollTop": 528,
+    "scrollTop": 524,
     "viewport": {
-      "height": 1114,
+      "height": 1115,
       "width": 1600
     }
   },
@@ -46,40 +46,40 @@
     "elements": {
       "quick-notes-container": {
         "childCount": 1,
-        "height": 68,
+        "height": 71,
         "visible": true,
         "width": 408,
-        "x": 1109,
-        "y": 376
+        "x": 1115,
+        "y": 518
       },
       "schedule-content": {
         "childCount": 1,
         "height": 286,
         "visible": true,
         "width": 326,
-        "x": 1178,
-        "y": 719
+        "x": 1184,
+        "y": 861
       },
       "task-name": {
         "childCount": 0,
         "height": 52,
         "visible": true,
         "width": 270,
-        "x": 623,
-        "y": 353
+        "x": 629,
+        "y": 495
       },
       "tasks-section": {
         "childCount": 3,
         "height": 1047,
         "visible": true,
         "width": 1152,
-        "x": 394,
-        "y": 0
+        "x": 400,
+        "y": 142
       }
     },
-    "scrollTop": 524,
+    "scrollTop": 382,
     "viewport": {
-      "height": 1114,
+      "height": 1115,
       "width": 1600
     }
   },
@@ -88,32 +88,32 @@
     "elements": {
       "leave-form-shell": {
         "childCount": 6,
-        "height": 750,
+        "height": 760,
         "visible": true,
         "width": 609,
-        "x": 394,
-        "y": 292
+        "x": 400,
+        "y": 283
       },
       "leave-records-table": {
         "childCount": 1,
         "height": 52,
         "visible": true,
         "width": 465,
-        "x": 1052,
-        "y": 429
+        "x": 1058,
+        "y": 423
       },
       "leave-section": {
         "childCount": 1,
-        "height": 750,
+        "height": 760,
         "visible": true,
         "width": 1152,
-        "x": 394,
-        "y": 292
+        "x": 400,
+        "y": 283
       }
     },
-    "scrollTop": 236,
+    "scrollTop": 241,
     "viewport": {
-      "height": 1114,
+      "height": 1115,
       "width": 1600
     }
   },
@@ -122,40 +122,40 @@
     "elements": {
       "mood-text-input": {
         "childCount": 0,
-        "height": 98,
+        "height": 103,
         "visible": true,
         "width": 546,
-        "x": 444,
-        "y": 541
+        "x": 450,
+        "y": 538
       },
       "state-input": {
         "childCount": 1,
-        "height": 789,
+        "height": 792,
         "visible": true,
         "width": 1150,
-        "x": 395,
-        "y": 252
+        "x": 401,
+        "y": 250
       },
       "tavern-section": {
         "childCount": 2,
-        "height": 961,
+        "height": 963,
         "visible": true,
         "width": 1152,
-        "x": 394,
-        "y": 82
+        "x": 400,
+        "y": 80
       },
       "view-tavern-container": {
         "childCount": 4,
-        "height": 791,
+        "height": 794,
         "visible": true,
         "width": 1152,
-        "x": 394,
-        "y": 251
+        "x": 400,
+        "y": 249
       }
     },
-    "scrollTop": 446,
+    "scrollTop": 444,
     "viewport": {
-      "height": 1114,
+      "height": 1115,
       "width": 1600
     }
   },
@@ -167,23 +167,23 @@
         "height": 80,
         "visible": true,
         "width": 465,
-        "x": 440,
-        "y": 929
+        "x": 446,
+        "y": 1798
       },
       "export-trigger-btn": {
         "childCount": 2,
         "height": 52,
         "visible": true,
         "width": 465,
-        "x": 440,
-        "y": 1138
+        "x": 446,
+        "y": 2000
       },
       "github-token-input": {
         "childCount": 0,
         "height": 51,
         "visible": true,
         "width": 1102,
-        "x": 419,
+        "x": 425,
         "y": 320
       },
       "settings-section": {
@@ -191,13 +191,13 @@
         "height": 2133,
         "visible": true,
         "width": 1152,
-        "x": 394,
+        "x": 400,
         "y": 0
       }
     },
     "scrollTop": 524,
     "viewport": {
-      "height": 1114,
+      "height": 1115,
       "width": 1600
     }
   }

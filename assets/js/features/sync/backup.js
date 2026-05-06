@@ -36,6 +36,13 @@ function restoreWorkspaceApplySnapshot(snapshot) {
     applyWorkspaceStateSnapshot(snapshot.state || {}, { persist: false });
 }
 
+function rollbackWorkspaceApplySnapshot(snapshot) {
+    restoreWorkspaceApplySnapshot(snapshot);
+    const saveResult = saveData(true) || { ok: true, failedKeys: [] };
+    if (!saveResult.ok) return saveResult;
+    return commitWorkspaceStatePersistence(snapshot.state || {});
+}
+
 function commitWorkspaceStatePersistence(snapshot = {}) {
     const taskResult = persistCurrentTask() || { ok: true, failedKeys: [] };
     if (!taskResult.ok) return taskResult;
@@ -78,6 +85,7 @@ function backupLocalDataBeforeCloudApply(reason) {
         backupTime: new Date().toISOString()
     }), result);
     if (!result.ok) console.error('本地覆盖前备份失败');
+    return result;
 }
 
 function readLocalBackupBeforeCloudApply() {
@@ -150,14 +158,22 @@ async function restoreLocalBackupBeforeCloudApply() {
     }
 
     const stateResult = commitWorkspaceStatePersistence(backup.state || {});
-    refreshWorkspaceUiAfterSync();
-    refreshLocalBackupRestoreState();
     if (stateResult.ok) {
+        refreshWorkspaceUiAfterSync();
+        refreshLocalBackupRestoreState();
         showToast('已恢复覆盖前本地备份，请检查后再同步。', 'success');
         return true;
     }
 
-    showToast(getWorkspaceSaveFailureMessage('已恢复数据，但当前任务或同步时间保存失败', stateResult), 'error');
+    const rollbackResult = rollbackWorkspaceApplySnapshot(beforeSnapshot);
+    refreshWorkspaceUiAfterSync();
+    refreshLocalBackupRestoreState();
+    if (!rollbackResult.ok) {
+        showToast(getWorkspaceSaveFailureMessage('恢复失败，且回滚当前工作区保存失败', rollbackResult), 'error');
+        return false;
+    }
+
+    showToast(getWorkspaceSaveFailureMessage('恢复失败，已回滚并保留当前工作区', stateResult), 'error');
     return false;
 }
 
@@ -172,7 +188,13 @@ function clearLocalBackupBeforeCloudApply() {
 
 function applyImportedData(cloudData) {
     const beforeSnapshot = createWorkspaceApplySnapshot();
-    backupLocalDataBeforeCloudApply('cloud-apply');
+    const backupResult = backupLocalDataBeforeCloudApply('cloud-apply');
+    if (!backupResult.ok) {
+        refreshLocalBackupRestoreState();
+        showToast(getWorkspaceSaveFailureMessage('云端数据未应用，覆盖前本地备份失败', backupResult), 'error');
+        return false;
+    }
+
     applyWorkspaceDatasetSnapshot(cloudData);
     const saveResult = saveData(true) || { ok: true, failedKeys: [] };
 

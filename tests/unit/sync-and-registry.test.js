@@ -242,6 +242,57 @@ test('sync state migrates legacy token storage into session scope', () => {
     assert.equal(credentials.gistId, 'gist_test');
 });
 
+test('sync config save fails without mutating credentials when storage write fails', () => {
+    const backingStorage = createStorageMock({
+        gistId: 'gist_old'
+    });
+    const failingLocalStorage = {
+        getItem: backingStorage.getItem,
+        setItem(key, value) {
+            if (key === 'gistId') {
+                throw new Error('quota exceeded');
+            }
+            backingStorage.setItem(key, value);
+        },
+        removeItem: backingStorage.removeItem
+    };
+    const sessionStorage = createStorageMock({
+        githubToken: 'token_old'
+    });
+    const toastEvents = [];
+    const elements = {
+        'github-token-input': { value: 'token_new' },
+        'gist-id-input': { value: 'gist_new' }
+    };
+    const context = createBaseContext({
+        console: { ...console, error() {} },
+        localStorage: failingLocalStorage,
+        sessionStorage,
+        document: {
+            getElementById(id) {
+                return elements[id] || null;
+            }
+        },
+        showToast(message, tone) {
+            toastEvents.push({ message, tone });
+        }
+    });
+
+    loadScript(context, 'assets/js/features/sync/state.js');
+    loadScript(context, 'assets/js/features/sync/ui.js');
+
+    assert.equal(context.saveSyncConfig(), false);
+    const credentials = context.getSyncCredentials();
+    assert.equal(credentials.githubToken, 'token_old');
+    assert.equal(credentials.gistId, 'gist_old');
+    assert.equal(sessionStorage.getItem('githubToken'), 'token_old');
+    assert.equal(backingStorage.getItem('gistId'), 'gist_old');
+    assert.equal(elements['github-token-input'].value, 'token_old');
+    assert.equal(elements['gist-id-input'].value, 'gist_old');
+    assert.equal(toastEvents.at(-1).tone, 'error');
+    assert.match(toastEvents.at(-1).message, /同步配置保存失败/);
+});
+
 test('sync state clears pending auto-sync timers on demand and on credential changes', () => {
     const scheduledTimers = [];
     const clearedTimers = [];
@@ -689,6 +740,127 @@ test('local cloud-apply backup restore rolls back memory when save fails', async
     assert.match(toastEvents.at(-1).message, /已保留当前工作区/);
 });
 
+test('local cloud-apply backup restore rolls back when state persistence fails', async () => {
+    const backup = {
+        datasets: {
+            taskData: { '2026-04-20': [{ name: 'Backup Task' }] },
+            quickNotesData: {}
+        },
+        state: {
+            currentTask: { name: 'Backup Active', startTimestamp: 1770000000000, startTime: '09:00' },
+            ambientPreferences: { enabled: false },
+            checkinPreferences: { lateGraceMins: 45, earlyGraceMins: 15 },
+            lastSyncTime: '2026-04-20T09:00:00.000Z'
+        },
+        backupTime: '2026-04-20T10:00:00.000Z'
+    };
+    const localStorage = createStorageMock({
+        gistId: 'gist_test',
+        localLastSyncTime: '2026-04-20T08:00:00.000Z',
+        lastLocalBackupBeforeCloudApply: JSON.stringify(backup)
+    });
+    const elements = {
+        'local-backup-summary': { textContent: '' },
+        'restore-local-backup-btn': createButtonElement(),
+        'clear-local-backup-btn': createButtonElement()
+    };
+    const toastEvents = [];
+    let saveCalls = 0;
+    let persistCalls = 0;
+    const context = createBaseContext({
+        localStorage,
+        sessionStorage: createStorageMock({ githubToken: 'ghp_test' }),
+        document: {
+            getElementById(id) {
+                return elements[id] || null;
+            }
+        },
+        showToast(message, tone) {
+            toastEvents.push({ message, tone });
+        },
+        showConfirmDialog: async () => true,
+        countTotalTaskEntries() { return 0; },
+        countQuickNoteEntries() { return 0; },
+        normalizeCurrentTaskRecord(task) {
+            return task || null;
+        },
+        normalizeAmbientPreferences(prefs) {
+            return prefs || { enabled: true };
+        },
+        normalizeCheckinPreferences(prefs) {
+            return prefs || { lateGraceMins: 30, earlyGraceMins: 30 };
+        },
+        runtimeActions: {
+            setCurrentTask(task) {
+                context.currentTask = task;
+            },
+            setAmbientPreferences(preferences) {
+                context.ambientPreferences = preferences;
+            },
+            setCheckinPreferences(preferences) {
+                context.checkinPreferences = preferences;
+            }
+        },
+        runtimeSelectors: {
+            checkinPreferences() {
+                return context.checkinPreferences;
+            }
+        },
+        buildWorkspaceDatasetSnapshot() {
+            return {
+                taskData: JSON.parse(JSON.stringify(context.taskData)),
+                quickNotesData: JSON.parse(JSON.stringify(context.quickNotesData))
+            };
+        },
+        buildWorkspaceStateSnapshot() {
+            return {
+                currentTask: context.currentTask,
+                ambientPreferences: context.ambientPreferences,
+                checkinPreferences: context.checkinPreferences,
+                lastSyncTime: localStorage.getItem('localLastSyncTime')
+            };
+        },
+        applyWorkspaceDatasetSnapshot(datasets) {
+            context.taskData = datasets.taskData || {};
+            context.quickNotesData = datasets.quickNotesData || {};
+        },
+        persistCurrentTask() {
+            persistCalls += 1;
+            if (persistCalls === 1) {
+                return { ok: false, failedKeys: ['currentTask'] };
+            }
+            localStorage.setItem('currentTask', JSON.stringify(context.currentTask));
+            return { ok: true, failedKeys: [] };
+        },
+        saveData() {
+            saveCalls += 1;
+            localStorage.setItem('taskData', JSON.stringify(context.taskData));
+            return { ok: true, failedKeys: [] };
+        },
+        refreshWorkspaceUiAfterSync() {},
+        taskData: { '2026-04-19': [{ name: 'Original Task' }] },
+        quickNotesData: {},
+        currentTask: { name: 'Original Active', startTimestamp: 1769990000000, startTime: '08:00' },
+        ambientPreferences: { enabled: true },
+        checkinPreferences: { lateGraceMins: 30, earlyGraceMins: 30 }
+    });
+
+    loadScript(context, 'assets/js/features/sync/state.js');
+    loadScript(context, 'assets/js/features/sync/backup.js');
+    context.refreshWorkspaceUiAfterSync = () => {};
+
+    const restored = await context.restoreLocalBackupBeforeCloudApply();
+
+    assert.equal(restored, false);
+    assert.equal(saveCalls, 2);
+    assert.equal(context.taskData['2026-04-19'][0].name, 'Original Task');
+    assert.equal(context.currentTask.name, 'Original Active');
+    assert.equal(context.localStorage.getItem('localLastSyncTime'), '2026-04-20T08:00:00.000Z');
+    assert.match(context.localStorage.getItem('taskData'), /Original Task/);
+    assert.equal(toastEvents.at(-1).tone, 'error');
+    assert.match(toastEvents.at(-1).message, /已回滚并保留当前工作区/);
+});
+
 test('cloud import rolls back memory when workspace save fails', () => {
     const localStorage = createStorageMock({
         gistId: 'gist_test',
@@ -780,6 +952,79 @@ test('cloud import rolls back memory when workspace save fails', () => {
     assert.equal(context.localStorage.getItem('localLastSyncTime'), '2026-04-20T08:00:00.000Z');
     assert.equal(toastEvents.at(-1).tone, 'error');
     assert.match(toastEvents.at(-1).message, /已回滚当前工作区/);
+});
+
+test('cloud import aborts when pre-apply local backup cannot be written', () => {
+    const localStorage = createStorageMock({
+        gistId: 'gist_test',
+        localLastSyncTime: '2026-04-20T08:00:00.000Z'
+    });
+    const toastEvents = [];
+    let applyCalls = 0;
+    let saveCalls = 0;
+    const context = createBaseContext({
+        console: { ...console, error() {} },
+        localStorage,
+        sessionStorage: createStorageMock({ githubToken: 'ghp_test' }),
+        document: {
+            getElementById() {
+                return null;
+            }
+        },
+        showToast(message, tone) {
+            toastEvents.push({ message, tone });
+        },
+        createStorageOperationResult: () => ({ ok: true, failedKeys: [] }),
+        safeSetStorageItem(key, _value, result) {
+            result.ok = false;
+            result.failedKeys.push(key);
+            return false;
+        },
+        countTotalTaskEntries() { return 0; },
+        countQuickNoteEntries() { return 0; },
+        buildWorkspaceDatasetSnapshot() {
+            return {
+                taskData: JSON.parse(JSON.stringify(context.taskData)),
+                quickNotesData: JSON.parse(JSON.stringify(context.quickNotesData))
+            };
+        },
+        buildWorkspaceStateSnapshot() {
+            return {
+                currentTask: context.currentTask,
+                lastSyncTime: localStorage.getItem('localLastSyncTime')
+            };
+        },
+        applyWorkspaceDatasetSnapshot(datasets) {
+            applyCalls += 1;
+            context.taskData = datasets.taskData || {};
+            context.quickNotesData = datasets.quickNotesData || {};
+        },
+        saveData() {
+            saveCalls += 1;
+            return { ok: true, failedKeys: [] };
+        },
+        taskData: { '2026-04-19': [{ name: 'Original Task' }] },
+        quickNotesData: {},
+        currentTask: null
+    });
+
+    loadScript(context, 'assets/js/features/sync/state.js');
+    loadScript(context, 'assets/js/features/sync/backup.js');
+
+    const applied = context.applyImportedData({
+        taskData: { '2026-04-20': [{ name: 'Cloud Task' }] },
+        quickNotesData: {},
+        lastSyncTime: '2026-04-20T10:00:00.000Z'
+    });
+
+    assert.equal(applied, false);
+    assert.equal(applyCalls, 0);
+    assert.equal(saveCalls, 0);
+    assert.equal(context.taskData['2026-04-19'][0].name, 'Original Task');
+    assert.equal(context.localStorage.getItem('localLastSyncTime'), '2026-04-20T08:00:00.000Z');
+    assert.equal(context.localStorage.getItem('lastLocalBackupBeforeCloudApply'), null);
+    assert.equal(toastEvents.at(-1).tone, 'error');
+    assert.match(toastEvents.at(-1).message, /覆盖前本地备份失败/);
 });
 
 test('sync controller covers conflict confirmation and failure branches', async () => {
