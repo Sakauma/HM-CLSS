@@ -134,10 +134,14 @@
             align-items: center;
             justify-content: center;
             gap: 0.55rem;
-            min-height: 2.95rem;
-            padding: 0.8rem 1rem;
-            border-radius: 1rem;
+            min-width: var(--control-min-width);
+            min-height: var(--control-height-lg);
+            padding: 0.75rem 1rem;
+            border-radius: var(--control-radius-lg);
             font-weight: 700;
+            line-height: 1.15;
+            text-align: center;
+            white-space: nowrap;
             cursor: pointer;
             transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease, background 220ms ease;
         }

@@ -24,6 +24,13 @@
             --surface-stroke-dark: rgba(148, 163, 184, 0.12);
             --shadow-soft-light: 0 20px 56px rgba(15, 23, 42, 0.07);
             --shadow-soft-dark: 0 26px 64px rgba(2, 12, 27, 0.42);
+            --hit-target: 2.75rem;
+            --control-height-sm: 2.75rem;
+            --control-height-md: 3rem;
+            --control-height-lg: 3.25rem;
+            --control-radius: 0.95rem;
+            --control-radius-lg: 1rem;
+            --control-min-width: 9.5rem;
         }
         .dark {
             color-scheme: dark;
@@ -119,9 +126,19 @@
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
 
         button, a, input, select, textarea {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
             transition-property: color, background-color, border-color, box-shadow, transform, opacity;
             transition-duration: 220ms;
             transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        button, [role="button"] {
+            min-width: var(--hit-target);
+            min-height: var(--hit-target);
+            touch-action: manipulation;
+        }
+        button:disabled {
+            transform: none !important;
         }
         button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
             outline: none;

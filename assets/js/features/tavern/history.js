@@ -79,7 +79,7 @@ function createTavernHistoryCard(drink) {
     });
 
     const viewBtn = createDomElement('button', {
-        className: 'view-drink-btn tavern-action-secondary !min-h-[2.9rem] flex-1 !px-4',
+        className: 'view-drink-btn tavern-action-secondary flex-1 !px-4',
         attrs: {
             type: 'button',
             'data-id': drink.id

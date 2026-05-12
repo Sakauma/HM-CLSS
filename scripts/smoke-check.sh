@@ -55,7 +55,7 @@ check_vendor_checksums() {
       exit 1
     }
     local actual_hash
-    actual_hash="$(shasum -a 256 "$file_path" | awk '{print $1}')"
+    actual_hash="$(perl -0pe 's/\r\n/\n/g' "$file_path" | shasum -a 256 | awk '{print $1}')"
     if [[ "$actual_hash" != "$expected_hash" ]]; then
       printf '%s checksum mismatch\nexpected: %s\nactual:   %s\n' "$file_path" "$expected_hash" "$actual_hash" >&2
       exit 1
