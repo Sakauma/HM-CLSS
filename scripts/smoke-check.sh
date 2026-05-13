@@ -5,6 +5,28 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MANIFEST_DIR="$ROOT_DIR/scripts/smoke_manifest"
 cd "$ROOT_DIR"
 
+resolve_python_bin() {
+  if [[ -n "${PYTHON_BIN:-}" ]]; then
+    "$PYTHON_BIN" -c 'import sys' >/dev/null 2>&1 || {
+      printf 'PYTHON_BIN is set but not runnable: %s\n' "$PYTHON_BIN" >&2
+      exit 1
+    }
+    printf '%s\n' "$PYTHON_BIN"
+    return
+  fi
+
+  local candidate
+  for candidate in python3 python py; do
+    if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import sys' >/dev/null 2>&1; then
+      printf '%s\n' "$candidate"
+      return
+    fi
+  done
+
+  printf 'python3 or python is required for smoke-check.sh\n' >&2
+  exit 1
+}
+
 read_manifest() {
   local manifest_path="$1"
   grep -vE '^\s*(#.*)?$' "$manifest_path"
@@ -103,11 +125,13 @@ check_script_manifest_exact() {
   fi
 }
 
+PYTHON_BIN="$(resolve_python_bin)"
+
 check_js_syntax
 node --test tests/unit/*.test.js
-python3 -m py_compile scripts/browser-smoke.py
+"$PYTHON_BIN" -m py_compile scripts/browser-smoke.py
 while IFS= read -r -d '' py_file; do
-  python3 -m py_compile "$py_file"
+  "$PYTHON_BIN" -m py_compile "$py_file"
 done < <(find scripts/browser_smoke -type f -name '*.py' -print0)
 bash -n scripts/browser-smoke.sh
 bash -n scripts/setup-browser-test.sh

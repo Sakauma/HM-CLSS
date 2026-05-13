@@ -97,9 +97,17 @@ def wait_active_element_id(driver: WebDriver, element_id: str, timeout: int = TI
 
 
 def send_shortcut(driver: WebDriver, *keys: str) -> None:
-    body = driver.find_element(By.TAG_NAME, "body")
+    driver.execute_script(
+        """
+        const active = document.activeElement;
+        if (active && typeof active.blur === 'function') {
+          active.blur();
+        }
+        document.body.setAttribute('tabindex', '-1');
+        document.body.focus({ preventScroll: true });
+        """
+    )
     actions = ActionChains(driver)
-    actions.move_to_element(body).click()
 
     modifiers = keys[:-1]
     final_key = keys[-1]

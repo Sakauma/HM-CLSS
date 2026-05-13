@@ -98,19 +98,19 @@ function showConfirmDialog(options = {}) {
     const toneClassMap = {
         danger: {
             badge: 'status-chip status-chip-danger shrink-0',
-            confirm: 'w-full rounded-xl bg-danger px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-rose-600'
+            confirm: 'action-btn action-btn-danger'
         },
         warning: {
             badge: 'status-chip status-chip-warning shrink-0',
-            confirm: 'w-full rounded-xl bg-warning px-4 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-yellow-500'
+            confirm: 'action-btn action-btn-warning'
         },
         info: {
             badge: 'status-chip status-chip-info shrink-0',
-            confirm: 'w-full rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-primaryHover'
+            confirm: 'action-btn action-btn-primary'
         },
         success: {
             badge: 'status-chip status-chip-success shrink-0',
-            confirm: 'w-full rounded-xl bg-success px-4 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-emerald-400'
+            confirm: 'action-btn action-btn-success'
         }
     };
     const toneClasses = toneClassMap[tone] || toneClassMap.warning;

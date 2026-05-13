@@ -22,14 +22,16 @@ if ! command -v conda >/dev/null 2>&1; then
   exit 1
 fi
 
-if [[ ! -x "$CONDA_ENV_PATH/bin/python" ]]; then
+if [[ -x "$CONDA_ENV_PATH/bin/python" ]]; then
+  ENV_PYTHON="$CONDA_ENV_PATH/bin/python"
+elif [[ -x "$CONDA_ENV_PATH/python.exe" ]]; then
+  ENV_PYTHON="$CONDA_ENV_PATH/python.exe"
+else
   printf 'Browser test environment not found at %s\n' "$CONDA_ENV_PATH" >&2
   printf 'Run: bash scripts/setup-browser-test.sh\n' >&2
   printf 'Expected a conda env containing python, selenium, firefox, and geckodriver.\n' >&2
   exit 1
 fi
-
-ENV_PYTHON="$CONDA_ENV_PATH/bin/python"
 
 probe_url() {
   "$ENV_PYTHON" - "$1" <<'PY'
