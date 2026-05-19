@@ -103,7 +103,7 @@ function disposeAppModules() {
             try {
                 cleanup();
             } catch (error) {
-                console.error(`App module "${module.id}" cleanup failed:`, error);
+                appLogger.error(`App module "${module.id}" cleanup failed:`, error);
             }
         }
 

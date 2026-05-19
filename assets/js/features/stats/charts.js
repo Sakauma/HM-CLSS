@@ -18,11 +18,11 @@ function renderStatisticsCharts(period) {
 
     const { startDate, endDate, labels } = getDateRange(period);
 
-    try { updateCheckinRateChart(labels, prepareCheckinRateData(startDate, endDate, labels)); } catch (error) { console.error(error); }
-    try { updateCheckinPeriodChart(prepareCheckinPeriodData(startDate, endDate)); } catch (error) { console.error(error); }
-    try { updateTaskDurationChart(labels, prepareTaskDurationData(startDate, endDate, labels)); } catch (error) { console.error(error); }
-    try { updatePhoneResistChart(labels, preparePhoneResistData(startDate, endDate, labels)); } catch (error) { console.error(error); }
-    try { updateTagChart(prepareTagData(startDate, endDate)); } catch (error) { console.error(error); }
+    try { updateCheckinRateChart(labels, prepareCheckinRateData(startDate, endDate, labels)); } catch (error) { appLogger.error(error); }
+    try { updateCheckinPeriodChart(prepareCheckinPeriodData(startDate, endDate)); } catch (error) { appLogger.error(error); }
+    try { updateTaskDurationChart(labels, prepareTaskDurationData(startDate, endDate, labels)); } catch (error) { appLogger.error(error); }
+    try { updatePhoneResistChart(labels, preparePhoneResistData(startDate, endDate, labels)); } catch (error) { appLogger.error(error); }
+    try { updateTagChart(prepareTagData(startDate, endDate)); } catch (error) { appLogger.error(error); }
 }
 
 /**

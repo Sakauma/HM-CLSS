@@ -89,22 +89,6 @@ function getWorkspaceSaveFailureMessage(prefix, result) {
     return `${prefix}，本地保存失败${failedKeys}`;
 }
 
-function hasCloudWorkspaceState(cloudData) {
-    return Boolean(cloudData?.state && typeof cloudData.state === 'object' && !Array.isArray(cloudData.state));
-}
-
-function getCloudWorkspaceSyncTime(cloudData) {
-    return cloudData?.lastSyncTime || new Date().toISOString();
-}
-
-function buildCloudWorkspaceApplyState(cloudData) {
-    if (!hasCloudWorkspaceState(cloudData)) return null;
-    return {
-        ...cloudData.state,
-        lastSyncTime: getCloudWorkspaceSyncTime(cloudData)
-    };
-}
-
 function backupLocalDataBeforeCloudApply(reason) {
     const result = createStorageOperationResult();
     safeSetStorageItem(LOCAL_BACKUP_BEFORE_CLOUD_APPLY_KEY, JSON.stringify({
@@ -113,7 +97,7 @@ function backupLocalDataBeforeCloudApply(reason) {
         backupReason: reason,
         backupTime: new Date().toISOString()
     }), result);
-    if (!result.ok) console.error('本地覆盖前备份失败');
+    if (!result.ok) appLogger.error('本地覆盖前备份失败');
     return result;
 }
 
@@ -128,7 +112,7 @@ function readLocalBackupBeforeCloudApply() {
         }
         return backup;
     } catch (error) {
-        console.error('覆盖前备份读取失败:', error);
+        appLogger.error('覆盖前备份读取失败:', error);
         return null;
     }
 }
@@ -216,34 +200,8 @@ function clearLocalBackupBeforeCloudApply() {
 }
 
 function applyImportedData(cloudData) {
-    const beforeSnapshot = createWorkspaceApplySnapshot();
-    const backupResult = backupLocalDataBeforeCloudApply('cloud-apply');
-    if (!backupResult.ok) {
-        refreshLocalBackupRestoreState();
-        showToast(getWorkspaceSaveFailureMessage('云端数据未应用，覆盖前本地备份失败', backupResult), 'error');
-        return false;
-    }
-
-    const cloudState = buildCloudWorkspaceApplyState(cloudData);
-    applyWorkspaceDatasetSnapshot(cloudData);
-    if (cloudState) {
-        applyWorkspaceStateSnapshot(cloudState, { persist: false });
-    }
-
-    const saveResult = saveData(true) || { ok: true, failedKeys: [] };
-
-    if (!saveResult.ok) {
-        return rollbackFailedWorkspaceApply(beforeSnapshot, '云端数据未应用', saveResult);
-    }
-
-    const stateResult = cloudState
-        ? commitWorkspaceStatePersistence(cloudState)
-        : updateLocalSyncTime(getCloudWorkspaceSyncTime(cloudData));
-    if (!stateResult.ok) {
-        return rollbackFailedWorkspaceApply(beforeSnapshot, '云端数据未应用', stateResult);
-    }
-
-    refreshWorkspaceUiAfterSync();
-    refreshLocalBackupRestoreState();
-    return true;
+    return runWorkspaceApplyTransaction({
+        reason: 'cloud-apply',
+        payload: cloudData
+    });
 }

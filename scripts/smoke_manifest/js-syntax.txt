@@ -1,5 +1,6 @@
 assets/js/runtime/theme.js
 assets/js/runtime/tailwind-config.js
+assets/js/runtime/logger.js
 assets/js/runtime/store.js
 assets/js/runtime/state.js
 assets/js/runtime/storage-migrations.js
@@ -15,6 +16,7 @@ assets/js/workspace/data.js
 assets/js/ui/navigation-data.js
 assets/js/ui/navigation-ui.js
 assets/js/ui/navigation.js
+assets/js/features/tavern/catalog-data.js
 assets/js/features/tavern/catalog.js
 assets/js/features/tavern/analyze.js
 assets/js/features/tavern/records.js
@@ -58,6 +60,7 @@ assets/js/features/sync/state.js
 assets/js/features/sync/api.js
 assets/js/features/sync/ui.js
 assets/js/features/sync/backup.js
+assets/js/features/sync/apply-transaction.js
 assets/js/features/sync/conflict.js
 assets/js/features/sync/logic.js
 assets/js/features/sync/index.js

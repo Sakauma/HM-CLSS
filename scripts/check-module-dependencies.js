@@ -2,8 +2,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const rootDir = path.resolve(__dirname, '..');
-const scriptOrderPath = path.join(rootDir, 'scripts', 'smoke_manifest', 'script-order.txt');
+const DEFAULT_ROOT_DIR = path.resolve(__dirname, '..');
+const DEFAULT_SCRIPT_ORDER_PATH = path.join(DEFAULT_ROOT_DIR, 'scripts', 'smoke_manifest', 'script-order.txt');
 
 function readManifest(filePath) {
     return fs.readFileSync(filePath, 'utf8')
@@ -67,88 +67,147 @@ function buildAliasMap(scriptPaths, moduleDefinitions) {
     return aliasMap;
 }
 
-function findRegisterAppModuleObjects(source) {
-    const objects = [];
-    let searchIndex = 0;
+function isIdentifierBoundary(source, index) {
+    const char = source[index];
+    return !char || !/[A-Za-z0-9_$]/.test(char);
+}
 
-    while (searchIndex < source.length) {
-        const callIndex = source.indexOf('registerAppModule', searchIndex);
-        if (callIndex === -1) break;
+function findTopLevelCallIndexes(source, functionName) {
+    const indexes = [];
+    let quote = '';
+    let escaped = false;
+    let lineComment = false;
+    let blockComment = false;
 
-        const parenIndex = source.indexOf('(', callIndex + 'registerAppModule'.length);
-        if (parenIndex === -1) break;
+    for (let index = 0; index < source.length; index += 1) {
+        const char = source[index];
+        const nextChar = source[index + 1];
 
-        let objectStart = parenIndex + 1;
-        while (/\s/.test(source[objectStart])) objectStart += 1;
-        if (source[objectStart] !== '{') {
-            searchIndex = parenIndex + 1;
+        if (lineComment) {
+            if (char === '\n') lineComment = false;
             continue;
         }
 
-        let depth = 0;
-        let quote = '';
-        let escaped = false;
-        let lineComment = false;
-        let blockComment = false;
-
-        for (let index = objectStart; index < source.length; index += 1) {
-            const char = source[index];
-            const nextChar = source[index + 1];
-
-            if (lineComment) {
-                if (char === '\n') lineComment = false;
-                continue;
-            }
-
-            if (blockComment) {
-                if (char === '*' && nextChar === '/') {
-                    blockComment = false;
-                    index += 1;
-                }
-                continue;
-            }
-
-            if (quote) {
-                if (escaped) {
-                    escaped = false;
-                } else if (char === '\\') {
-                    escaped = true;
-                } else if (char === quote) {
-                    quote = '';
-                }
-                continue;
-            }
-
-            if (char === '/' && nextChar === '/') {
-                lineComment = true;
+        if (blockComment) {
+            if (char === '*' && nextChar === '/') {
+                blockComment = false;
                 index += 1;
-                continue;
             }
-            if (char === '/' && nextChar === '*') {
-                blockComment = true;
-                index += 1;
-                continue;
-            }
-            if (char === '"' || char === "'" || char === '`') {
-                quote = char;
-                continue;
-            }
-            if (char === '{') {
-                depth += 1;
-            } else if (char === '}') {
-                depth -= 1;
-                if (depth === 0) {
-                    objects.push(source.slice(objectStart, index + 1));
-                    searchIndex = index + 1;
-                    break;
-                }
-            }
+            continue;
         }
 
-        if (searchIndex <= callIndex) break;
+        if (quote) {
+            if (escaped) {
+                escaped = false;
+            } else if (char === '\\') {
+                escaped = true;
+            } else if (char === quote) {
+                quote = '';
+            }
+            continue;
+        }
+
+        if (char === '/' && nextChar === '/') {
+            lineComment = true;
+            index += 1;
+            continue;
+        }
+        if (char === '/' && nextChar === '*') {
+            blockComment = true;
+            index += 1;
+            continue;
+        }
+        if (char === '"' || char === "'" || char === '`') {
+            quote = char;
+            continue;
+        }
+
+        if (
+            source.startsWith(functionName, index) &&
+            isIdentifierBoundary(source, index - 1) &&
+            isIdentifierBoundary(source, index + functionName.length)
+        ) {
+            indexes.push(index);
+            index += functionName.length - 1;
+        }
     }
 
-    return objects;
+    return indexes;
+}
+
+function extractObjectArgument(source, callIndex) {
+    const parenIndex = source.indexOf('(', callIndex + 'registerAppModule'.length);
+    if (parenIndex === -1) return null;
+
+    let objectStart = parenIndex + 1;
+    while (/\s/.test(source[objectStart])) objectStart += 1;
+    if (source[objectStart] !== '{') return null;
+
+    let depth = 0;
+    let quote = '';
+    let escaped = false;
+    let lineComment = false;
+    let blockComment = false;
+
+    for (let index = objectStart; index < source.length; index += 1) {
+        const char = source[index];
+        const nextChar = source[index + 1];
+
+        if (lineComment) {
+            if (char === '\n') lineComment = false;
+            continue;
+        }
+
+        if (blockComment) {
+            if (char === '*' && nextChar === '/') {
+                blockComment = false;
+                index += 1;
+            }
+            continue;
+        }
+
+        if (quote) {
+            if (escaped) {
+                escaped = false;
+            } else if (char === '\\') {
+                escaped = true;
+            } else if (char === quote) {
+                quote = '';
+            }
+            continue;
+        }
+
+        if (char === '/' && nextChar === '/') {
+            lineComment = true;
+            index += 1;
+            continue;
+        }
+        if (char === '/' && nextChar === '*') {
+            blockComment = true;
+            index += 1;
+            continue;
+        }
+        if (char === '"' || char === "'" || char === '`') {
+            quote = char;
+            continue;
+        }
+        if (char === '{') {
+            depth += 1;
+        } else if (char === '}') {
+            depth -= 1;
+            if (depth === 0) {
+                return source.slice(objectStart, index + 1);
+            }
+        }
+    }
+
+    return null;
+}
+
+function findRegisterAppModuleObjects(source) {
+    return findTopLevelCallIndexes(source, 'registerAppModule')
+        .map((callIndex) => extractObjectArgument(source, callIndex))
+        .filter(Boolean);
 }
 
 function parseStringProperty(objectSource, propertyName) {
@@ -170,13 +229,14 @@ function parseDependsOn(objectSource) {
     return dependencies;
 }
 
-function collectModuleDefinitions(scriptPaths) {
+function collectModuleDefinitions(scriptPaths, options = {}) {
+    const rootDir = options.rootDir || DEFAULT_ROOT_DIR;
+    const readSource = options.readSource || ((scriptPath) => fs.readFileSync(path.join(rootDir, scriptPath), 'utf8'));
     const definitions = [];
 
     scriptPaths.forEach((scriptPath) => {
         if (!scriptPath.startsWith('assets/js/') || !scriptPath.endsWith('.js')) return;
-        const absolutePath = path.join(rootDir, scriptPath);
-        const source = fs.readFileSync(absolutePath, 'utf8');
+        const source = readSource(scriptPath);
 
         findRegisterAppModuleObjects(source).forEach((objectSource) => {
             const id = parseStringProperty(objectSource, 'id');
@@ -194,10 +254,15 @@ function collectModuleDefinitions(scriptPaths) {
     return definitions;
 }
 
-function main() {
-    const scriptPaths = readManifest(scriptOrderPath).map(normalizePath);
+function checkModuleDependencies(options = {}) {
+    const rootDir = options.rootDir || DEFAULT_ROOT_DIR;
+    const scriptOrderPath = options.scriptOrderPath || DEFAULT_SCRIPT_ORDER_PATH;
+    const scriptPaths = (options.scriptPaths || readManifest(scriptOrderPath)).map(normalizePath);
     const scriptIndexByPath = new Map(scriptPaths.map((scriptPath, index) => [scriptPath, index]));
-    const moduleDefinitions = collectModuleDefinitions(scriptPaths);
+    const moduleDefinitions = collectModuleDefinitions(scriptPaths, {
+        rootDir,
+        readSource: options.readSource
+    });
     const aliasMap = buildAliasMap(scriptPaths, moduleDefinitions);
     const errors = [];
 
@@ -235,13 +300,30 @@ function main() {
         });
     });
 
-    if (errors.length > 0) {
+    return {
+        ok: errors.length === 0,
+        errors,
+        moduleDefinitions
+    };
+}
+
+function main() {
+    const result = checkModuleDependencies();
+    if (!result.ok) {
         console.error('Module dependency check failed:');
-        errors.forEach((error) => console.error(`- ${error}`));
+        result.errors.forEach((error) => console.error(`- ${error}`));
         process.exit(1);
     }
 
-    console.log(`Module dependency check passed (${moduleDefinitions.length} modules).`);
+    console.log(`Module dependency check passed (${result.moduleDefinitions.length} modules).`);
 }
 
-main();
+if (require.main === module) {
+    main();
+}
+
+module.exports = {
+    checkModuleDependencies,
+    findRegisterAppModuleObjects,
+    parseDependsOn
+};

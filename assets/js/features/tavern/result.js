@@ -3,6 +3,66 @@
  * 负责结果卡渲染与分享文案生成。
  */
 
+function createTavernResultDomAdapter(rootDocument) {
+    const textBindings = [
+        ['res-title', 'name'],
+        ['res-subtitle', 'enName'],
+        ['res-style', 'style'],
+        ['res-badge', 'badge'],
+        ['res-base', 'base'],
+        ['res-glass', 'glass'],
+        ['res-top', 'top'],
+        ['res-mid', 'middle'],
+        ['res-bot', 'bottom'],
+        ['res-feel', 'feel'],
+        ['res-garnish', 'garnish'],
+        ['res-params', 'params'],
+        ['res-family', 'family'],
+        ['res-abv', 'abv'],
+        ['res-left-family', 'family'],
+        ['res-left-base', 'base'],
+        ['res-left-abv', 'abv'],
+        ['res-left-glass', 'glass'],
+        ['res-left-feel', 'feel'],
+        ['res-left-garnish', 'garnish'],
+        ['res-serial', 'serial'],
+        ['res-story', 'story'],
+        ['res-reason', 'reason'],
+        ['res-quote', 'quote'],
+        ['res-intensity-label', 'intensityLabel']
+    ];
+
+    function requireElement(id) {
+        const element = rootDocument.getElementById(id);
+        if (!element) {
+            throw new Error(`Missing tavern result element: ${id}`);
+        }
+        return element;
+    }
+
+    return {
+        renderDrinkInfo(drinkInfo) {
+            textBindings.forEach(([id, key]) => {
+                requireElement(id).textContent = drinkInfo[key];
+            });
+            requireElement('res-left-service').textContent = `?${drinkInfo.glass}?? ${drinkInfo.base}?????? ${drinkInfo.top}???? ${drinkInfo.garnish} ?????????`;
+        },
+        updateSaveButton(drinkInfo) {
+            const saveBtn = rootDocument.getElementById('btn-save-drink');
+            if (!saveBtn) return;
+
+            setElementIconLabel(
+                saveBtn,
+                drinkInfo.saved ? 'archive-check' : 'archive',
+                drinkInfo.saved ? '???' : '?????'
+            );
+            saveBtn.disabled = !!drinkInfo.saved;
+            saveBtn.classList.toggle('opacity-60', !!drinkInfo.saved);
+            saveBtn.classList.toggle('cursor-not-allowed', !!drinkInfo.saved);
+        }
+    };
+}
+
 function renderResult(record, fromHistory = false) {
     runtimeActions.setCurrentDrinkInfo({ ...record, saved: !!fromHistory || record.saved });
     if (typeof updateVoyageAmbientPresentation === 'function') {
@@ -10,44 +70,9 @@ function renderResult(record, fromHistory = false) {
     }
     applyPaletteToTavern(currentDrinkInfo);
 
-    document.getElementById('res-title').textContent = currentDrinkInfo.name;
-    document.getElementById('res-subtitle').textContent = currentDrinkInfo.enName;
-    document.getElementById('res-style').textContent = currentDrinkInfo.style;
-    document.getElementById('res-badge').textContent = currentDrinkInfo.badge;
-    document.getElementById('res-base').textContent = currentDrinkInfo.base;
-    document.getElementById('res-glass').textContent = currentDrinkInfo.glass;
-    document.getElementById('res-top').textContent = currentDrinkInfo.top;
-    document.getElementById('res-mid').textContent = currentDrinkInfo.middle;
-    document.getElementById('res-bot').textContent = currentDrinkInfo.bottom;
-    document.getElementById('res-feel').textContent = currentDrinkInfo.feel;
-    document.getElementById('res-garnish').textContent = currentDrinkInfo.garnish;
-    document.getElementById('res-params').textContent = currentDrinkInfo.params;
-    document.getElementById('res-family').textContent = currentDrinkInfo.family;
-    document.getElementById('res-abv').textContent = currentDrinkInfo.abv;
-    document.getElementById('res-left-family').textContent = currentDrinkInfo.family;
-    document.getElementById('res-left-base').textContent = currentDrinkInfo.base;
-    document.getElementById('res-left-abv').textContent = currentDrinkInfo.abv;
-    document.getElementById('res-left-glass').textContent = currentDrinkInfo.glass;
-    document.getElementById('res-left-feel').textContent = currentDrinkInfo.feel;
-    document.getElementById('res-left-garnish').textContent = currentDrinkInfo.garnish;
-    document.getElementById('res-serial').textContent = currentDrinkInfo.serial;
-    document.getElementById('res-story').textContent = currentDrinkInfo.story;
-    document.getElementById('res-reason').textContent = currentDrinkInfo.reason;
-    document.getElementById('res-quote').textContent = currentDrinkInfo.quote;
-    document.getElementById('res-intensity-label').textContent = currentDrinkInfo.intensityLabel;
-    document.getElementById('res-left-service').textContent = `以${currentDrinkInfo.glass}承接 ${currentDrinkInfo.base}，入口先给出 ${currentDrinkInfo.top}，尾段让 ${currentDrinkInfo.garnish} 把整杯酒慢慢收住。`;
-
-    const saveBtn = document.getElementById('btn-save-drink');
-    if (saveBtn) {
-        setElementIconLabel(
-            saveBtn,
-            currentDrinkInfo.saved ? 'archive-check' : 'archive',
-            currentDrinkInfo.saved ? '已封存' : '保存到酒单'
-        );
-        saveBtn.disabled = !!currentDrinkInfo.saved;
-        saveBtn.classList.toggle('opacity-60', !!currentDrinkInfo.saved);
-        saveBtn.classList.toggle('cursor-not-allowed', !!currentDrinkInfo.saved);
-    }
+    const resultDom = createTavernResultDomAdapter(document);
+    resultDom.renderDrinkInfo(currentDrinkInfo);
+    resultDom.updateSaveButton(currentDrinkInfo);
 
     switchTavernState('state-result');
     lucide.createIcons();

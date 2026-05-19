@@ -18,7 +18,7 @@ function readSyncStorageValue(storage, key) {
     try {
         return storage?.getItem(key) || '';
     } catch (error) {
-        console.error(`storage read failed for "${key}":`, error);
+        appLogger.error(`storage read failed for "${key}":`, error);
         return '';
     }
 }
@@ -71,7 +71,7 @@ function recordSyncStorageFailure(result, key, error) {
     if (!result.failedKeys.includes(key)) {
         result.failedKeys.push(key);
     }
-    console.error(`storage write failed for "${key}":`, error);
+    appLogger.error(`storage write failed for "${key}":`, error);
 }
 
 function persistSyncStorageValue(storage, key, value, result) {
@@ -156,7 +156,7 @@ function updateLocalSyncTime(timeStr) {
         if (!result.failedKeys.includes(SYNC_TIME_STORAGE_KEY)) {
             result.failedKeys.push(SYNC_TIME_STORAGE_KEY);
         }
-        console.error(`localStorage write failed for "${SYNC_TIME_STORAGE_KEY}":`, error);
+        appLogger.error(`localStorage write failed for "${SYNC_TIME_STORAGE_KEY}":`, error);
     }
     if (!result.ok && typeof notifyStorageWriteFailure === 'function') {
         notifyStorageWriteFailure(result);

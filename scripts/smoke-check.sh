@@ -27,6 +27,29 @@ resolve_python_bin() {
   exit 1
 }
 
+resolve_node_bin() {
+  if [[ -n "${NODE_BIN:-}" ]]; then
+    "$NODE_BIN" --version >/dev/null 2>&1 || {
+      printf 'NODE_BIN is set but not runnable: %s\n' "$NODE_BIN" >&2
+      exit 1
+    }
+    printf '%s\n' "$NODE_BIN"
+    return
+  fi
+
+  local candidate
+  for candidate in node.exe node; do
+    if command -v "$candidate" >/dev/null 2>&1 && "$candidate" --version >/dev/null 2>&1; then
+      "$candidate" -e 'process.exit(Number(process.versions.node.split(".")[0]) >= 18 ? 0 : 1)' >/dev/null 2>&1 || continue
+      printf '%s\n' "$candidate"
+      return
+    fi
+  done
+
+  printf 'Node.js 18 or newer is required for smoke-check.sh\n' >&2
+  exit 1
+}
+
 read_manifest() {
   local manifest_path="$1"
   grep -vE '^\s*(#.*)?$' "$manifest_path" | sed 's/\r$//'
@@ -75,7 +98,7 @@ check_manifest_freshness() {
 
 check_js_syntax() {
   while IFS= read -r file_path; do
-    node --check "$file_path"
+    "$NODE_BIN" --check "$file_path"
   done < <(read_manifest "$MANIFEST_DIR/js-syntax.txt")
 }
 
@@ -167,11 +190,12 @@ check_script_manifest_exact() {
 }
 
 PYTHON_BIN="$(resolve_python_bin)"
+NODE_BIN="$(resolve_node_bin)"
 
 check_manifest_freshness
 check_js_syntax
-node scripts/check-module-dependencies.js
-node --test tests/unit/*.test.js
+"$NODE_BIN" scripts/check-module-dependencies.js
+"$NODE_BIN" --test tests/unit/*.test.js
 "$PYTHON_BIN" -m py_compile scripts/browser-smoke.py
 while IFS= read -r -d '' py_file; do
   "$PYTHON_BIN" -m py_compile "$py_file"

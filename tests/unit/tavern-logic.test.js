@@ -35,6 +35,7 @@ function createBaseContext(overrides = {}) {
 
 function loadTavernModules(context) {
     loadScript(context, 'assets/js/runtime/state.js');
+    loadScript(context, 'assets/js/features/tavern/catalog-data.js');
     loadScript(context, 'assets/js/features/tavern/catalog.js');
     loadScript(context, 'assets/js/features/tavern/analyze.js');
     loadScript(context, 'assets/js/features/tavern/records.js');
@@ -100,4 +101,73 @@ test('tavern drink records expose stable metadata and normalize legacy entries',
     assert.equal(normalized.familyKey, 'calm');
     assert.equal(normalized.serial.startsWith('ARCHIVE-'), true);
     assert.equal(normalized.intensity, 0.5);
+});
+
+test('tavern result DOM adapter renders drink info and reports missing ids', () => {
+    const ids = [
+        'res-title', 'res-subtitle', 'res-style', 'res-badge', 'res-base', 'res-glass',
+        'res-top', 'res-mid', 'res-bot', 'res-feel', 'res-garnish', 'res-params',
+        'res-family', 'res-abv', 'res-left-family', 'res-left-base', 'res-left-abv',
+        'res-left-glass', 'res-left-feel', 'res-left-garnish', 'res-serial', 'res-story',
+        'res-reason', 'res-quote', 'res-intensity-label', 'res-left-service'
+    ];
+    const elements = Object.fromEntries(ids.map((id) => [id, { textContent: '' }]));
+    elements['btn-save-drink'] = {
+        disabled: false,
+        classList: {
+            toggles: [],
+            toggle(name, value) {
+                this.toggles.push({ name, value });
+            }
+        }
+    };
+    const iconLabels = [];
+    const context = createBaseContext({
+        document: {
+            getElementById(id) {
+                return elements[id] || null;
+            }
+        },
+        setElementIconLabel(element, icon, label) {
+            iconLabels.push({ element, icon, label });
+        }
+    });
+    loadScript(context, 'assets/js/features/tavern/result.js');
+
+    const adapter = context.createTavernResultDomAdapter(context.document);
+    adapter.renderDrinkInfo({
+        name: 'Test Drink',
+        enName: 'Test',
+        style: 'Fizz',
+        badge: 'Badge',
+        base: 'Gin',
+        glass: 'Highball',
+        top: 'Lime',
+        middle: 'Soda',
+        bottom: 'Mint',
+        feel: 'Bright',
+        garnish: 'Peel',
+        params: '0.50',
+        family: 'bright',
+        abv: '12% ABV',
+        serial: 'ARCHIVE-1',
+        story: 'Story',
+        reason: 'Reason',
+        quote: 'Quote',
+        intensityLabel: 'Medium',
+        saved: true
+    });
+    adapter.updateSaveButton({ saved: true });
+
+    assert.equal(elements['res-title'].textContent, 'Test Drink');
+    assert.match(elements['res-left-service'].textContent, /Highball/);
+    assert.equal(elements['btn-save-drink'].disabled, true);
+    assert.equal(iconLabels.at(-1).icon, 'archive-check');
+
+    const missingAdapter = context.createTavernResultDomAdapter({
+        getElementById() {
+            return null;
+        }
+    });
+    assert.throws(() => missingAdapter.renderDrinkInfo({}), /Missing tavern result element: res-title/);
 });

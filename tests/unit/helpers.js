@@ -13,6 +13,12 @@ function loadScript(context, relativePath) {
 function createBaseContext(overrides = {}) {
     const context = vm.createContext({
         console,
+        appLogger: {
+            info() {},
+            warn() {},
+            error() {},
+            setSilent() {}
+        },
         setTimeout,
         clearTimeout,
         setInterval,

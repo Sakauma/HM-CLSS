@@ -26,6 +26,7 @@ registerAppModule({
         'sync/api',
         'sync/ui',
         'sync/backup',
+        'sync/apply-transaction',
         'sync/conflict',
         'sync/logic'
     ],

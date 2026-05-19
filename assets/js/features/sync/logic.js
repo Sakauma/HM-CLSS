@@ -109,7 +109,7 @@ async function handlePullCloud() {
 function triggerAutoSync() {
     if (!hasSyncCredentials() || autoSyncTimer) return;
 
-    console.log('☁️ 检测到数据变动，开始10分钟同步倒计时...');
+    appLogger.info('☁️ 检测到数据变动，开始10分钟同步倒计时...');
     autoSyncTimer = setTimeout(async () => {
         try {
             const cloudSnapshot = await fetchCloudWorkspaceSnapshot();
@@ -131,9 +131,9 @@ function triggerAutoSync() {
             if (!syncTimeResult.ok) {
                 throw new Error('sync_time_save_failed');
             }
-            console.log('☁️ 后台节流自动同步成功：', new Date().toLocaleTimeString());
+            appLogger.info('☁️ 后台节流自动同步成功：', new Date().toLocaleTimeString());
         } catch (error) {
-            console.error('☁️ 后台同步失败:', error);
+            appLogger.error('☁️ 后台同步失败:', error);
             if (typeof showToast === 'function') {
                 const message = String(error?.message || '');
                 showToast(
@@ -166,9 +166,9 @@ async function autoPullOnStartup(runState = null) {
         if (runState && runState.active === false) return;
         const message = String(error?.message || '');
         if (message === 'fetch_invalid_payload') {
-            console.error('☁️ [Auto-Sync] 云端数据文件内容损坏，已跳过自动拉取。');
+            appLogger.error('☁️ [Auto-Sync] 云端数据文件内容损坏，已跳过自动拉取。');
             return;
         }
-        console.error('☁️ [Auto-Sync] 启动检查失败:', error);
+        appLogger.error('☁️ [Auto-Sync] 启动检查失败:', error);
     }
 }

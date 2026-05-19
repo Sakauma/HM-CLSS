@@ -39,6 +39,7 @@ scripts/smoke_manifest/required-ids.txt
 scripts/smoke_manifest/required-docs.txt
 scripts/smoke_manifest/vendor-checksums.txt
 tests/unit/helpers.js
+tests/unit/module-dependency-checker.test.js
 tests/unit/runtime-store-and-checkin.test.js
 tests/unit/export-storage-workspace.test.js
 tests/unit/tavern-logic.test.js
@@ -46,7 +47,9 @@ tests/unit/module-registry.test.js
 tests/unit/theme-runtime.test.js
 tests/unit/sync-helpers.js
 tests/unit/sync-api-state.test.js
-tests/unit/sync-apply-backup.test.js
+tests/unit/sync-apply-transaction.test.js
+tests/unit/sync-local-backup.test.js
+tests/unit/sync-controller.test.js
 tests/unit/statistics-and-export.test.js
 tests/fixtures/visual-layout-baselines.json
 docs/testing-artifacts.md

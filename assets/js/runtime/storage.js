@@ -24,7 +24,7 @@ function recordStorageFailure(result, key, error) {
     if (!result.failedKeys.includes(key)) {
         result.failedKeys.push(key);
     }
-    console.error(`localStorage write failed for "${key}":`, error);
+    appLogger.error(`localStorage write failed for "${key}":`, error);
     return false;
 }
 

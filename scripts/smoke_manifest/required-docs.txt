@@ -1,2 +1,6 @@
 docs/functional-self-check.md
 docs/testing-artifacts.md
+CONTEXT.md
+docs/adr/0001-zero-build-static-app.md
+docs/adr/0002-script-order-startup-contract.md
+docs/adr/0003-local-storage-sync-safety.md

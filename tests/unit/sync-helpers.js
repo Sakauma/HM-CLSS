@@ -167,6 +167,7 @@ function createSyncApplyContext(options = {}) {
 
     loadScript(context, 'assets/js/features/sync/state.js');
     loadScript(context, 'assets/js/features/sync/backup.js');
+    loadScript(context, 'assets/js/features/sync/apply-transaction.js');
     context.refreshWorkspaceUiAfterSync = () => {};
 
     return { context, localStorage, toastEvents };
