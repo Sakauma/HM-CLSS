@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import ElementClickInterceptedException, TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -145,7 +145,18 @@ def set_field_value(driver: WebDriver, element_id: str, value: str) -> None:
 
 
 def click(driver: WebDriver, element_id: str) -> None:
-    find(driver, element_id).click()
+    element = find(driver, element_id)
+    wait_for(driver, lambda _driver: element.is_enabled(), f"{element_id} did not become enabled")
+    try:
+        element.click()
+    except ElementClickInterceptedException:
+        driver.execute_script(
+            """
+            arguments[0].scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' });
+            arguments[0].click();
+            """,
+            element,
+        )
 
 
 def install_debug_hooks(driver: WebDriver) -> None:

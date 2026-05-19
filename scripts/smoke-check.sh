@@ -29,7 +29,48 @@ resolve_python_bin() {
 
 read_manifest() {
   local manifest_path="$1"
-  grep -vE '^\s*(#.*)?$' "$manifest_path"
+  grep -vE '^\s*(#.*)?$' "$manifest_path" | sed 's/\r$//'
+}
+
+manifest_contains_item() {
+  local manifest_path="$1"
+  local item="$2"
+  read_manifest "$manifest_path" | grep -Fx -- "$item" >/dev/null
+}
+
+check_tracked_manifest_freshness() {
+  local manifest_path="$1"
+  local label="$2"
+  local tracked_path="$3"
+  local include_regex="$4"
+  local exclude_regex="${5:-^$}"
+  local missing=()
+
+  if ! command -v git >/dev/null 2>&1; then
+    printf 'git is required for manifest freshness checks\n' >&2
+    exit 1
+  fi
+
+  while IFS= read -r file_path; do
+    [[ "$file_path" =~ $include_regex ]] || continue
+    [[ "$file_path" =~ $exclude_regex ]] && continue
+    if ! manifest_contains_item "$manifest_path" "$file_path"; then
+      missing+=("$file_path")
+    fi
+  done < <(git ls-files "$tracked_path")
+
+  if (( ${#missing[@]} > 0 )); then
+    printf '%s is missing tracked files:\n' "$label" >&2
+    printf '  %s\n' "${missing[@]}" >&2
+    printf 'Update %s so smoke checks cover newly added files.\n' "$manifest_path" >&2
+    exit 1
+  fi
+}
+
+check_manifest_freshness() {
+  check_tracked_manifest_freshness "$MANIFEST_DIR/js-syntax.txt" "JavaScript syntax manifest" "assets/js" '\.js$'
+  check_tracked_manifest_freshness "$MANIFEST_DIR/required-stylesheets.txt" "Stylesheet manifest" "assets/css" '\.css$'
+  check_tracked_manifest_freshness "$MANIFEST_DIR/required-files.txt" "Browser smoke Python manifest" "scripts/browser_smoke" '\.py$' '(^|/)__init__\.py$'
 }
 
 check_js_syntax() {
@@ -42,7 +83,7 @@ check_index_references() {
   local manifest_path="$1"
 
   while IFS= read -r item; do
-    rg -F "$item" index.html >/dev/null || {
+    grep -F -- "$item" index.html >/dev/null || {
       printf '%s is missing from index.html\n' "$item" >&2
       exit 1
     }
@@ -62,7 +103,7 @@ check_existing_paths() {
 
 check_required_ids() {
   while IFS= read -r element_id; do
-    rg -F "id=\"$element_id\"" index.html >/dev/null || {
+    grep -F -- "id=\"$element_id\"" index.html >/dev/null || {
       printf 'id="%s" is missing from index.html\n' "$element_id" >&2
       exit 1
     }
@@ -91,7 +132,7 @@ check_script_order() {
 
   while IFS= read -r script_path; do
     local current_line
-    current_line="$(rg -n -F "$script_path" index.html | cut -d: -f1 | head -n 1)"
+    current_line="$(grep -n -F -- "$script_path" index.html | cut -d: -f1 | head -n 1)"
     if [[ -z "$current_line" ]]; then
       printf '%s is missing from index.html\n' "$script_path" >&2
       exit 1
@@ -127,6 +168,7 @@ check_script_manifest_exact() {
 
 PYTHON_BIN="$(resolve_python_bin)"
 
+check_manifest_freshness
 check_js_syntax
 node --test tests/unit/*.test.js
 "$PYTHON_BIN" -m py_compile scripts/browser-smoke.py

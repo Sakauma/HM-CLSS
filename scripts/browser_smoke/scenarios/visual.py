@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 
 from browser_smoke.artifacts import write_json_artifact
@@ -8,6 +9,10 @@ from browser_smoke.helpers import click, log, require, wait_for, wait_text_conta
 
 LAYOUT_TOLERANCE = 16
 VIEWPORT_TOLERANCE = 2
+LAYOUT_STABLE_TOLERANCE = 1
+LAYOUT_STABLE_SAMPLES = 3
+LAYOUT_STABLE_INTERVAL = 0.16
+LAYOUT_STABLE_TIMEOUT = 4
 
 VISUAL_CASES = [
     {
@@ -93,6 +98,73 @@ def collect_layout_snapshot(driver, element_ids):
     )
 
 
+def layout_signature(snapshot):
+    signature = [snapshot["scrollTop"]]
+    for element_id in sorted(snapshot["elements"].keys()):
+        metrics = snapshot["elements"][element_id]
+        if metrics is None:
+            signature.append(None)
+            continue
+        signature.append(
+            (
+                metrics["x"],
+                metrics["y"],
+                metrics["width"],
+                metrics["height"],
+                metrics["visible"],
+                metrics["childCount"],
+            )
+        )
+    return signature
+
+
+def signatures_match(actual, previous) -> bool:
+    if previous is None or len(actual) != len(previous):
+        return False
+
+    for actual_value, previous_value in zip(actual, previous):
+        if actual_value is None or previous_value is None:
+            if actual_value != previous_value:
+                return False
+            continue
+
+        if isinstance(actual_value, tuple):
+            for actual_part, previous_part in zip(actual_value, previous_value):
+                if isinstance(actual_part, (int, float)) and isinstance(previous_part, (int, float)):
+                    if abs(actual_part - previous_part) > LAYOUT_STABLE_TOLERANCE:
+                        return False
+                elif actual_part != previous_part:
+                    return False
+        elif abs(actual_value - previous_value) > LAYOUT_STABLE_TOLERANCE:
+            return False
+
+    return True
+
+
+def wait_layout_stable(driver, element_ids):
+    deadline = time.monotonic() + LAYOUT_STABLE_TIMEOUT
+    previous_signature = None
+    stable_samples = 0
+    last_snapshot = None
+
+    while time.monotonic() < deadline:
+        last_snapshot = collect_layout_snapshot(driver, element_ids)
+        current_signature = layout_signature(last_snapshot)
+
+        if signatures_match(current_signature, previous_signature):
+            stable_samples += 1
+            if stable_samples >= LAYOUT_STABLE_SAMPLES:
+                return last_snapshot
+        else:
+            stable_samples = 0
+            previous_signature = current_signature
+
+        time.sleep(LAYOUT_STABLE_INTERVAL)
+
+    require(False, "Visual layout did not settle before snapshot capture")
+    return last_snapshot
+
+
 def compare_layout_snapshots(case, actual, expected) -> None:
     case_name = case["name"]
     require(expected is not None, f"Missing visual baseline for {case_name}")
@@ -151,7 +223,7 @@ def capture_visual_case(driver, case, artifact_dir: Path | None):
         visual_dir.mkdir(parents=True, exist_ok=True)
         driver.save_screenshot(str(visual_dir / f"{case['name']}.png"))
 
-    return collect_layout_snapshot(driver, case["elements"])
+    return wait_layout_stable(driver, case["elements"])
 
 
 def test_visual_layout_baselines(driver, baseline_path: str, artifact_dir: Path | None) -> None:
