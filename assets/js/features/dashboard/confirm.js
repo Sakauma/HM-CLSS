@@ -141,6 +141,7 @@ function showConfirmDialog(options = {}) {
 registerAppModule({
     id: 'confirm-dialog',
     order: 112,
+    dependsOn: ['module-registry', 'runtime/dom-utils'],
     init() {
         ensureConfirmDialogBindings();
         return () => {

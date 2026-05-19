@@ -33,6 +33,7 @@ function bindSummaryModalControls() {
 registerAppModule({
     id: 'runtime-clock',
     order: 10,
+    dependsOn: ['module-registry', 'runtime/storage', 'checkin/ui', 'dashboard/status'],
     init() {
         updateDateTime();
         const timerId = setInterval(updateDateTime, 1000);
@@ -43,6 +44,7 @@ registerAppModule({
 registerAppModule({
     id: 'dashboard-home',
     order: 100,
+    dependsOn: ['module-registry', 'dashboard/overview'],
     init() {
         refreshDashboardHome();
     }
@@ -51,6 +53,7 @@ registerAppModule({
 registerAppModule({
     id: 'summary-modals',
     order: 110,
+    dependsOn: ['module-registry', 'runtime/dom-utils'],
     init: bindSummaryModalControls
 });
 

@@ -44,5 +44,13 @@ function initNotesModule() {
 registerAppModule({
     id: 'notes',
     order: 55,
+    dependsOn: [
+        'module-registry',
+        'runtime/dom-utils',
+        'notes/modal',
+        'notes/today',
+        'notes/archive',
+        'notes/render'
+    ],
     init: initNotesModule
 });

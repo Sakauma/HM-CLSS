@@ -215,5 +215,6 @@ async function addLeave() {
 registerAppModule({
     id: 'leave',
     order: 60,
+    dependsOn: ['module-registry', 'runtime/storage', 'runtime/date-utils', 'leave/rules', 'leave/ui'],
     init: initLeaveManagement
 });

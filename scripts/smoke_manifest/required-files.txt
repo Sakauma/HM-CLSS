@@ -17,6 +17,7 @@ assets/js/runtime/tailwind-config.js
 .github/workflows/ci.yml
 environment.browser-test.yml
 scripts/smoke-check.sh
+scripts/check-module-dependencies.js
 scripts/browser-smoke.sh
 scripts/browser-smoke.py
 scripts/browser_smoke/helpers.py
@@ -41,7 +42,11 @@ tests/unit/helpers.js
 tests/unit/runtime-store-and-checkin.test.js
 tests/unit/export-storage-workspace.test.js
 tests/unit/tavern-logic.test.js
-tests/unit/sync-and-registry.test.js
+tests/unit/module-registry.test.js
+tests/unit/theme-runtime.test.js
+tests/unit/sync-helpers.js
+tests/unit/sync-api-state.test.js
+tests/unit/sync-apply-backup.test.js
 tests/unit/statistics-and-export.test.js
 tests/fixtures/visual-layout-baselines.json
 docs/testing-artifacts.md

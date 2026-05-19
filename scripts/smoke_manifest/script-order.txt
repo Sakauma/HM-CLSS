@@ -4,6 +4,7 @@ assets/vendor/chart.umd-4.4.8.min.js
 assets/vendor/marked-12.0.2.min.js
 assets/vendor/purify-3.0.6.min.js
 assets/js/runtime/tailwind-config.js
+assets/js/runtime/module-registry.js
 assets/js/runtime/theme.js
 assets/js/runtime/store.js
 assets/js/runtime/state.js
@@ -14,10 +15,8 @@ assets/js/runtime/storage.js
 assets/js/runtime/date-utils.js
 assets/js/runtime/dom-utils.js
 assets/js/runtime/ambient.js
-assets/js/runtime/module-registry.js
 assets/js/workspace/metrics.js
 assets/js/workspace/data.js
-assets/js/runtime/app-init.js
 assets/js/ui/navigation-data.js
 assets/js/ui/navigation-ui.js
 assets/js/ui/navigation.js
@@ -73,4 +72,5 @@ assets/js/features/export/data.js
 assets/js/features/export/formats.js
 assets/js/features/export/ui.js
 assets/js/features/export/index.js
+assets/js/runtime/app-init.js
 assets/js/ui/shortcuts.js

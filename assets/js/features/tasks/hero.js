@@ -47,5 +47,6 @@ function initTaskHero() {
 registerAppModule({
     id: 'task-hero',
     order: 49,
+    dependsOn: ['module-registry', 'runtime/store'],
     init: initTaskHero
 });

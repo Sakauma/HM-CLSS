@@ -217,5 +217,16 @@ async function submitRetroCheckin() {
 registerAppModule({
     id: 'checkin',
     order: 30,
+    dependsOn: [
+        'module-registry',
+        'runtime/store',
+        'runtime/storage',
+        'runtime/date-utils',
+        'checkin/rules',
+        'checkin/status',
+        'checkin/retro',
+        'checkin/summary',
+        'checkin/ui'
+    ],
     init: initCheckin
 });

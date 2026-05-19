@@ -1661,7 +1661,8 @@
         </div>
     </div>
 
-    <!-- 脚本加载顺序：先状态、时间与 DOM 工具，再注册启动编排，随后加载业务模块、导出链路与快捷键层。 -->
+    <!-- 脚本加载顺序：先加载 vendor 与启动注册器，再加载运行时、业务模块、导出链路与快捷键层。 -->
+    <script src="assets/js/runtime/module-registry.js"></script>
     <script src="assets/js/runtime/theme.js"></script>
     <script src="assets/js/runtime/store.js"></script>
     <script src="assets/js/runtime/state.js"></script>
@@ -1672,10 +1673,8 @@
     <script src="assets/js/runtime/date-utils.js"></script>
     <script src="assets/js/runtime/dom-utils.js"></script>
     <script src="assets/js/runtime/ambient.js"></script>
-    <script src="assets/js/runtime/module-registry.js"></script>
     <script src="assets/js/workspace/metrics.js"></script>
     <script src="assets/js/workspace/data.js"></script>
-    <script src="assets/js/runtime/app-init.js"></script>
     <script src="assets/js/ui/navigation-data.js"></script>
     <script src="assets/js/ui/navigation-ui.js"></script>
     <script src="assets/js/ui/navigation.js"></script>
@@ -1731,6 +1730,7 @@
     <script src="assets/js/features/export/formats.js"></script>
     <script src="assets/js/features/export/ui.js"></script>
     <script src="assets/js/features/export/index.js"></script>
+    <script src="assets/js/runtime/app-init.js"></script>
     <script src="assets/js/ui/shortcuts.js"></script>
     <!-- HM_CLSS_SCRIPT_BLOCK_END -->
     <!-- 每日/每周总结弹窗。 -->

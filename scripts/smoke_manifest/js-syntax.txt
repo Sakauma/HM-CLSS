@@ -69,3 +69,4 @@ assets/js/features/export/ui.js
 assets/js/features/export/index.js
 assets/js/ui/shortcuts.js
 assets/js/runtime/app-init.js
+scripts/check-module-dependencies.js

@@ -7,9 +7,30 @@ const appModuleRegistry = [];
 const initializedAppModules = new Map();
 let appModuleRegistrationOrder = 0;
 
+function normalizeModuleDependencies(moduleId, dependsOn) {
+    if (dependsOn === undefined) return [];
+
+    if (!Array.isArray(dependsOn)) {
+        throw new Error(`registerAppModule("${moduleId}") dependsOn must be an array of module ids.`);
+    }
+
+    return dependsOn.map((dependencyId) => {
+        if (typeof dependencyId !== 'string' || !dependencyId.trim()) {
+            throw new Error(`registerAppModule("${moduleId}") dependsOn entries must be non-empty strings.`);
+        }
+
+        const normalizedDependencyId = dependencyId.trim();
+        if (normalizedDependencyId === moduleId) {
+            throw new Error(`registerAppModule("${moduleId}") cannot depend on itself.`);
+        }
+
+        return normalizedDependencyId;
+    });
+}
+
 /**
  * 注册一个启动模块。
- * @param {{ id: string, init: Function, order?: number }} definition
+ * @param {{ id: string, init: Function, order?: number, dependsOn?: string[] }} definition
  */
 function registerAppModule(definition) {
     if (!definition || typeof definition.id !== 'string' || !definition.id.trim()) {
@@ -20,21 +41,25 @@ function registerAppModule(definition) {
         throw new Error(`registerAppModule("${definition.id}") requires an init function.`);
     }
 
-    if (appModuleRegistry.some((module) => module.id === definition.id)) {
-        throw new Error(`App module "${definition.id}" has already been registered.`);
+    const moduleId = definition.id.trim();
+    if (appModuleRegistry.some((module) => module.id === moduleId)) {
+        throw new Error(`App module "${moduleId}" has already been registered.`);
     }
 
+    const dependsOn = normalizeModuleDependencies(moduleId, definition.dependsOn);
+
     appModuleRegistry.push({
-        id: definition.id,
+        id: moduleId,
         init: definition.init,
         order: Number.isFinite(definition.order) ? definition.order : 1000,
+        dependsOn,
         registrationOrder: appModuleRegistrationOrder++
     });
 }
 
 /**
  * 返回当前已注册模块的有序快照，便于调试和测试。
- * @returns {Array<{ id: string, init: Function, order: number, registrationOrder: number }>}
+ * @returns {Array<{ id: string, init: Function, order: number, dependsOn: string[], registrationOrder: number }>}
  */
 function getRegisteredAppModules() {
     return [...appModuleRegistry].sort((a, b) => {

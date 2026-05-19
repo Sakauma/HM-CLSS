@@ -170,6 +170,7 @@ PYTHON_BIN="$(resolve_python_bin)"
 
 check_manifest_freshness
 check_js_syntax
+node scripts/check-module-dependencies.js
 node --test tests/unit/*.test.js
 "$PYTHON_BIN" -m py_compile scripts/browser-smoke.py
 while IFS= read -r -d '' py_file; do

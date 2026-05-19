@@ -80,5 +80,13 @@ function updateSummaryStatistics() {
 registerAppModule({
     id: 'statistics',
     order: 70,
+    dependsOn: [
+        'module-registry',
+        'workspace/metrics',
+        'stats/ranges',
+        'stats/aggregates',
+        'stats/data',
+        'stats/charts'
+    ],
     init: initStatistics
 });

@@ -113,5 +113,6 @@ function initExportTools() {
 registerAppModule({
     id: 'export-tools',
     order: 80,
+    dependsOn: ['module-registry', 'export/profiles', 'export/monthly', 'export/data', 'export/formats'],
     init: initExportTools
 });

@@ -131,5 +131,6 @@ function initKeyboardShortcuts() {
 registerAppModule({
     id: 'keyboard-shortcuts',
     order: 90,
+    dependsOn: ['module-registry', 'navigation-data', 'navigation'],
     init: initKeyboardShortcuts
 });

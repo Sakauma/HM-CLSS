@@ -159,5 +159,6 @@ function checkAchievements() {
 registerAppModule({
     id: 'focus-achievements',
     order: 40,
+    dependsOn: ['module-registry', 'runtime/storage'],
     init: initPhoneResist
 });

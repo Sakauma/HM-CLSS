@@ -108,6 +108,7 @@ function registerThemeModule() {
     registerAppModule({
         id: 'runtime-theme',
         order: 15,
+        dependsOn: ['module-registry'],
         init: initThemeModule
     });
 }

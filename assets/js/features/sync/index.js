@@ -19,5 +19,15 @@ function initSyncModule() {
 registerAppModule({
     id: 'sync',
     order: 95,
+    dependsOn: [
+        'module-registry',
+        'runtime/dom-utils',
+        'sync/state',
+        'sync/api',
+        'sync/ui',
+        'sync/backup',
+        'sync/conflict',
+        'sync/logic'
+    ],
     init: initSyncModule
 });

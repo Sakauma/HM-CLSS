@@ -79,5 +79,6 @@ function initNavigation() {
 registerAppModule({
     id: 'navigation',
     order: 20,
+    dependsOn: ['module-registry', 'navigation-data', 'navigation-ui'],
     init: initNavigation
 });

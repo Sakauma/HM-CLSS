@@ -89,5 +89,13 @@ function endTask() {
 registerAppModule({
     id: 'tasks',
     order: 50,
+    dependsOn: [
+        'module-registry',
+        'runtime/store',
+        'runtime/storage',
+        'workspace/entries',
+        'tasks/hero',
+        'tasks/render'
+    ],
     init: initTaskManagement
 });
