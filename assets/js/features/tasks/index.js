@@ -69,14 +69,15 @@ function endTask() {
     const duration = Math.floor((Date.now() - activeTask.startTimestamp) / 60000);
     const taskStartDate = activeTask.startDate || getTodayString();
     const taskEndDate = getTodayString();
-    appendDailyEntry(taskData, taskStartDate, {
+    const completedTask = {
         ...activeTask,
         startDate: taskStartDate,
         endDate: taskEndDate,
         endTime: getCurrentTimeString(),
         duration,
         completed: true
-    });
+    };
+    runtimeActions.appendTaskEntry(taskStartDate, completedTask);
     runtimeActions.clearCurrentTask();
     persistCurrentTask();
     saveData();

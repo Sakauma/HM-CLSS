@@ -62,6 +62,46 @@ test('module dependency checker reports dependencies that load later', () => {
     assert.match(result.errors[0], /loads at position 2/);
 });
 
+test('module dependency checker reports dependencies that initialize later', () => {
+    const result = check(
+        [
+            'assets/js/features/alpha.js',
+            'assets/js/features/beta.js'
+        ],
+        {
+            'assets/js/features/alpha.js': `
+                registerAppModule({ id: 'alpha', order: 20, dependsOn: ['beta'], init() {} });
+            `,
+            'assets/js/features/beta.js': `
+                registerAppModule({ id: 'beta', order: 40, init() {} });
+            `
+        }
+    );
+
+    assert.equal(result.ok, false);
+    assert.match(result.errors.join('\n'), /alpha depends on "beta"/);
+    assert.match(result.errors.join('\n'), /initializes at position/);
+});
+
+test('module dependency checker accepts equal order when the dependency registers first', () => {
+    const result = check(
+        [
+            'assets/js/features/beta.js',
+            'assets/js/features/alpha.js'
+        ],
+        {
+            'assets/js/features/beta.js': `
+                registerAppModule({ id: 'beta', order: 40, init() {} });
+            `,
+            'assets/js/features/alpha.js': `
+                registerAppModule({ id: 'alpha', order: 40, dependsOn: ['beta'], init() {} });
+            `
+        }
+    );
+
+    assert.equal(result.ok, true);
+});
+
 test('module dependency checker reports unknown and ambiguous aliases', () => {
     const result = check(
         [
@@ -107,4 +147,28 @@ test('findRegisterAppModuleObjects extracts calls with comments inside the objec
 
     assert.equal(objects.length, 1);
     assert.match(objects[0], /id: 'alpha'/);
+});
+
+test('parseDependsOn ignores commented dependency metadata inside a module object', () => {
+    const result = check(
+        [
+            'assets/js/runtime/module-registry.js',
+            'assets/js/features/alpha.js'
+        ],
+        {
+            'assets/js/runtime/module-registry.js': `
+                registerAppModule({ id: 'module-registry', init() {} });
+            `,
+            'assets/js/features/alpha.js': `
+                registerAppModule({
+                    id: 'alpha',
+                    // dependsOn: ['missing'],
+                    dependsOn: ['module-registry'],
+                    init() {}
+                });
+            `
+        }
+    );
+
+    assert.equal(result.ok, true);
 });

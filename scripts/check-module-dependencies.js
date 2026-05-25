@@ -16,6 +16,65 @@ function normalizePath(filePath) {
     return filePath.replace(/\\/g, '/');
 }
 
+function stripJavaScriptComments(source) {
+    let output = '';
+    let quote = '';
+    let escaped = false;
+    let lineComment = false;
+    let blockComment = false;
+
+    for (let index = 0; index < source.length; index += 1) {
+        const char = source[index];
+        const nextChar = source[index + 1];
+
+        if (lineComment) {
+            if (char === '\n') {
+                lineComment = false;
+                output += char;
+            }
+            continue;
+        }
+
+        if (blockComment) {
+            if (char === '*' && nextChar === '/') {
+                blockComment = false;
+                index += 1;
+            }
+            continue;
+        }
+
+        if (quote) {
+            output += char;
+            if (escaped) {
+                escaped = false;
+            } else if (char === '\\') {
+                escaped = true;
+            } else if (char === quote) {
+                quote = '';
+            }
+            continue;
+        }
+
+        if (char === '/' && nextChar === '/') {
+            lineComment = true;
+            index += 1;
+            continue;
+        }
+        if (char === '/' && nextChar === '*') {
+            blockComment = true;
+            index += 1;
+            continue;
+        }
+        if (char === '"' || char === "'" || char === '`') {
+            quote = char;
+        }
+
+        output += char;
+    }
+
+    return output;
+}
+
 function addAlias(aliasMap, collisions, alias, scriptPath) {
     if (!alias || collisions.has(alias)) return;
     const existing = aliasMap.get(alias);
@@ -211,12 +270,20 @@ function findRegisterAppModuleObjects(source) {
 }
 
 function parseStringProperty(objectSource, propertyName) {
-    const match = objectSource.match(new RegExp(`${propertyName}\\s*:\\s*(['"\`])([\\s\\S]*?)\\1`));
+    const sanitizedSource = stripJavaScriptComments(objectSource);
+    const match = sanitizedSource.match(new RegExp(`${propertyName}\\s*:\\s*(['"\`])([\\s\\S]*?)\\1`));
     return match ? match[2] : null;
 }
 
+function parseNumericProperty(objectSource, propertyName) {
+    const sanitizedSource = stripJavaScriptComments(objectSource);
+    const match = sanitizedSource.match(new RegExp(`${propertyName}\\s*:\\s*(-?\\d+(?:\\.\\d+)?)`));
+    return match ? Number(match[1]) : null;
+}
+
 function parseDependsOn(objectSource) {
-    const match = objectSource.match(/dependsOn\s*:\s*\[([\s\S]*?)\]/);
+    const sanitizedSource = stripJavaScriptComments(objectSource);
+    const match = sanitizedSource.match(/dependsOn\s*:\s*\[([\s\S]*?)\]/);
     if (!match) return [];
 
     const dependencies = [];
@@ -243,15 +310,29 @@ function collectModuleDefinitions(scriptPaths, options = {}) {
             if (!id) {
                 throw new Error(`${scriptPath} contains registerAppModule without a literal id.`);
             }
+            const order = parseNumericProperty(objectSource, 'order');
             definitions.push({
                 id,
+                order: Number.isFinite(order) ? order : 1000,
                 dependsOn: parseDependsOn(objectSource),
-                scriptPath
+                scriptPath,
+                registrationOrder: definitions.length
             });
         });
     });
 
     return definitions;
+}
+
+function getInitializationOrderIndex(moduleDefinitions) {
+    return new Map(
+        [...moduleDefinitions]
+            .sort((a, b) => {
+                if (a.order !== b.order) return a.order - b.order;
+                return a.registrationOrder - b.registrationOrder;
+            })
+            .map((definition, index) => [definition.id, index])
+    );
 }
 
 function checkModuleDependencies(options = {}) {
@@ -264,6 +345,14 @@ function checkModuleDependencies(options = {}) {
         readSource: options.readSource
     });
     const aliasMap = buildAliasMap(scriptPaths, moduleDefinitions);
+    const moduleDefinitionById = new Map(moduleDefinitions.map((definition) => [definition.id, definition]));
+    const moduleDefinitionsByPath = new Map();
+    moduleDefinitions.forEach((definition) => {
+        const definitionsForPath = moduleDefinitionsByPath.get(definition.scriptPath) || [];
+        definitionsForPath.push(definition);
+        moduleDefinitionsByPath.set(definition.scriptPath, definitionsForPath);
+    });
+    const initializationOrderIndex = getInitializationOrderIndex(moduleDefinitions);
     const errors = [];
 
     moduleDefinitions.forEach((definition) => {
@@ -295,6 +384,22 @@ function checkModuleDependencies(options = {}) {
                 errors.push(
                     `${definition.id} depends on "${dependencyId}", but ${dependencyPath} loads at position ${dependencyScriptIndex + 1} ` +
                     `and ${definition.scriptPath} loads at position ${moduleScriptIndex + 1}.`
+                );
+            }
+
+            const dependencyModuleDefinition = moduleDefinitionById.get(dependencyId)
+                || ((moduleDefinitionsByPath.get(dependencyPath) || []).length === 1
+                    ? moduleDefinitionsByPath.get(dependencyPath)[0]
+                    : null);
+            if (!dependencyModuleDefinition) return;
+
+            const dependencyInitializationIndex = initializationOrderIndex.get(dependencyModuleDefinition.id);
+            const moduleInitializationIndex = initializationOrderIndex.get(definition.id);
+            if (dependencyInitializationIndex >= moduleInitializationIndex) {
+                errors.push(
+                    `${definition.id} depends on "${dependencyId}", but ${dependencyModuleDefinition.id} initializes at position ` +
+                    `${dependencyInitializationIndex + 1} and ${definition.id} initializes at position ${moduleInitializationIndex + 1}. ` +
+                    `Adjust registerAppModule order values so dependencies initialize first.`
                 );
             }
         });

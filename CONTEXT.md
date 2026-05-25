@@ -16,5 +16,6 @@ HM-CLSS is a zero-build static web app for personal work discipline, check-in tr
 
 - **Script Order Contract**: The explicit startup sequence in `scripts/smoke_manifest/script-order.txt`, mirrored by the script block in `index.html`.
 - **App Module**: A registered startup unit declared with `registerAppModule({ id, order, dependsOn, init })`.
+- **Runtime Action Boundary**: Shared workspace state should be mutated through `runtimeActions` so persistence, sync, and UI refresh paths stay consistent.
 - **Storage Schema**: The localStorage payload shape guarded by migration and safe parse helpers.
 - **Browser Smoke Baseline**: Selenium/Firefox checks and visual fixtures that protect boot, navigation, sync, accessibility, and layout behavior.

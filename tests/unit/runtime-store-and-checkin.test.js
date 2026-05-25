@@ -4,7 +4,8 @@ const test = require('node:test');
 const {
     loadScript,
     createBaseContext,
-    createCheckinDay
+    createCheckinDay,
+    createStorageMock
 } = require('./helpers');
 
 function createClassList(initialValues = []) {
@@ -114,6 +115,68 @@ test('runtime store object entry helpers update checkin days and daily records s
     assert.equal(context.runtimeSelectors.checkinData()['2026-04-20'].morning.checkIn, '08:30');
     assert.equal(context.runtimeSelectors.phoneResistData().records['2026-04-20'].count, 1);
     assert.deepEqual(context.runtimeSelectors.phoneResistData().records['2026-04-20'].times, ['09:00']);
+
+    context.runtimeActions.appendTaskEntry('2026-04-20', { id: 'task_1', name: 'Task One' });
+    context.runtimeActions.prependQuickNoteEntry('2026-04-20', { text: 'Second note' });
+    context.runtimeActions.prependQuickNoteEntry('2026-04-20', { text: 'First note' });
+    const removed = context.runtimeActions.removeQuickNoteEntry('2026-04-20', 1);
+
+    assert.equal(context.runtimeSelectors.taskData()['2026-04-20'][0].name, 'Task One');
+    assert.equal(removed.text, 'Second note');
+    assert.equal(context.runtimeSelectors.quickNotesData()['2026-04-20'].length, 1);
+    assert.equal(context.runtimeSelectors.quickNotesData()['2026-04-20'][0].text, 'First note');
+    assert.equal(context.runtimeActions.removeQuickNoteEntry('2026-04-20', 0).text, 'First note');
+    assert.equal(Object.hasOwn(context.runtimeSelectors.quickNotesData(), '2026-04-20'), false);
+});
+
+test('runtime action writes persist through saveData and refresh dependent views', () => {
+    const localStorage = createStorageMock();
+    let statisticsRefreshes = 0;
+    let exportRefreshes = 0;
+    let autoSyncTriggers = 0;
+    const context = createBaseContext({
+        localStorage,
+        refreshStatisticsView() {
+            statisticsRefreshes += 1;
+        },
+        refreshExportPreview() {
+            exportRefreshes += 1;
+        },
+        triggerAutoSync() {
+            autoSyncTriggers += 1;
+        },
+        showToast() {}
+    });
+
+    loadScript(context, 'assets/js/runtime/state.js');
+    loadScript(context, 'assets/js/runtime/store.js');
+    loadScript(context, 'assets/js/runtime/date-utils.js');
+    loadScript(context, 'assets/js/features/checkin/rules.js');
+    loadScript(context, 'assets/js/runtime/storage-shapes.js');
+    loadScript(context, 'assets/js/runtime/storage.js');
+
+    context.runtimeActions.updateTaskEntries('2026-04-20', (entries) => [
+        ...(Array.isArray(entries) ? entries : []),
+        {
+            id: 'task_action_1',
+            name: 'Action persisted task',
+            tag: 'code',
+            startTime: '09:00',
+            endTime: '10:00',
+            startDate: '2026-04-20',
+            endDate: '2026-04-20',
+            duration: 60,
+            completed: true
+        }
+    ]);
+
+    const result = context.saveData(false);
+
+    assert.equal(result.ok, true);
+    assert.match(localStorage.getItem('taskData'), /Action persisted task/);
+    assert.equal(statisticsRefreshes, 1);
+    assert.equal(exportRefreshes, 1);
+    assert.equal(autoSyncTriggers, 1);
 });
 
 test('runtime store rejects unknown state keys', () => {

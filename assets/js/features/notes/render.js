@@ -14,7 +14,7 @@ async function handleNoteDeletion(event) {
 
     const date = btn.getAttribute('data-date');
     const index = parseInt(btn.getAttribute('data-index'), 10);
-    if (removeDailyEntry(quickNotesData, date, index)) {
+    if (runtimeActions.removeQuickNoteEntry(date, index)) {
         saveData();
         showToast('记录已抹除', 'success');
         updateQuickNotesList();

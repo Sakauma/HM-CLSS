@@ -11,7 +11,7 @@ function saveQuickCapture() {
     }
 
     const today = getTodayString();
-    prependDailyEntry(quickNotesData, today, {
+    runtimeActions.prependQuickNoteEntry(today, {
         time: getCurrentTimeString(),
         text,
         tag

@@ -223,8 +223,45 @@ const runtimeActions = Object.freeze({
     updateTaskEntries(date, updater) {
         return updateRuntimeObjectEntry('taskData', date, updater, []);
     },
+    appendTaskEntry(date, task) {
+        updateRuntimeObjectEntry('taskData', date, (entries) => [
+            ...(Array.isArray(entries) ? entries : []),
+            task
+        ], []);
+        return task;
+    },
     updateQuickNoteEntries(date, updater) {
         return updateRuntimeObjectEntry('quickNotesData', date, updater, []);
+    },
+    prependQuickNoteEntry(date, note) {
+        updateRuntimeObjectEntry('quickNotesData', date, (entries) => [
+            note,
+            ...(Array.isArray(entries) ? entries : [])
+        ], []);
+        return note;
+    },
+    removeQuickNoteEntry(date, index) {
+        let removed = null;
+        updateRuntimeValue('quickNotesData', (currentValue) => {
+            const baseValue = currentValue && typeof currentValue === 'object' && !Array.isArray(currentValue)
+                ? currentValue
+                : {};
+            const entries = baseValue[date];
+            if (!Array.isArray(entries) || index < 0 || index >= entries.length) {
+                return baseValue;
+            }
+
+            const nextEntries = [...entries];
+            [removed] = nextEntries.splice(index, 1);
+            const nextValue = { ...baseValue };
+            if (nextEntries.length) {
+                nextValue[date] = nextEntries;
+            } else {
+                delete nextValue[date];
+            }
+            return nextValue;
+        });
+        return removed || null;
     },
     updatePhoneResistRecord(date, updater) {
         return updateRuntimeValue('phoneResistData', (currentValue) => {

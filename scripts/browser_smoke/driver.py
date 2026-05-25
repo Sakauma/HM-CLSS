@@ -9,6 +9,7 @@ from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 
 from browser_smoke.helpers import require
 
@@ -42,19 +43,48 @@ def resolve_browser_tool(name: str) -> str | None:
     return None
 
 
-def build_driver() -> WebDriver:
+def create_firefox_driver(firefox_path: str, geckodriver_path: str) -> WebDriver:
     options = Options()
     options.add_argument("-headless")
+    options.add_argument("--width=1600")
+    options.add_argument("--height=1200")
     options.page_load_strategy = "eager"
+    options.binary_location = firefox_path
 
+    service = Service(executable_path=geckodriver_path)
+    driver: WebDriver | None = None
+    try:
+        driver = webdriver.Firefox(options=options, service=service)
+        driver.set_page_load_timeout(30)
+        return driver
+    except Exception:
+        if driver is not None:
+            try:
+                driver.quit()
+            except Exception:
+                pass
+        raise
+
+
+def build_driver() -> WebDriver:
     firefox_path = resolve_browser_tool("firefox")
     geckodriver_path = resolve_browser_tool("geckodriver")
     require(firefox_path is not None, "firefox was not found in PATH")
     require(geckodriver_path is not None, "geckodriver was not found in PATH")
 
-    options.binary_location = firefox_path
-    service = Service(executable_path=geckodriver_path)
-    driver = webdriver.Firefox(options=options, service=service)
-    driver.set_window_size(1600, 1200)
-    driver.set_page_load_timeout(30)
-    return driver
+    last_error: Exception | None = None
+    for attempt in range(2):
+        try:
+            return create_firefox_driver(firefox_path, geckodriver_path)
+        except WebDriverException as error:
+            last_error = error
+            if attempt == 0:
+                continue
+            message = (
+                "Firefox started but Selenium lost the browsing context during driver setup. "
+                f"firefox={firefox_path}; geckodriver={geckodriver_path}; "
+                "check the local Firefox/Geckodriver environment or rerun after closing stray Firefox processes."
+            )
+            raise RuntimeError(message) from error
+
+    raise RuntimeError("Failed to initialize Firefox driver") from last_error

@@ -304,6 +304,10 @@
             text-align: center;
             border: 1px solid transparent;
         }
+        .action-btn-fit {
+            width: auto;
+            padding-inline: 1.5rem;
+        }
         .action-btn-primary {
             color: white;
             background: linear-gradient(180deg, rgb(var(--color-primary) / 0.94), rgb(var(--color-primary-hover) / 0.9));

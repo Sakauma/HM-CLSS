@@ -265,7 +265,11 @@
                     </div>
                 </header>
 
-                <!-- 值班模块。 -->
+                <!--
+                    主面板 DOM ID 是导航、快捷键、浏览器 smoke 和本地数据流的稳定契约。
+                    调整结构时可以整理 class 和内部布局，但默认不要重命名这些 section id。
+                -->
+                <!-- 值班模块：checkin-section。 -->
                 <section id="checkin-section" class="mb-8">
                     <div id="shift-ops-grid" class="grid grid-cols-1 gap-5 xl:grid-cols-3">
                         <div class="shift-card">
@@ -502,7 +506,7 @@
                     </div>
                 </section>
 
-                <!-- 抗干扰与成就模块。 -->
+                <!-- 抗干扰与成就模块：phone-section。 -->
                 <section id="phone-section" class="mb-8 hidden">
                     <div class="mission-card mb-5 p-5 sm:p-6">
                         <div class="page-header-layout lg:grid-cols-[minmax(0,1.05fr)_minmax(260px,0.65fr)] lg:items-center">
@@ -540,7 +544,7 @@
                     </div>
                 </section>
 
-                <!-- 任务管理与今日时间轴。 -->
+                <!-- 任务管理与今日时间轴：tasks-section。 -->
                 <section id="tasks-section" class="mb-8 hidden">
                     <div class="mission-card mb-6 p-5 sm:p-6">
                         <div class="focus-hero-grid">
@@ -599,7 +603,7 @@
                                         <div class="text-xl font-semibold dark:text-white" id="current-task-name">-</div>
                                         <div class="text-sm text-slate-500 dark:text-slate-400 mt-1 font-mono" id="current-task-time">已进行: 00:00:00</div>
                                     </div>
-                                    <button id="end-task" class="action-btn action-btn-primary shrink-0 !w-auto px-6">
+                                    <button id="end-task" class="action-btn action-btn-primary action-btn-fit shrink-0">
                                         结束并记录
                                     </button>
                                 </div>
@@ -694,7 +698,7 @@
                     </div>
                 </section>
 
-                <!-- 速记历史归档。 -->
+                <!-- 速记历史归档：archive-section。 -->
                 <section id="archive-section" class="mb-8 hidden">
                     <div class="mission-card mb-6 p-5 sm:p-6">
                         <div class="page-header-layout lg:grid-cols-[minmax(0,0.95fr)_minmax(320px,1.05fr)] lg:items-center">
@@ -716,7 +720,7 @@
                         </div>
                 </section>
 
-                <!-- 离舰审批模块。 -->
+                <!-- 离舰审批模块：leave-section。 -->
                 <section id="leave-section" class="mb-8 hidden">
                     <div class="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_minmax(340px,0.92fr)]">
                         <div id="leave-form-shell" class="surface-card">
@@ -832,7 +836,7 @@
                     </div>
                 </section>
 
-                <!-- 统计分析模块。 -->
+                <!-- 统计分析模块：stats-section。 -->
                 <section id="stats-section" class="mb-8 hidden">
                     <div class="mission-card mb-6 p-5 sm:p-6">
                         <div class="page-header-layout">
@@ -898,7 +902,7 @@
                     </div>
                 </section>
 
-                <!-- 深空酒馆模块。 -->
+                <!-- 深空酒馆模块：tavern-section。 -->
                 <section id="tavern-section" class="mb-8 hidden hidden-flex-col">
                     <div class="mission-card tavern-shell-hero mb-5 p-5 sm:p-6">
                         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -1332,7 +1336,7 @@
                     </div>
                 </section>
 
-                <!-- 同步与配置模块。 -->
+                <!-- 同步与配置模块：settings-section。 -->
                 <section id="settings-section" class="mb-8 hidden">
                     <div class="mission-card mb-5 p-5 sm:p-6">
                         <div class="page-header-layout">
@@ -1369,9 +1373,9 @@
                         </div>
 
                         <div class="system-panel-actions">
-                            <button id="save-config-btn" class="action-btn action-btn-secondary !w-auto px-6">保存配置</button>
-                            <button id="pull-cloud-btn" class="action-btn action-btn-primary !w-auto px-6 flex items-center gap-2"><i data-lucide="cloud-download" class="w-4 h-4"></i> 拉取云端数据</button>
-                            <button id="push-cloud-btn" class="action-btn action-btn-secondary !w-auto px-6 flex items-center gap-2"><i data-lucide="cloud-upload" class="w-4 h-4"></i> 上传覆盖云端</button>
+                            <button id="save-config-btn" class="action-btn action-btn-secondary action-btn-fit">保存配置</button>
+                            <button id="pull-cloud-btn" class="action-btn action-btn-primary action-btn-fit"><i data-lucide="cloud-download" class="w-4 h-4"></i> 拉取云端数据</button>
+                            <button id="push-cloud-btn" class="action-btn action-btn-secondary action-btn-fit"><i data-lucide="cloud-upload" class="w-4 h-4"></i> 上传覆盖云端</button>
                         </div>
                     </div>
 
@@ -1389,10 +1393,10 @@
                             </div>
                         </div>
                         <div class="system-panel-actions">
-                            <button id="restore-local-backup-btn" class="action-btn action-btn-secondary !w-auto px-6 flex items-center gap-2" disabled>
+                            <button id="restore-local-backup-btn" class="action-btn action-btn-secondary action-btn-fit" disabled>
                                 <i data-lucide="rotate-ccw" class="w-4 h-4"></i> 恢复本地备份
                             </button>
-                            <button id="clear-local-backup-btn" class="action-btn action-btn-ghost !w-auto px-6 flex items-center gap-2" disabled>
+                            <button id="clear-local-backup-btn" class="action-btn action-btn-ghost action-btn-fit" disabled>
                                 <i data-lucide="trash-2" class="w-4 h-4"></i> 清除备份
                             </button>
                         </div>
@@ -1456,8 +1460,8 @@
                         </div>
 
                         <div class="system-panel-actions">
-                            <button id="checkin-flex-reset-btn" class="action-btn action-btn-secondary !w-auto px-6">恢复默认</button>
-                            <button id="checkin-flex-save-btn" class="action-btn action-btn-primary !w-auto px-6">保存弹性规则</button>
+                            <button id="checkin-flex-reset-btn" class="action-btn action-btn-secondary action-btn-fit">恢复默认</button>
+                            <button id="checkin-flex-save-btn" class="action-btn action-btn-primary action-btn-fit">保存弹性规则</button>
                         </div>
                     </div>
 

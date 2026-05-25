@@ -136,6 +136,18 @@ bash -n scripts/setup-browser-test.sh
 bash scripts/smoke-check.sh
 ```
 
+Windows 上建议使用 PowerShell 包装脚本，它会优先使用项目内的 `.conda/browser-test/python.exe`，并把 Node/Python 路径转换给 Git Bash：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/smoke-check.ps1
+```
+
+等价入口：
+
+- Git Bash / CI：`bash scripts/smoke-check.sh`
+- Windows PowerShell：`powershell -ExecutionPolicy Bypass -File scripts/smoke-check.ps1`
+- GitHub Actions：`smoke-check` job 先运行同一套 `bash scripts/smoke-check.sh`
+
 ### 本地数据导出
 
 导出入口位于 **云端同步中心** 页面下半段的 **本地数据导出** 卡片。
@@ -172,6 +184,14 @@ bash scripts/setup-browser-test.sh
 ```bash
 bash scripts/browser-smoke.sh
 ```
+
+Windows 上可以直接调用包装脚本：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/browser-smoke.ps1
+```
+
+浏览器冒烟会默认访问 `http://127.0.0.1:8000`。如果目标地址不可达，脚本会自动启动本地静态服务。失败截图、页面源码、控制台日志和视觉快照统一输出到 `.artifacts/browser-smoke/`；该目录只用于本地排障和 CI 工件，不进入版本库。
 
 ### 持续集成
 
@@ -595,6 +615,8 @@ const CONFIG = {
 
 现在目录按 `runtime / workspace / ui / features` 分层：`runtime` 负责启动、模块注册、共享运行时和可变状态容器，`workspace` 负责跨模块共享的数据与口径，`ui` 负责导航和快捷键这类外层交互，`features` 按值班、酒馆、离舰、统计、同步、导出等功能继续拆分。`app-init.js` 现在只负责 `initData()` 和触发模块注册中心，具体功能模块各自向注册中心报到。顺序错乱会导致飞船在启动时失压。
 
+新增或调整业务数据时，优先通过 `runtimeActions` 写入共享状态，再由 `saveData()` 统一持久化和刷新统计/导出预览。只有兼容旧 helper 或纯读取场景才直接访问 `checkinData`、`taskData` 等全局代理。新增 `registerAppModule` 时必须声明稳定 `id`；如果依赖其他模块或脚本，补齐 `dependsOn`，并让 `order` 晚于依赖模块的初始化顺序。
+
 
 ## 🧪 手动巡检建议
 
@@ -606,6 +628,10 @@ const CONFIG = {
   创建或更新真实浏览器测试所需的 `conda` 环境。
 - `bash scripts/browser-smoke.sh`
   在 Firefox + Selenium 中做关键交互冒烟、布局视觉基线校验，并在失败时留下截图和页面工件。
+- `powershell -ExecutionPolicy Bypass -File scripts/smoke-check.ps1`
+  Windows 入口，自动解析 Git Bash、项目内 Python 和本机 Node。
+- `powershell -ExecutionPolicy Bypass -File scripts/browser-smoke.ps1`
+  Windows 浏览器冒烟入口，默认复用 `.conda/browser-test`。
 
 自动化之外，发版前仍建议按 [docs/functional-self-check.md](./docs/functional-self-check.md) 做一轮功能级人工巡检，尤其是下面这些高风险舱段：
 
