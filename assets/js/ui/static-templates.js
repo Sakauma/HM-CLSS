@@ -183,6 +183,15 @@ function renderMetricCardTemplate(target, options = {}) {
     return target;
 }
 
+const STATIC_TEMPLATE_RENDERERS = Object.freeze([
+    ['[data-tavern-vessel-template]', renderTavernVesselTemplate],
+    ['[data-tavern-spectrum-template]', renderTavernSpectrumTemplate],
+    ['[data-tavern-stat-template]', renderTavernStatTemplate],
+    ['[data-shift-card-template]', renderShiftCardTemplate],
+    ['[data-checkin-table-row-template]', renderCheckinTableRowTemplate],
+    ['[data-metric-card-template]', renderMetricCardTemplate]
+]);
+
 function markStaticTemplateHydrated(target) {
     if (target?.dataset) {
         target.dataset.hydrated = 'true';
@@ -196,40 +205,12 @@ function shouldHydrateStaticTemplate(target) {
 function renderStaticUiTemplates(root = document) {
     if (!root?.querySelectorAll) return false;
 
-    root.querySelectorAll('[data-tavern-vessel-template]').forEach((target) => {
-        if (!shouldHydrateStaticTemplate(target)) return;
-        renderTavernVesselTemplate(target, target.dataset);
-        markStaticTemplateHydrated(target);
-    });
-
-    root.querySelectorAll('[data-tavern-spectrum-template]').forEach((target) => {
-        if (!shouldHydrateStaticTemplate(target)) return;
-        renderTavernSpectrumTemplate(target, target.dataset);
-        markStaticTemplateHydrated(target);
-    });
-
-    root.querySelectorAll('[data-tavern-stat-template]').forEach((target) => {
-        if (!shouldHydrateStaticTemplate(target)) return;
-        renderTavernStatTemplate(target, target.dataset);
-        markStaticTemplateHydrated(target);
-    });
-
-    root.querySelectorAll('[data-shift-card-template]').forEach((target) => {
-        if (!shouldHydrateStaticTemplate(target)) return;
-        renderShiftCardTemplate(target, target.dataset);
-        markStaticTemplateHydrated(target);
-    });
-
-    root.querySelectorAll('[data-checkin-table-row-template]').forEach((target) => {
-        if (!shouldHydrateStaticTemplate(target)) return;
-        renderCheckinTableRowTemplate(target, target.dataset);
-        markStaticTemplateHydrated(target);
-    });
-
-    root.querySelectorAll('[data-metric-card-template]').forEach((target) => {
-        if (!shouldHydrateStaticTemplate(target)) return;
-        renderMetricCardTemplate(target, target.dataset);
-        markStaticTemplateHydrated(target);
+    STATIC_TEMPLATE_RENDERERS.forEach(([selector, renderer]) => {
+        root.querySelectorAll(selector).forEach((target) => {
+            if (!shouldHydrateStaticTemplate(target)) return;
+            renderer(target, target.dataset);
+            markStaticTemplateHydrated(target);
+        });
     });
 
     return true;
