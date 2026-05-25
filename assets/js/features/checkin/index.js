@@ -219,6 +219,7 @@ registerAppModule({
     order: 30,
     dependsOn: [
         'module-registry',
+        'ui/static-templates',
         'runtime/store',
         'runtime/storage',
         'runtime/date-utils',

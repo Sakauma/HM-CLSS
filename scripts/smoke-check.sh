@@ -126,7 +126,17 @@ check_existing_paths() {
 
 check_required_ids() {
   while IFS= read -r element_id; do
-    grep -F -- "id=\"$element_id\"" index.html >/dev/null || {
+    "$NODE_BIN" - "$element_id" <<'JS' || {
+const fs = require('node:fs');
+
+const elementId = process.argv[2];
+const html = fs.readFileSync('index.html', 'utf8');
+const hasStaticId = html.includes(`id="${elementId}"`);
+const hasTemplateId = [...html.matchAll(/data-template-ids="([^"]*)"/g)]
+  .some((match) => match[1].split(/\s+/).includes(elementId));
+
+process.exit(hasStaticId || hasTemplateId ? 0 : 1);
+JS
       printf 'id="%s" is missing from index.html\n' "$element_id" >&2
       exit 1
     }

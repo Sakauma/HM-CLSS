@@ -14,6 +14,7 @@ assets/vendor/marked-12.0.2.min.js
 assets/vendor/purify-3.0.6.min.js
 assets/vendor/README.md
 assets/js/runtime/tailwind-config.js
+assets/js/ui/static-templates.js
 .github/workflows/ci.yml
 environment.browser-test.yml
 scripts/smoke-check.sh
@@ -53,6 +54,7 @@ tests/unit/sync-apply-transaction.test.js
 tests/unit/sync-local-backup.test.js
 tests/unit/sync-controller.test.js
 tests/unit/statistics-and-export.test.js
+tests/unit/static-template-contracts.test.js
 tests/unit/windows-script-entrypoints.test.js
 tests/fixtures/visual-layout-baselines.json
 docs/testing-artifacts.md

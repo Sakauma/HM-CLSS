@@ -33,7 +33,7 @@ function bindSummaryModalControls() {
 registerAppModule({
     id: 'runtime-clock',
     order: 10,
-    dependsOn: ['module-registry', 'runtime/storage', 'checkin/ui', 'dashboard/status'],
+    dependsOn: ['module-registry', 'ui/static-templates', 'runtime/storage', 'checkin/ui', 'dashboard/status'],
     init() {
         updateDateTime();
         const timerId = setInterval(updateDateTime, 1000);

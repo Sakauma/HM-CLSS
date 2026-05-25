@@ -358,6 +358,9 @@
         .dark .system-panel-actions {
             border-top-color: rgba(148, 163, 184, 0.1);
         }
+        .system-panel-actions .action-btn {
+            flex: 1 1 12rem;
+        }
         @media (min-width: 1024px) {
             .system-card-head {
                 flex-direction: row;
@@ -573,4 +576,65 @@
         }
         .dark .stats-period-btn-idle:hover {
             color: #f3f9ff;
+        }
+
+        .shift-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1.5rem;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            background: rgba(255, 255, 255, 0.58);
+            padding: 1.35rem;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+        }
+        .shift-card::before {
+            content: '';
+            position: absolute;
+            inset: 0 auto auto 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(120, 138, 160, 0.42), rgba(120, 138, 160, 0.08));
+            opacity: 1;
+        }
+        .dark .shift-card {
+            border-color: rgba(255, 255, 255, 0.075);
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02)),
+                rgba(24, 28, 34, 0.84);
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.28);
+        }
+        .dark .shift-card::before {
+            background: linear-gradient(90deg, rgba(194, 206, 220, 0.16), rgba(194, 206, 220, 0.03));
+        }
+        .shift-window {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.4rem 0.7rem;
+            border-radius: 9999px;
+            font-family: var(--font-label);
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            color: #1d4ed8;
+            background: rgb(var(--color-primary) / 0.12);
+        }
+        .dark .shift-window {
+            color: #9acfff;
+            background: rgb(var(--color-primary) / 0.12);
+        }
+
+        .ops-table-shell {
+            border-radius: 1.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            background: rgba(255, 255, 255, 0.66);
+            overflow: hidden;
+            box-shadow: 0 20px 48px rgba(15, 23, 42, 0.06);
+        }
+        .dark .ops-table-shell {
+            border-color: rgba(255, 255, 255, 0.075);
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02)),
+                rgba(24, 28, 34, 0.82);
+            box-shadow: 0 28px 56px rgba(0, 0, 0, 0.3);
         }

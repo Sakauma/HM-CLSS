@@ -8,6 +8,7 @@ registerAppModule({
     order: 25,
     dependsOn: [
         'module-registry',
+        'ui/static-templates',
         'tavern/catalog',
         'tavern/analyze',
         'tavern/records',

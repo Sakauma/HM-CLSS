@@ -21,6 +21,7 @@ assets/js/workspace/data.js
 assets/js/ui/navigation-data.js
 assets/js/ui/navigation-ui.js
 assets/js/ui/navigation.js
+assets/js/ui/static-templates.js
 assets/js/features/tavern/catalog-data.js
 assets/js/features/tavern/catalog.js
 assets/js/features/tavern/analyze.js

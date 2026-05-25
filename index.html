@@ -272,101 +272,11 @@
                 <!-- 值班模块：checkin-section。 -->
                 <section id="checkin-section" class="mb-8">
                     <div id="shift-ops-grid" class="grid grid-cols-1 gap-5 xl:grid-cols-3">
-                        <div class="shift-card">
-                            <div class="mb-4 flex items-start justify-between gap-4">
-                                <div>
-                                    <div class="module-eyebrow mb-2">ALPHA WATCH</div>
-                                    <h3 class="text-xl font-bold text-slate-950 dark:text-slate-50">Alpha 班次</h3>
-                                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">适合清晨启动，把今天的第一段状态稳定下来。</p>
-                                </div>
-                                <span class="shift-window">08:00 前启动</span>
-                            </div>
-
-                            <div class="mb-5 grid grid-cols-2 gap-3 text-sm">
-                                <div class="metric-card">
-                                    <span class="metric-label">唤醒窗口</span>
-                                    <span class="mt-2 block text-base font-extrabold text-slate-950 dark:text-slate-50">06:00 - 12:00</span>
-                                </div>
-                                <div class="metric-card">
-                                    <span class="metric-label">建议休眠</span>
-                                    <span class="mt-2 block text-base font-extrabold text-slate-950 dark:text-slate-50">12:00 前完成</span>
-                                </div>
-                            </div>
-
-                            <div class="space-y-3">
-                                <button id="morning-checkin" class="action-btn action-btn-primary">早班连线</button>
-                                <button id="morning-checkout" class="action-btn action-btn-disabled" disabled>早班登出</button>
-                            </div>
-
-                            <div class="mt-4 flex justify-between gap-4 text-xs font-mono text-slate-400">
-                                <span id="morning-checkin-time">开始: -</span>
-                                <span id="morning-checkout-time">结束: -</span>
-                            </div>
-                        </div>
+                        <div class="shift-card" data-shift-card-template data-template-ids="morning-checkin morning-checkout morning-checkin-time morning-checkout-time" data-period="morning" data-eyebrow="ALPHA WATCH" data-title="Alpha 班次" data-copy="适合清晨启动，把今天的第一段状态稳定下来。" data-window="08:00 前启动" data-primary-label="唤醒窗口" data-primary-value="06:00 - 12:00" data-secondary-label="建议休眠" data-secondary-value="12:00 前完成" data-checkin-label="早班连线" data-checkout-label="早班登出" data-checkin-time="开始: -" data-checkout-time="结束: -"></div>
                         
-                        <div class="shift-card">
-                            <div class="mb-4 flex items-start justify-between gap-4">
-                                <div>
-                                    <div class="module-eyebrow mb-2">BETA WATCH</div>
-                                    <h3 class="text-xl font-bold text-slate-950 dark:text-slate-50">Beta 班次</h3>
-                                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">中段班次更容易被打断，把开始时间先记下来会更稳。</p>
-                                </div>
-                                <span class="shift-window">14:00 前启动</span>
-                            </div>
-
-                            <div class="mb-5 grid grid-cols-2 gap-3 text-sm">
-                                <div class="metric-card">
-                                    <span class="metric-label">唤醒窗口</span>
-                                    <span class="mt-2 block text-base font-extrabold text-slate-950 dark:text-slate-50">12:00 - 17:00</span>
-                                </div>
-                                <div class="metric-card">
-                                    <span class="metric-label">建议休眠</span>
-                                    <span class="mt-2 block text-base font-extrabold text-slate-950 dark:text-slate-50">18:00 前完成</span>
-                                </div>
-                            </div>
-
-                            <div class="space-y-3">
-                                <button id="afternoon-checkin" class="action-btn action-btn-primary">午班连线</button>
-                                <button id="afternoon-checkout" class="action-btn action-btn-disabled" disabled>午班登出</button>
-                            </div>
-
-                            <div class="mt-4 flex justify-between gap-4 text-xs font-mono text-slate-400">
-                                <span id="afternoon-checkin-time">开始: -</span>
-                                <span id="afternoon-checkout-time">结束: -</span>
-                            </div>
-                        </div>
+                        <div class="shift-card" data-shift-card-template data-template-ids="afternoon-checkin afternoon-checkout afternoon-checkin-time afternoon-checkout-time" data-period="afternoon" data-eyebrow="BETA WATCH" data-title="Beta 班次" data-copy="中段班次更容易被打断，把开始时间先记下来会更稳。" data-window="14:00 前启动" data-primary-label="唤醒窗口" data-primary-value="12:00 - 17:00" data-secondary-label="建议休眠" data-secondary-value="18:00 前完成" data-checkin-label="午班连线" data-checkout-label="午班登出" data-checkin-time="开始: -" data-checkout-time="结束: -"></div>
                         
-                        <div class="shift-card">
-                            <div class="mb-4 flex items-start justify-between gap-4">
-                                <div>
-                                    <div class="module-eyebrow mb-2">GAMMA WATCH</div>
-                                    <h3 class="text-xl font-bold text-slate-950 dark:text-slate-50">Gamma 班次</h3>
-                                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">晚班是今日闭环的关键，记得让最后一次记录完整落地。</p>
-                                </div>
-                                <span class="shift-window">19:00 前启动</span>
-                            </div>
-
-                            <div class="mb-5 grid grid-cols-2 gap-3 text-sm">
-                                <div class="metric-card">
-                                    <span class="metric-label">唤醒窗口</span>
-                                    <span class="mt-2 block text-base font-extrabold text-slate-950 dark:text-slate-50">17:00 - 22:00</span>
-                                </div>
-                                <div class="metric-card">
-                                    <span class="metric-label">建议休眠</span>
-                                    <span class="mt-2 block text-base font-extrabold text-slate-950 dark:text-slate-50">22:00 前完成</span>
-                                </div>
-                            </div>
-
-                            <div class="space-y-3">
-                                <button id="evening-checkin" class="action-btn action-btn-primary">晚班连线</button>
-                                <button id="evening-checkout" class="action-btn action-btn-disabled" disabled>晚班登出</button>
-                            </div>
-
-                            <div class="mt-4 flex justify-between gap-4 text-xs font-mono text-slate-400">
-                                <span id="evening-checkin-time">开始: -</span>
-                                <span id="evening-checkout-time">结束: -</span>
-                            </div>
-                        </div>
+                        <div class="shift-card" data-shift-card-template data-template-ids="evening-checkin evening-checkout evening-checkin-time evening-checkout-time" data-period="evening" data-eyebrow="GAMMA WATCH" data-title="Gamma 班次" data-copy="晚班是今日闭环的关键，记得让最后一次记录完整落地。" data-window="19:00 前启动" data-primary-label="唤醒窗口" data-primary-value="17:00 - 22:00" data-secondary-label="建议休眠" data-secondary-value="22:00 前完成" data-checkin-label="晚班连线" data-checkout-label="晚班登出" data-checkin-time="开始: -" data-checkout-time="结束: -"></div>
                     </div>
 
                     <div id="today-checkin-log" class="ops-table-shell mt-8 p-6">
@@ -389,27 +299,9 @@
                                     </tr>
                                 </thead>
                                 <tbody id="today-checkin-table" class="divide-y divide-slate-100 dark:divide-slate-800">
-                                    <tr class="surface-table-row">
-                                        <td class="py-3 px-4 font-medium">Alpha 班次</td>
-                                        <td class="py-3 px-4 font-mono text-slate-500" id="table-morning-checkin">-</td>
-                                        <td class="py-3 px-4 font-mono text-slate-500" id="table-morning-checkout">-</td>
-                                        <td class="py-3 px-4" id="table-morning-checkin-status">-</td>
-                                        <td class="py-3 px-4" id="table-morning-checkout-status">-</td>
-                                    </tr>
-                                    <tr class="surface-table-row">
-                                        <td class="py-3 px-4 font-medium">Beta 班次</td>
-                                        <td class="py-3 px-4 font-mono text-slate-500" id="table-afternoon-checkin">-</td>
-                                        <td class="py-3 px-4 font-mono text-slate-500" id="table-afternoon-checkout">-</td>
-                                        <td class="py-3 px-4" id="table-afternoon-checkin-status">-</td>
-                                        <td class="py-3 px-4" id="table-afternoon-checkout-status">-</td>
-                                    </tr>
-                                    <tr class="surface-table-row">
-                                        <td class="py-3 px-4 font-medium">Gamma 班次</td>
-                                        <td class="py-3 px-4 font-mono text-slate-500" id="table-evening-checkin">-</td>
-                                        <td class="py-3 px-4 font-mono text-slate-500" id="table-evening-checkout">-</td>
-                                        <td class="py-3 px-4" id="table-evening-checkin-status">-</td>
-                                        <td class="py-3 px-4" id="table-evening-checkout-status">-</td>
-                                    </tr>
+                                    <tr class="surface-table-row" data-checkin-table-row-template data-template-ids="table-morning-checkin table-morning-checkout table-morning-checkin-status table-morning-checkout-status" data-period="morning" data-label="Alpha 班次"></tr>
+                                    <tr class="surface-table-row" data-checkin-table-row-template data-template-ids="table-afternoon-checkin table-afternoon-checkout table-afternoon-checkin-status table-afternoon-checkout-status" data-period="afternoon" data-label="Beta 班次"></tr>
+                                    <tr class="surface-table-row" data-checkin-table-row-template data-template-ids="table-evening-checkin table-evening-checkout table-evening-checkin-status table-evening-checkout-status" data-period="evening" data-label="Gamma 班次"></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -993,49 +885,14 @@
                                     <div class="tavern-stage w-full">
                                         <div class="tavern-stage-aura"></div>
                                         <div class="tavern-stage-ring"></div>
-                                        <div class="tavern-vessel-wrap">
-                                            <div class="tavern-vessel">
-                                                <div class="tavern-vessel-label" id="tavern-stage-label">Idle Pour</div>
-                                                <div id="tavern-stage-liquid" class="tavern-liquid">
-                                                    <div class="tavern-wave-stack" aria-hidden="true">
-                                                        <svg class="tavern-wave tavern-wave-back tavern-wave-fill-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
-                                                            <path class="tavern-wave-fill" d="M0 25 C 34 12 78 10 118 16 C 164 23 204 31 240 24 L240 44 L0 44 Z"></path>
-                                                        </svg>
-                                                        <svg class="tavern-wave tavern-wave-front tavern-wave-fill-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
-                                                            <path class="tavern-wave-fill" d="M0 20 C 44 7 96 10 138 19 C 178 27 212 24 240 18 L240 48 L0 48 Z"></path>
-                                                        </svg>
-                                                        <svg class="tavern-wave tavern-wave-back tavern-wave-line-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
-                                                            <path class="tavern-wave-line tavern-wave-line-soft" d="M0 25 C 34 12 78 10 118 16 C 164 23 204 31 240 24"></path>
-                                                        </svg>
-                                                        <svg class="tavern-wave tavern-wave-front tavern-wave-line-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
-                                                            <path class="tavern-wave-line" d="M0 20 C 44 7 96 10 138 19 C 178 27 212 24 240 18"></path>
-                                                        </svg>
-                                                    </div>
-                                                    <div id="tavern-stage-bubbles" class="tavern-bubbles">
-                                                        <span></span><span></span><span></span><span></span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <div data-tavern-vessel-template data-label-id="tavern-stage-label" data-label="Idle Pour" data-liquid-id="tavern-stage-liquid" data-bubbles-id="tavern-stage-bubbles"></div>
                                         <div class="mt-4 text-center">
                                             <div id="tavern-stage-status" class="text-sm font-semibold tracking-[0.2em] text-slate-500 dark:text-slate-400">WAITING FOR INPUT</div>
                                             <p id="tavern-stage-caption" class="mt-2 max-w-sm text-sm leading-6 text-slate-500 dark:text-slate-400">
                                                 写下一句此刻的感受，吧台会把它翻译成颜色、液面和配方结构。
                                             </p>
                                         </div>
-                                        <div class="mt-4 tavern-spectrum">
-                                            <div class="mb-2 flex justify-between text-[10px] font-mono uppercase tracking-[0.16em] text-slate-400">
-                                                <span>负向</span>
-                                                <span>中性</span>
-                                                <span>正向</span>
-                                            </div>
-                                            <div class="tavern-spectrum-bar">
-                                                <div id="emotion-indicator" class="tavern-spectrum-dot"></div>
-                                            </div>
-                                            <p id="emotion-scale-copy" class="mt-3 text-center text-xs leading-6 text-slate-500 dark:text-slate-400">
-                                                目前处于待命状态，尚未开始读取情绪样本。
-                                            </p>
-                                        </div>
+                                        <div class="mt-4 tavern-spectrum" data-tavern-spectrum-template data-left-label="负向" data-mid-label="中性" data-right-label="正向" data-dot-id="emotion-indicator" data-copy-id="emotion-scale-copy" data-copy="目前处于待命状态，尚未开始读取情绪样本。"></div>
                                     </div>
                                 </div>
                             </div>
@@ -1055,18 +912,9 @@
                                     </div>
 
                                     <div class="mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-                                        <div class="tavern-stat">
-                                            <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Primary Family</div>
-                                            <div id="analysis-reading-family" class="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">Calm / 待判定</div>
-                                        </div>
-                                        <div class="tavern-stat">
-                                            <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">EFI</div>
-                                            <div id="analysis-reading-efi" class="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">0.00</div>
-                                        </div>
-                                        <div class="tavern-stat">
-                                            <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">EII</div>
-                                            <div id="analysis-reading-eii" class="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">0.00</div>
-                                        </div>
+                                        <div class="tavern-stat" data-tavern-stat-template data-label="Primary Family" data-value-id="analysis-reading-family" data-value="Calm / 待判定"></div>
+                                        <div class="tavern-stat" data-tavern-stat-template data-label="EFI" data-value-id="analysis-reading-efi" data-value="0.00"></div>
+                                        <div class="tavern-stat" data-tavern-stat-template data-label="EII" data-value-id="analysis-reading-eii" data-value="0.00"></div>
                                     </div>
 
                                     <div class="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -1080,49 +928,14 @@
                                     <div class="tavern-stage w-full">
                                         <div class="tavern-stage-aura"></div>
                                         <div class="tavern-stage-ring"></div>
-                                        <div class="tavern-vessel-wrap">
-                                            <div class="tavern-vessel">
-                                                <div class="tavern-vessel-label" id="analysis-status-primary">Mood Reading</div>
-                                                <div id="realtime-fluid" class="tavern-liquid">
-                                                    <div class="tavern-wave-stack" aria-hidden="true">
-                                                        <svg class="tavern-wave tavern-wave-back tavern-wave-fill-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
-                                                            <path class="tavern-wave-fill" d="M0 25 C 34 12 78 10 118 16 C 164 23 204 31 240 24 L240 44 L0 44 Z"></path>
-                                                        </svg>
-                                                        <svg class="tavern-wave tavern-wave-front tavern-wave-fill-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
-                                                            <path class="tavern-wave-fill" d="M0 20 C 44 7 96 10 138 19 C 178 27 212 24 240 18 L240 48 L0 48 Z"></path>
-                                                        </svg>
-                                                        <svg class="tavern-wave tavern-wave-back tavern-wave-line-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
-                                                            <path class="tavern-wave-line tavern-wave-line-soft" d="M0 25 C 34 12 78 10 118 16 C 164 23 204 31 240 24"></path>
-                                                        </svg>
-                                                        <svg class="tavern-wave tavern-wave-front tavern-wave-line-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
-                                                            <path class="tavern-wave-line" d="M0 20 C 44 7 96 10 138 19 C 178 27 212 24 240 18"></path>
-                                                        </svg>
-                                                    </div>
-                                                    <div id="realtime-bubbles" class="tavern-bubbles">
-                                                        <span></span><span></span><span></span><span></span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <div data-tavern-vessel-template data-label-id="analysis-status-primary" data-label="Mood Reading" data-liquid-id="realtime-fluid" data-bubbles-id="realtime-bubbles"></div>
                                         <div class="mt-4 text-center">
                                             <div id="analysis-status-secondary" class="text-sm font-semibold tracking-[0.2em] text-slate-500 dark:text-slate-400">CALIBRATING</div>
                                             <p class="mt-2 max-w-sm text-sm leading-6 text-slate-500 dark:text-slate-400">
                                                 吧台会判断你的情绪方向，再决定用哪种基酒去承接它。
                                             </p>
                                         </div>
-                                        <div id="emotion-bar-container" class="mt-4 tavern-spectrum opacity-0 transition-opacity duration-1000">
-                                            <div class="mb-2 flex justify-between text-[10px] font-mono uppercase tracking-[0.16em] text-slate-400">
-                                                <span>负向</span>
-                                                <span>中性</span>
-                                                <span>正向</span>
-                                            </div>
-                                            <div class="tavern-spectrum-bar">
-                                                <div class="tavern-spectrum-dot"></div>
-                                            </div>
-                                            <p class="mt-3 text-center text-xs leading-6 text-slate-500 dark:text-slate-400">
-                                                情绪位置正在移动，系统会在结果页把它换成更容易理解的配方语言。
-                                            </p>
-                                        </div>
+                                        <div id="emotion-bar-container" class="mt-4 tavern-spectrum opacity-0 transition-opacity duration-1000" data-tavern-spectrum-template data-left-label="负向" data-mid-label="中性" data-right-label="正向" data-copy="情绪位置正在移动，系统会在结果页把它换成更容易理解的配方语言。"></div>
                                     </div>
                                 </div>
                             </div>
@@ -1154,30 +967,7 @@
                                         </div>
                                         <div class="mt-4 tavern-stage flex-1 w-full">
                                             <div class="tavern-stage-aura"></div>
-                                            <div class="tavern-vessel-wrap !h-auto">
-                                                <div class="tavern-vessel tavern-result-vessel !h-[17rem] !w-[12.4rem]">
-                                                    <div class="tavern-vessel-label">Blend</div>
-                                                    <div id="res-fluid" class="tavern-liquid !h-[54%]">
-                                                        <div class="tavern-wave-stack" aria-hidden="true">
-                                                            <svg class="tavern-wave tavern-wave-back tavern-wave-fill-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
-                                                                <path class="tavern-wave-fill" d="M0 25 C 34 12 78 10 118 16 C 164 23 204 31 240 24 L240 44 L0 44 Z"></path>
-                                                            </svg>
-                                                            <svg class="tavern-wave tavern-wave-front tavern-wave-fill-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
-                                                                <path class="tavern-wave-fill" d="M0 20 C 44 7 96 10 138 19 C 178 27 212 24 240 18 L240 48 L0 48 Z"></path>
-                                                            </svg>
-                                                            <svg class="tavern-wave tavern-wave-back tavern-wave-line-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
-                                                                <path class="tavern-wave-line tavern-wave-line-soft" d="M0 25 C 34 12 78 10 118 16 C 164 23 204 31 240 24"></path>
-                                                            </svg>
-                                                            <svg class="tavern-wave tavern-wave-front tavern-wave-line-layer" viewBox="0 0 240 44" preserveAspectRatio="none">
-                                                                <path class="tavern-wave-line" d="M0 20 C 44 7 96 10 138 19 C 178 27 212 24 240 18"></path>
-                                                            </svg>
-                                                        </div>
-                                                        <div id="res-bubbles" class="tavern-bubbles">
-                                                            <span></span><span></span><span></span><span></span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <div data-tavern-vessel-template data-wrap-class="!h-auto" data-vessel-class="tavern-result-vessel !h-[17rem] !w-[12.4rem]" data-label="Blend" data-liquid-id="res-fluid" data-liquid-class="!h-[54%]" data-bubbles-id="res-bubbles"></div>
                                         </div>
                                         <div class="mt-4 text-center">
                                             <div id="res-intensity-label" class="text-sm font-semibold tracking-[0.18em] text-slate-500 dark:text-slate-400">MID-INTENSITY</div>
@@ -1186,22 +976,10 @@
                                             </p>
                                         </div>
                                         <div class="mt-5 grid gap-3 sm:grid-cols-2">
-                                            <div class="tavern-stat text-center">
-                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Family</div>
-                                                <div id="res-left-family" class="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">Calm</div>
-                                            </div>
-                                            <div class="tavern-stat text-center">
-                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Base Spirit</div>
-                                                <div id="res-left-base" class="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">Dark Rum</div>
-                                            </div>
-                                            <div class="tavern-stat text-center">
-                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">ABV</div>
-                                                <div id="res-left-abv" class="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">15% ABV</div>
-                                            </div>
-                                            <div class="tavern-stat text-center">
-                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Glass</div>
-                                                <div id="res-left-glass" class="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">Highball</div>
-                                            </div>
+                                            <div class="tavern-stat text-center" data-tavern-stat-template data-label="Family" data-value-id="res-left-family" data-value="Calm" data-value-class="text-sm font-semibold text-slate-900 dark:text-slate-100"></div>
+                                            <div class="tavern-stat text-center" data-tavern-stat-template data-label="Base Spirit" data-value-id="res-left-base" data-value="Dark Rum" data-value-class="text-sm font-semibold text-slate-900 dark:text-slate-100"></div>
+                                            <div class="tavern-stat text-center" data-tavern-stat-template data-label="ABV" data-value-id="res-left-abv" data-value="15% ABV" data-value-class="text-sm font-semibold text-slate-900 dark:text-slate-100"></div>
+                                            <div class="tavern-stat text-center" data-tavern-stat-template data-label="Glass" data-value-id="res-left-glass" data-value="Highball" data-value-class="text-sm font-semibold text-slate-900 dark:text-slate-100"></div>
                                         </div>
                                         <div class="tavern-result-summary mt-3">
                                             <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Bar Note</div>
@@ -1224,40 +1002,19 @@
                                         </p>
 
                                         <div class="mt-5 grid gap-3 sm:grid-cols-2">
-                                            <div class="tavern-stat">
-                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">基酒 Base</div>
-                                                <div id="res-base" class="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">深色朗姆</div>
-                                            </div>
-                                            <div class="tavern-stat">
-                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">杯型 Glass</div>
-                                                <div id="res-glass" class="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">高球杯</div>
-                                            </div>
+                                            <div class="tavern-stat" data-tavern-stat-template data-label="基酒 Base" data-value-id="res-base" data-value="深色朗姆"></div>
+                                            <div class="tavern-stat" data-tavern-stat-template data-label="杯型 Glass" data-value-id="res-glass" data-value="高球杯"></div>
                                         </div>
 
                                         <div class="mt-5 grid gap-3 sm:grid-cols-3">
-                                            <div class="tavern-stat text-center">
-                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Top</div>
-                                                <div id="res-top" class="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">柠檬皮</div>
-                                            </div>
-                                            <div class="tavern-stat text-center">
-                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Mid</div>
-                                                <div id="res-mid" class="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">可可</div>
-                                            </div>
-                                            <div class="tavern-stat text-center">
-                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">Base</div>
-                                                <div id="res-bot" class="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">香草</div>
-                                            </div>
+                                            <div class="tavern-stat text-center" data-tavern-stat-template data-label="Top" data-value-id="res-top" data-value="柠檬皮" data-value-class="text-sm font-semibold text-slate-900 dark:text-slate-100"></div>
+                                            <div class="tavern-stat text-center" data-tavern-stat-template data-label="Mid" data-value-id="res-mid" data-value="可可" data-value-class="text-sm font-semibold text-slate-900 dark:text-slate-100"></div>
+                                            <div class="tavern-stat text-center" data-tavern-stat-template data-label="Base" data-value-id="res-bot" data-value="香草" data-value-class="text-sm font-semibold text-slate-900 dark:text-slate-100"></div>
                                         </div>
 
                                         <div class="mt-5 grid gap-3 sm:grid-cols-2">
-                                            <div class="tavern-stat">
-                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">体感 Feel</div>
-                                                <div id="res-feel" class="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">Tight / 紧绷</div>
-                                            </div>
-                                            <div class="tavern-stat">
-                                                <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">装饰 Garnish</div>
-                                                <div id="res-garnish" class="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">橙皮与海盐雾</div>
-                                            </div>
+                                            <div class="tavern-stat" data-tavern-stat-template data-label="体感 Feel" data-value-id="res-feel" data-value="Tight / 紧绷"></div>
+                                            <div class="tavern-stat" data-tavern-stat-template data-label="装饰 Garnish" data-value-id="res-garnish" data-value="橙皮与海盐雾"></div>
                                         </div>
 
                                         <div class="system-panel-note mt-5 p-4 sm:p-5">
@@ -1315,18 +1072,9 @@
                                 </div>
 
                                 <div class="mb-5 grid gap-3 sm:grid-cols-3">
-                                    <div class="tavern-stat">
-                                        <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">已封存</div>
-                                        <div id="history-count" class="mt-3 text-2xl font-bold text-slate-950 dark:text-slate-50">0</div>
-                                    </div>
-                                    <div class="tavern-stat">
-                                        <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">彩蛋酒款</div>
-                                        <div id="history-secret-count" class="mt-3 text-2xl font-bold text-slate-950 dark:text-slate-50">0</div>
-                                    </div>
-                                    <div class="tavern-stat">
-                                        <div class="text-[11px] font-mono uppercase tracking-[0.16em] text-slate-400">酒库总量</div>
-                                        <div class="mt-3 text-2xl font-bold text-slate-950 dark:text-slate-50">58</div>
-                                    </div>
+                                    <div class="tavern-stat" data-tavern-stat-template data-label="已封存" data-value-id="history-count" data-value="0" data-value-class="text-2xl font-bold text-slate-950 dark:text-slate-50"></div>
+                                    <div class="tavern-stat" data-tavern-stat-template data-label="彩蛋酒款" data-value-id="history-secret-count" data-value="0" data-value-class="text-2xl font-bold text-slate-950 dark:text-slate-50"></div>
+                                    <div class="tavern-stat" data-tavern-stat-template data-label="酒库总量" data-value="58" data-value-class="text-2xl font-bold text-slate-950 dark:text-slate-50"></div>
                                 </div>
 
                                 <div id="tavern-history-list" class="tavern-history-grid content-start pb-3">
@@ -1547,22 +1295,10 @@
                                 </p>
 
                                 <div class="mt-5 grid grid-cols-2 gap-3">
-                                    <div class="metric-card !p-4">
-                                        <span class="metric-label">出勤天数</span>
-                                        <span id="export-preview-checkin-days" class="metric-value">0 / 0</span>
-                                    </div>
-                                    <div class="metric-card !p-4">
-                                        <span class="metric-label">深度工作</span>
-                                        <span id="export-preview-task-hours" class="metric-value">0 h</span>
-                                    </div>
-                                    <div class="metric-card !p-4">
-                                        <span class="metric-label">克制次数</span>
-                                        <span id="export-preview-resist" class="metric-value">0</span>
-                                    </div>
-                                    <div class="metric-card !p-4">
-                                        <span class="metric-label">速记条目</span>
-                                        <span id="export-preview-notes" class="metric-value">0</span>
-                                    </div>
+                                    <div class="metric-card !p-4" data-metric-card-template data-template-ids="export-preview-checkin-days" data-label="出勤天数" data-value-id="export-preview-checkin-days" data-value="0 / 0"></div>
+                                    <div class="metric-card !p-4" data-metric-card-template data-template-ids="export-preview-task-hours" data-label="深度工作" data-value-id="export-preview-task-hours" data-value="0 h"></div>
+                                    <div class="metric-card !p-4" data-metric-card-template data-template-ids="export-preview-resist" data-label="克制次数" data-value-id="export-preview-resist" data-value="0"></div>
+                                    <div class="metric-card !p-4" data-metric-card-template data-template-ids="export-preview-notes" data-label="速记条目" data-value-id="export-preview-notes" data-value="0"></div>
                                 </div>
 
                                 <div class="mt-5 rounded-2xl border border-primary/10 bg-primary/5 px-4 py-4 text-sm leading-6 text-slate-600 dark:border-primary/20 dark:bg-primary/10 dark:text-slate-300">
@@ -1683,6 +1419,7 @@
     <script src="assets/js/ui/navigation-data.js"></script>
     <script src="assets/js/ui/navigation-ui.js"></script>
     <script src="assets/js/ui/navigation.js"></script>
+    <script src="assets/js/ui/static-templates.js"></script>
     <script src="assets/js/features/tavern/catalog-data.js"></script>
     <script src="assets/js/features/tavern/catalog.js"></script>
     <script src="assets/js/features/tavern/analyze.js"></script>
