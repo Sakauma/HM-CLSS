@@ -43,19 +43,25 @@
 - `bash scripts/browser-smoke.sh`
   - 结果：通过。
   - 覆盖：真实 Firefox + Selenium 的关键用户路径、可访问性回归和视觉布局基线。
-- GitHub Actions `ci` run #33（2026-05-27）
+- GitHub Actions `ci` run #36（2026-05-27）
   - 结果：通过。
-  - 覆盖：远程 `smoke-check`、Firefox browser smoke、Chrome for Testing 安装、Chromium browser smoke，以及 Chart.js / DOMPurify vendor 刷新后的运行路径。
+  - 覆盖：合并后的 `main` 提交 `e3d7435`，远程 `smoke-check`、Firefox browser smoke、Chrome for Testing 安装、Chromium browser smoke，以及 Chart.js / DOMPurify vendor 刷新后的运行路径。
+- Git tag `v1.0.0`
+  - 结果：已推送。
+  - 覆盖：tag 指向合并后的商业级基线提交 `e3d7435`。
+- GitHub Pages build and deployment run `26522538984`
+  - 结果：通过。
+  - 覆盖：合并后的 `main` 提交已完成 Pages 构建和部署。
 
 ## 仍需推进的商业级缺口
 
-- 发布落地：`v1.0.0` release note 已准备；正式 tag 需要在 PR 合并到 `main` 后指向合并后的商业级基线。
+- 发布落地：`v1.0.0` release note、合并后的 `main`、远程 tag、主线 CI 和 Pages 部署证据已齐备。
 - 本地 Chromium 证据：CI 已验证 Chromium 自动化；本地可选入口仍为 `HM_CLSS_BROWSER=chromium`。本机缺少 Chrome/ChromeDriver，因此本地 Chromium 不是本轮 release blocker。
 - 产品探索验收：本轮没有大面积产品交互改版；`docs/release-validation.md` 已记录自动化覆盖映射。未来大面积视觉或交互改版前仍需追加人工探索式验收。
 - 长期依赖安全监控：已完成本轮联网复核；后续仍需按 `docs/vendor-review.md` 在 release、季度或安全公告触发时复核。
 
 ## 下一批优先级
 
-1. 合并 PR 后创建 `v1.0.0` tag。
-2. 为 Tailwind browser build、Lucide 和 marked 的跨主版本升级开独立兼容性验证任务。
-3. 大面积视觉或交互改版前，补一次人工探索验收记录，并把结论追加到 `docs/release-validation.md`。
+1. 为 Tailwind browser build、Lucide 和 marked 的跨主版本升级开独立兼容性验证任务。
+2. 大面积视觉或交互改版前，补一次人工探索验收记录，并把结论追加到 `docs/release-validation.md`。
+3. 下一次 release 前按 `docs/vendor-review.md` 再做一轮 vendor 复核。

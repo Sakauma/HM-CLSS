@@ -28,7 +28,7 @@
 - Node test runner: 84 tests passed.
 - Vendor checksum, script order, required files, required docs, and required IDs passed.
 
-远程证据：GitHub Actions `ci` run #33（2026-05-27）中 `smoke-check` job 通过。
+远程证据：GitHub Actions `ci` run #36（2026-05-27）中 `smoke-check` job 通过，运行对象为合并后的 `main` 提交 `e3d7435`。
 
 ### `bash scripts/browser-smoke.sh`
 
@@ -49,7 +49,7 @@
 - Visual layout baselines.
 - Tavern analysis flow.
 
-远程证据：GitHub Actions `ci` run #33（2026-05-27）中 `browser-smoke` job 通过，包含 Firefox smoke、Chrome for Testing 安装，以及 `HM_CLSS_BROWSER=chromium` 的 Chromium smoke。Chromium 使用浏览器专属视觉基线覆盖 settings 页的字体/表单渲染差异，未放宽全局视觉容差。
+远程证据：GitHub Actions `ci` run #36（2026-05-27）中 `browser-smoke` job 通过，运行对象为合并后的 `main` 提交 `e3d7435`，包含 Firefox smoke、Chrome for Testing 安装，以及 `HM_CLSS_BROWSER=chromium` 的 Chromium smoke。Chromium 使用浏览器专属视觉基线覆盖 settings 页的字体/表单渲染差异，未放宽全局视觉容差。
 
 ## Functional Self-Check Mapping
 
@@ -63,7 +63,8 @@
 
 ## Residual Release Notes
 
-- `CHANGELOG.md` 已包含 `v1.0.0 - 2026-05-27` 正式发布记录；发布 tag 应指向合并后的同一商业级基线。
+- `CHANGELOG.md` 已包含 `v1.0.0 - 2026-05-27` 正式发布记录；远程 tag `v1.0.0` 已指向合并后的商业级基线提交 `e3d7435`。
+- GitHub Pages build and deployment run `26522538984` 已在同一 `main` 提交上通过。
 - Firefox 是本地和 CI 的基础浏览器 gate。
 - Chromium 已由 CI gate 验证：GitHub Actions 通过 `browser-actions/setup-chrome@v2` 安装 Chrome for Testing 和 ChromeDriver 后运行同一套 smoke 场景。本机当前没有 Chrome/ChromeDriver，因此本轮本地只验证 Firefox 路径。
 - 本次没有修改存储 schema 版本。
