@@ -62,7 +62,7 @@ jobs:
           HM_CLSS_BROWSER: chromium
           HM_CLSS_CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
           HM_CLSS_CHROMEDRIVER_PATH: ${{ steps.setup-chrome.outputs.chromedriver-path }}
-          HM_CLSS_BROWSER_ARTIFACT_DIR: .artifacts/browser-smoke-chromium
+          HM_CLSS_BROWSER_ARTIFACT_DIR: ${{ github.workspace }}/.artifacts/browser-smoke-chromium
         run: bash scripts/browser-smoke.sh
 
       - name: Upload browser smoke artifacts
@@ -70,5 +70,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: browser-smoke-artifacts
-          path: .artifacts
+          path: ${{ github.workspace }}/.artifacts
+          include-hidden-files: true
           if-no-files-found: ignore

@@ -21,6 +21,8 @@ test('browser smoke shell wrapper forwards HM_CLSS_BROWSER to Selenium runner', 
     const source = readSource('scripts/browser-smoke.sh');
 
     assert.match(source, /BROWSER_NAME="\$\{HM_CLSS_BROWSER:-firefox\}"/);
+    assert.match(source, /resolve_repo_path\(\)/);
+    assert.match(source, /ARTIFACT_DIR="\$\(resolve_repo_path/);
     assert.match(source, /--browser "\$BROWSER_NAME"/);
     assert.match(source, /chromedriver/);
 });
@@ -31,6 +33,8 @@ test('browser driver supports Firefox and Chromium toolchains', () => {
     assert.match(source, /def build_firefox_driver/);
     assert.match(source, /def build_chromium_driver/);
     assert.match(source, /resolve_browser_tool\("chromedriver"\)/);
+    assert.match(source, /Emulation\.setDeviceMetricsOverride/);
+    assert.match(source, /VISUAL_VIEWPORT_HEIGHT = 1114/);
     assert.match(source, /HM_CLSS_CHROME_PATH/);
     assert.match(source, /HM_CLSS_CHROMEDRIVER_PATH/);
     assert.match(source, /Unsupported browser for smoke checks/);
@@ -45,4 +49,6 @@ test('CI runs browser smoke in Firefox and Chromium', () => {
     assert.match(source, /HM_CLSS_BROWSER:\s*chromium/);
     assert.match(source, /HM_CLSS_CHROME_PATH/);
     assert.match(source, /HM_CLSS_CHROMEDRIVER_PATH/);
+    assert.match(source, /github\.workspace.*\.artifacts\/browser-smoke-chromium/);
+    assert.match(source, /include-hidden-files:\s*true/);
 });

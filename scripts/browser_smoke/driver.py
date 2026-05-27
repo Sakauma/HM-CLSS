@@ -15,6 +15,9 @@ from selenium.common.exceptions import WebDriverException
 
 from browser_smoke.helpers import require
 
+VISUAL_VIEWPORT_WIDTH = 1600
+VISUAL_VIEWPORT_HEIGHT = 1114
+
 
 def resolve_browser_tool(name: str) -> str | None:
     env_overrides = {
@@ -85,6 +88,7 @@ def create_chromium_driver(browser_path: str, chromedriver_path: str) -> WebDriv
     options = ChromiumOptions()
     options.add_argument("--headless=new")
     options.add_argument("--window-size=1600,1200")
+    options.add_argument("--force-device-scale-factor=1")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
@@ -95,6 +99,15 @@ def create_chromium_driver(browser_path: str, chromedriver_path: str) -> WebDriv
     driver: WebDriver | None = None
     try:
         driver = webdriver.Chrome(options=options, service=service)
+        driver.execute_cdp_cmd(
+            "Emulation.setDeviceMetricsOverride",
+            {
+                "width": VISUAL_VIEWPORT_WIDTH,
+                "height": VISUAL_VIEWPORT_HEIGHT,
+                "deviceScaleFactor": 1,
+                "mobile": False,
+            },
+        )
         driver.set_page_load_timeout(30)
         return driver
     except Exception:

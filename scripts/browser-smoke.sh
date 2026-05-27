@@ -5,12 +5,25 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEFAULT_URL="http://127.0.0.1:8000"
 TARGET_URL="${HM_CLSS_SMOKE_URL:-$DEFAULT_URL}"
 CONDA_ENV_PATH="${HM_CLSS_BROWSER_ENV:-$ROOT_DIR/.conda/browser-test}"
-ARTIFACT_DIR="${HM_CLSS_BROWSER_ARTIFACT_DIR:-$ROOT_DIR/.artifacts/browser-smoke}"
 BROWSER_NAME="${HM_CLSS_BROWSER:-firefox}"
-SERVER_LOG="${HM_CLSS_BROWSER_SERVER_LOG:-$ARTIFACT_DIR/server.log}"
 SERVER_PID=""
 ENV_PYTHON=""
 CONDA_BIN=""
+
+resolve_repo_path() {
+  local input="$1"
+  case "$input" in
+    /* | [A-Za-z]:/* | [A-Za-z]:\\*)
+      printf '%s\n' "$input"
+      ;;
+    *)
+      printf '%s/%s\n' "$ROOT_DIR" "$input"
+      ;;
+  esac
+}
+
+ARTIFACT_DIR="$(resolve_repo_path "${HM_CLSS_BROWSER_ARTIFACT_DIR:-$ROOT_DIR/.artifacts/browser-smoke}")"
+SERVER_LOG="$(resolve_repo_path "${HM_CLSS_BROWSER_SERVER_LOG:-$ARTIFACT_DIR/server.log}")"
 
 log_info() {
   printf '[browser-smoke] %s\n' "$*"
