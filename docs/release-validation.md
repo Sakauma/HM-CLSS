@@ -27,7 +27,7 @@
 - Node test runner: 84 tests passed.
 - Vendor checksum, script order, required files, required docs, and required IDs passed.
 
-远程证据：GitHub Actions `ci` run #31（2026-05-27）中 `smoke-check` job 通过。
+远程证据：GitHub Actions `ci` run #33（2026-05-27）中 `smoke-check` job 通过。
 
 ### `bash scripts/browser-smoke.sh`
 
@@ -48,7 +48,7 @@
 - Visual layout baselines.
 - Tavern analysis flow.
 
-远程证据：GitHub Actions `ci` run #31（2026-05-27）中 `browser-smoke` job 通过，包含 Firefox smoke、Chrome for Testing 安装，以及 `HM_CLSS_BROWSER=chromium` 的 Chromium smoke。Chromium 使用浏览器专属视觉基线覆盖 settings 页的字体/表单渲染差异，未放宽全局视觉容差。
+远程证据：GitHub Actions `ci` run #33（2026-05-27）中 `browser-smoke` job 通过，包含 Firefox smoke、Chrome for Testing 安装，以及 `HM_CLSS_BROWSER=chromium` 的 Chromium smoke。Chromium 使用浏览器专属视觉基线覆盖 settings 页的字体/表单渲染差异，未放宽全局视觉容差。
 
 ## Functional Self-Check Mapping
 

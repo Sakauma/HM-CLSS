@@ -74,6 +74,12 @@ Updated files:
 - `assets/vendor/purify-3.4.7.min.js`
 - `scripts/smoke_manifest/vendor-checksums.txt`
 
+Verification:
+
+- `bash scripts/smoke-check.sh`
+- `bash scripts/browser-smoke.sh`
+- GitHub Actions `ci` run #33（2026-05-27）：Firefox browser smoke and Chromium browser smoke passed.
+
 Follow-up: plan a separate major-upgrade review for Tailwind browser runtime, Lucide icons, and marked markdown output.
 
 ## Local Gates

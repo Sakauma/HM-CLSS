@@ -42,9 +42,9 @@
 - `bash scripts/browser-smoke.sh`
   - 结果：通过。
   - 覆盖：真实 Firefox + Selenium 的关键用户路径、可访问性回归和视觉布局基线。
-- GitHub Actions `ci` run #31（2026-05-27）
+- GitHub Actions `ci` run #33（2026-05-27）
   - 结果：通过。
-  - 覆盖：远程 `smoke-check`、Firefox browser smoke、Chrome for Testing 安装、Chromium browser smoke。
+  - 覆盖：远程 `smoke-check`、Firefox browser smoke、Chrome for Testing 安装、Chromium browser smoke，以及 Chart.js / DOMPurify vendor 刷新后的运行路径。
 
 ## 仍需推进的商业级缺口
 
