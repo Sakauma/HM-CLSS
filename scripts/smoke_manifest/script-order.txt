@@ -30,6 +30,7 @@ assets/js/features/tavern/logic.js
 assets/js/features/tavern/stage.js
 assets/js/features/tavern/result.js
 assets/js/features/tavern/history.js
+assets/js/features/tavern/flow.js
 assets/js/features/tavern/ui.js
 assets/js/features/tavern/index.js
 assets/js/features/checkin/rules.js

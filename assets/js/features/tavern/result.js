@@ -45,7 +45,7 @@ function createTavernResultDomAdapter(rootDocument) {
             textBindings.forEach(([id, key]) => {
                 requireElement(id).textContent = drinkInfo[key];
             });
-            requireElement('res-left-service').textContent = `?${drinkInfo.glass}?? ${drinkInfo.base}?????? ${drinkInfo.top}???? ${drinkInfo.garnish} ?????????`;
+            requireElement('res-left-service').textContent = `以 ${drinkInfo.glass} 承接，${drinkInfo.base} 缓慢铺底，${drinkInfo.top} 提亮开场，最后用 ${drinkInfo.garnish} 把尾声收住。`;
         },
         updateSaveButton(drinkInfo) {
             const saveBtn = rootDocument.getElementById('btn-save-drink');
@@ -54,7 +54,7 @@ function createTavernResultDomAdapter(rootDocument) {
             setElementIconLabel(
                 saveBtn,
                 drinkInfo.saved ? 'archive-check' : 'archive',
-                drinkInfo.saved ? '???' : '?????'
+                drinkInfo.saved ? '已封存' : '保存到酒单'
             );
             saveBtn.disabled = !!drinkInfo.saved;
             saveBtn.classList.toggle('opacity-60', !!drinkInfo.saved);

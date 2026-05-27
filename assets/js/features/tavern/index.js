@@ -16,6 +16,7 @@ registerAppModule({
         'tavern/stage',
         'tavern/result',
         'tavern/history',
+        'tavern/flow',
         'tavern/ui'
     ],
     init: initTavernModule

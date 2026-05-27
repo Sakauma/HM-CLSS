@@ -74,6 +74,7 @@ node --check assets/js/features/tavern/logic.js
 node --check assets/js/features/tavern/stage.js
 node --check assets/js/features/tavern/result.js
 node --check assets/js/features/tavern/history.js
+node --check assets/js/features/tavern/flow.js
 node --check assets/js/features/tavern/ui.js
 node --check assets/js/features/tavern/index.js
 node --check assets/js/features/checkin/rules.js
@@ -287,6 +288,8 @@ powershell -ExecutionPolicy Bypass -File scripts/browser-smoke.ps1
   结果卡渲染、分享文案与当前特调展示。
 - `assets/js/features/tavern/history.js`
   酒柜列表渲染、历史查看与删除交互。
+- `assets/js/features/tavern/flow.js`
+  输入控件同步、情绪分析动画与结果流转编排。
 - `assets/js/features/tavern/ui.js`
   酒馆事件绑定层，负责把舞台、结果卡和历史酒柜组装成完整交互。
 - `assets/js/features/tavern/index.js`
@@ -538,80 +541,91 @@ const CONFIG = {
 
 ### 5. 自定义“脚本加载顺序”
 
-如果你未来继续拆分脚本，不要随意打乱 `index.html` 中的 `<script src="assets/js/...">` 顺序。
+如果你未来继续拆分脚本，不要随意打乱 `index.html` 中的 `<script src="...">` 顺序。
 
 当前顺序遵循依赖关系，`scripts/smoke_manifest/script-order.txt` 与 `index.html` 保持同一份清单：
 
-1. `runtime/theme.js`
-2. `runtime/store.js`
-3. `runtime/state.js`
-4. `runtime/storage-migrations.js`
-5. `runtime/storage-payload.js`
-6. `runtime/storage-shapes.js`
-7. `runtime/storage.js`
-8. `runtime/date-utils.js`
-9. `runtime/dom-utils.js`
-10. `runtime/ambient.js`
-11. `runtime/module-registry.js`
-12. `workspace/metrics.js`
-13. `workspace/data.js`
-14. `runtime/app-init.js`
-15. `ui/navigation-data.js`
-16. `ui/navigation-ui.js`
-17. `ui/navigation.js`
-18. `features/tavern/catalog.js`
-19. `features/tavern/analyze.js`
-20. `features/tavern/records.js`
-21. `features/tavern/logic.js`
-22. `features/tavern/stage.js`
-23. `features/tavern/result.js`
-24. `features/tavern/history.js`
-25. `features/tavern/ui.js`
-26. `features/tavern/index.js`
-27. `features/checkin/rules.js`
-28. `features/checkin/status.js`
-29. `features/checkin/retro.js`
-30. `features/checkin/summary.js`
-31. `features/checkin/ui.js`
-32. `features/checkin/index.js`
-33. `features/focus/achievements.js`
-34. `workspace/entries.js`
-35. `features/tasks/hero.js`
-36. `features/tasks/render.js`
-37. `features/tasks/index.js`
-38. `features/notes/modal.js`
-39. `features/notes/today.js`
-40. `features/notes/archive.js`
-41. `features/notes/render.js`
-42. `features/notes/index.js`
-43. `features/leave/rules.js`
-44. `features/leave/ui.js`
-45. `features/leave/index.js`
-46. `features/stats/ranges.js`
-47. `features/stats/aggregates.js`
-48. `features/stats/data.js`
-49. `features/stats/charts.js`
-50. `features/stats/index.js`
-51. `features/dashboard/labels.js`
-52. `features/dashboard/overview.js`
-53. `features/dashboard/confirm.js`
-54. `features/dashboard/toast.js`
-55. `features/dashboard/status.js`
-56. `features/dashboard/ui.js`
-57. `features/sync/state.js`
-58. `features/sync/api.js`
-59. `features/sync/ui.js`
-60. `features/sync/backup.js`
-61. `features/sync/conflict.js`
-62. `features/sync/logic.js`
-63. `features/sync/index.js`
-64. `features/export/profiles.js`
-65. `features/export/monthly.js`
-66. `features/export/data.js`
-67. `features/export/formats.js`
-68. `features/export/ui.js`
-69. `features/export/index.js`
-70. `ui/shortcuts.js`
+1. `vendor/tailwindcss-3.4.17.js`
+2. `vendor/lucide-0.514.0.min.js`
+3. `vendor/chart.umd-4.4.8.min.js`
+4. `vendor/marked-12.0.2.min.js`
+5. `vendor/purify-3.0.6.min.js`
+6. `runtime/tailwind-config.js`
+7. `runtime/logger.js`
+8. `runtime/module-registry.js`
+9. `runtime/theme.js`
+10. `runtime/store.js`
+11. `runtime/state.js`
+12. `runtime/storage-migrations.js`
+13. `runtime/storage-payload.js`
+14. `runtime/storage-shapes.js`
+15. `runtime/storage.js`
+16. `runtime/date-utils.js`
+17. `runtime/dom-utils.js`
+18. `runtime/ambient.js`
+19. `workspace/metrics.js`
+20. `workspace/data.js`
+21. `ui/navigation-data.js`
+22. `ui/navigation-ui.js`
+23. `ui/navigation.js`
+24. `ui/static-templates.js`
+25. `features/tavern/catalog-data.js`
+26. `features/tavern/catalog.js`
+27. `features/tavern/analyze.js`
+28. `features/tavern/records.js`
+29. `features/tavern/logic.js`
+30. `features/tavern/stage.js`
+31. `features/tavern/result.js`
+32. `features/tavern/history.js`
+33. `features/tavern/flow.js`
+34. `features/tavern/ui.js`
+35. `features/tavern/index.js`
+36. `features/checkin/rules.js`
+37. `features/checkin/status.js`
+38. `features/checkin/retro.js`
+39. `features/checkin/summary.js`
+40. `features/checkin/ui.js`
+41. `features/checkin/index.js`
+42. `features/focus/achievements.js`
+43. `workspace/entries.js`
+44. `features/tasks/hero.js`
+45. `features/tasks/render.js`
+46. `features/tasks/index.js`
+47. `features/notes/modal.js`
+48. `features/notes/today.js`
+49. `features/notes/archive.js`
+50. `features/notes/render.js`
+51. `features/notes/index.js`
+52. `features/leave/rules.js`
+53. `features/leave/ui.js`
+54. `features/leave/index.js`
+55. `features/stats/ranges.js`
+56. `features/stats/aggregates.js`
+57. `features/stats/data.js`
+58. `features/stats/charts.js`
+59. `features/stats/index.js`
+60. `features/dashboard/labels.js`
+61. `features/dashboard/overview.js`
+62. `features/dashboard/confirm.js`
+63. `features/dashboard/toast.js`
+64. `features/dashboard/status.js`
+65. `features/dashboard/ui.js`
+66. `features/sync/state.js`
+67. `features/sync/api.js`
+68. `features/sync/ui.js`
+69. `features/sync/backup.js`
+70. `features/sync/apply-transaction.js`
+71. `features/sync/conflict.js`
+72. `features/sync/logic.js`
+73. `features/sync/index.js`
+74. `features/export/profiles.js`
+75. `features/export/monthly.js`
+76. `features/export/data.js`
+77. `features/export/formats.js`
+78. `features/export/ui.js`
+79. `features/export/index.js`
+80. `runtime/app-init.js`
+81. `ui/shortcuts.js`
 
 现在目录按 `runtime / workspace / ui / features` 分层：`runtime` 负责启动、模块注册、共享运行时和可变状态容器，`workspace` 负责跨模块共享的数据与口径，`ui` 负责导航和快捷键这类外层交互，`features` 按值班、酒馆、离舰、统计、同步、导出等功能继续拆分。`app-init.js` 现在只负责 `initData()` 和触发模块注册中心，具体功能模块各自向注册中心报到。顺序错乱会导致飞船在启动时失压。
 

@@ -161,8 +161,11 @@ test('tavern result DOM adapter renders drink info and reports missing ids', () 
 
     assert.equal(elements['res-title'].textContent, 'Test Drink');
     assert.match(elements['res-left-service'].textContent, /Highball/);
+    assert.match(elements['res-left-service'].textContent, /以 Highball 承接/);
+    assert.doesNotMatch(elements['res-left-service'].textContent, /\?{3,}/);
     assert.equal(elements['btn-save-drink'].disabled, true);
     assert.equal(iconLabels.at(-1).icon, 'archive-check');
+    assert.equal(iconLabels.at(-1).label, '已封存');
 
     const missingAdapter = context.createTavernResultDomAdapter({
         getElementById() {
