@@ -21,6 +21,9 @@ scripts/smoke-check.sh
 scripts/smoke-check.ps1
 scripts/check-module-dependencies.js
 scripts/check-static-template-contracts.js
+scripts/check-runtime-state-contracts.js
+scripts/check-release-governance.js
+scripts/check-vendor-manifest.js
 scripts/browser-smoke.sh
 scripts/browser-smoke.ps1
 scripts/browser-smoke.py
@@ -43,6 +46,7 @@ scripts/smoke_manifest/required-ids.txt
 scripts/smoke_manifest/required-docs.txt
 scripts/smoke_manifest/vendor-checksums.txt
 tests/unit/helpers.js
+tests/unit/browser-driver-contract.test.js
 tests/unit/module-dependency-checker.test.js
 tests/unit/runtime-store-and-checkin.test.js
 tests/unit/export-storage-workspace.test.js
@@ -57,6 +61,9 @@ tests/unit/sync-controller.test.js
 tests/unit/statistics-and-export.test.js
 tests/unit/static-template-contracts.test.js
 tests/unit/static-template-contract-checker.test.js
+tests/unit/runtime-state-contract-checker.test.js
+tests/unit/release-governance-checker.test.js
+tests/unit/vendor-manifest-checker.test.js
 tests/unit/windows-script-entrypoints.test.js
 tests/fixtures/visual-layout-baselines.json
 docs/testing-artifacts.md

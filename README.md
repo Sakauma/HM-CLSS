@@ -122,6 +122,9 @@ node --check assets/js/features/export/ui.js
 node --check assets/js/features/export/index.js
 node --check assets/js/ui/shortcuts.js
 node --check assets/js/runtime/app-init.js
+node --check scripts/check-module-dependencies.js
+node --check scripts/check-static-template-contracts.js
+node --check scripts/check-runtime-state-contracts.js
 node --test tests/unit/*.test.js
 python3 -m py_compile scripts/browser-smoke.py
 python3 -m py_compile scripts/browser_smoke/helpers.py
@@ -194,12 +197,25 @@ powershell -ExecutionPolicy Bypass -File scripts/browser-smoke.ps1
 
 浏览器冒烟会默认访问 `http://127.0.0.1:8000`。如果目标地址不可达，脚本会自动启动本地静态服务。失败截图、页面源码、控制台日志和视觉快照统一输出到 `.artifacts/browser-smoke/`；该目录只用于本地排障和 CI 工件，不进入版本库。
 
+默认浏览器 gate 是 Firefox。若本机或测试环境同时提供 Chromium/Chrome 与 `chromedriver`，可以复用同一套场景跑 Chromium：
+
+```bash
+HM_CLSS_BROWSER=chromium bash scripts/browser-smoke.sh
+```
+
+Windows 包装脚本也支持显式浏览器参数：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/browser-smoke.ps1 -Browser chromium
+```
+
 ### 持续集成
 
 仓库内置了 [`.github/workflows/ci.yml`](./.github/workflows/ci.yml)：
 
 - `push` / `pull_request` 自动运行 `bash scripts/smoke-check.sh`
 - 浏览器环境可用时继续运行 `bash scripts/browser-smoke.sh`
+- CI 通过 `browser-actions/setup-chrome@v2` 额外运行 Chromium smoke，并把 Chrome / ChromeDriver 路径显式传给 Selenium。
 - 本地脚本和 CI 使用同一套 `conda` 浏览器环境定义，不走两套口径
 - 浏览器冒烟失败时会把截图、页面源码和控制台留痕上传为 CI 工件
 
@@ -216,7 +232,26 @@ powershell -ExecutionPolicy Bypass -File scripts/browser-smoke.ps1
 - `HM_CLSS_BROWSER_ARTIFACT_DIR`
   覆盖默认的浏览器冒烟工件目录；默认输出到 `.artifacts/browser-smoke`。
   目录内部会再细分成 `failures/` 和 `visual/` 两层。
+- `HM_CLSS_BROWSER`
+  选择浏览器驱动，默认 `firefox`；可选 `chromium`，要求环境中存在 Chromium/Chrome 与 `chromedriver`。
+- `HM_CLSS_CHROME_PATH`
+  Chromium 模式下显式指定 Chrome / Chromium 可执行文件路径，CI 会由 `browser-actions/setup-chrome` 注入。
+- `HM_CLSS_CHROMEDRIVER_PATH`
+  Chromium 模式下显式指定 `chromedriver` 路径，CI 会由 `browser-actions/setup-chrome` 注入。
 
+### 商业级治理文档
+
+发布、贡献、安全和兼容性约束由下列文档共同维护，并由 `scripts/check-release-governance.js` 接入 `smoke-check`：
+
+- [SECURITY.md](./SECURITY.md)：安全边界、敏感数据规则、漏洞报告和 vendor 升级流程。
+- [CONTRIBUTING.md](./CONTRIBUTING.md)：开发流程、提交风格、测试要求和 PR 检查项。
+- [CHANGELOG.md](./CHANGELOG.md)：未发布变更、发版模板和验证记录。
+- [docs/release-checklist.md](./docs/release-checklist.md)：发版前自动门禁、人工验收、数据安全和回滚步骤。
+- [docs/release-validation.md](./docs/release-validation.md)：最近一轮 smoke 与浏览器验收的证据留痕。
+- [docs/troubleshooting.md](./docs/troubleshooting.md)：浏览器 smoke、数据损坏、同步、导出、布局和 vendor 排障。
+- [docs/browser-support.md](./docs/browser-support.md)：浏览器支持矩阵、发布验证期望和自动化缺口。
+- [docs/data-compatibility.md](./docs/data-compatibility.md)：本地存储 schema、迁移、同步兼容和恢复原则。
+- [docs/vendor-review.md](./docs/vendor-review.md)：第三方浏览器脚本的版本、安全和升级复核节奏。
 
 ## 🗂️ 舰体结构
 
@@ -386,30 +421,66 @@ powershell -ExecutionPolicy Bypass -File scripts/browser-smoke.ps1
   DOM 就绪后的统一启动编排。
 - `scripts/smoke-check.sh`
   常见回归场景的本地冒烟脚本。
+- `scripts/check-runtime-state-contracts.js`
+  运行时共享状态写入契约检查，阻止功能模块绕过 `runtimeActions` 直接改内存态。
+- `scripts/check-release-governance.js`
+  发布、安全、贡献、兼容和排障文档的治理检查，确保关键章节进入 release gate。
+- `scripts/check-vendor-manifest.js`
+  第三方浏览器脚本的 README、source URL、版本文件名和 checksum 清单一致性检查。
 - `scripts/setup-browser-test.sh`
   根据环境文件创建或更新浏览器测试所需的 `conda` 环境。
 - `scripts/browser-smoke.sh`
-  真实 Firefox + Selenium 的浏览器冒烟入口。
+  Selenium 浏览器冒烟入口，默认 Firefox，也支持 `HM_CLSS_BROWSER=chromium`。
 - `scripts/browser-smoke.py`
   浏览器级功能检查的启动脚本，按场景顺序编排执行。
 - `scripts/browser_smoke/`
   浏览器冒烟共享 helper、driver 封装与分场景回归脚本。
 - `scripts/smoke_manifest/`
-  `smoke-check` 使用的清单目录，分别维护语法检查、脚本顺序、样式、文件和关键 DOM id。
+  `smoke-check` 使用的清单目录，分别维护语法检查、脚本顺序、样式、文件、文档和关键 DOM id。
 - `docs/testing-artifacts.md`
   浏览器冒烟工件目录、失败快照和视觉快照的落盘约定。
+- `docs/commercial-readiness-audit.md`
+  当前商业级工程成熟度审计、已验证证据和后续 release gate 优先级。
+- `docs/release-checklist.md`
+  发版前自动门禁、人工验收、数据安全和回滚检查单。
+- `docs/release-validation.md`
+  最近一轮自动化与浏览器级验收证据留痕。
+- `docs/troubleshooting.md`
+  本地数据、同步、导出、视觉和 vendor 异常排障指南。
+- `docs/browser-support.md`
+  浏览器支持矩阵、必需能力和发布验证期望。
+- `docs/data-compatibility.md`
+  本地存储 schema、迁移原则、云同步兼容和恢复流程。
+- `docs/vendor-review.md`
+  第三方浏览器脚本的版本、安全公告和升级复核节奏。
+- `SECURITY.md`
+  安全策略、敏感数据规则、漏洞报告和依赖升级流程。
+- `CONTRIBUTING.md`
+  开发流程、提交规范、测试要求和 PR 检查项。
+- `CHANGELOG.md`
+  未发布变更、验证记录和发版记录模板。
 - `tests/fixtures/visual-layout-baselines.json`
   关键舱段的布局视觉基线，用于浏览器回归时对比主要面板是否漂移。
 - `environment.browser-test.yml`
   浏览器测试环境的可复现依赖定义。
 - `tests/unit/helpers.js`
   单测共享上下文、脚本加载和本地存储 mock。
+- `tests/unit/browser-driver-contract.test.js`
+  浏览器 smoke 入口和 Firefox/Chromium 驱动选择契约测试。
 - `tests/unit/runtime-store-and-checkin.test.js`
   运行时状态、值班规则和首页状态映射测试。
+- `tests/unit/runtime-state-contract-checker.test.js`
+  运行时状态写入契约检查器测试，覆盖直接写入、旧 helper 回流和模板字符串表达式。
+- `tests/unit/release-governance-checker.test.js`
+  发布治理检查器测试，覆盖文档章节、README 引用和 required-docs 清单。
+- `tests/unit/vendor-manifest-checker.test.js`
+  vendor 资产清单检查器测试，覆盖 README、checksum 和 source URL 约束。
 - `tests/unit/export-storage-workspace.test.js`
   导出构建、工作区快照和本地存储迁移测试。
-- `tests/unit/sync-and-registry.test.js`
-  同步失败/冲突分支和模块注册中心生命周期测试。
+- `tests/unit/module-registry.test.js`
+  模块注册中心生命周期、依赖校验和延迟注册测试。
+- `tests/unit/sync-controller.test.js`
+  同步失败、冲突确认和控制器分支测试。
 - `tests/unit/statistics-and-export.test.js`
   统计聚合与空月导出 fixture 测试。
 - `docs/functional-self-check.md`

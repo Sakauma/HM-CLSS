@@ -42,7 +42,7 @@ async function handleLeaveRecordDeletion(event) {
 
     const id = btn.getAttribute('data-id');
     const leaveObj = leaveData.find((leave) => leave.id === id);
-    filterRuntimeItems('leaveData', (leave) => leave.id !== id);
+    runtimeActions.filter('leaveData', (leave) => leave.id !== id);
 
     if (!leaveObj) return;
 
@@ -184,12 +184,12 @@ async function addLeave() {
         }
 
         if (existingFullLeave) {
-            mapRuntimeItems('leaveData', (leave) => leave.id === existingFullLeave.id ? { ...leavePayload, id: existingFullLeave.id } : leave);
+            runtimeActions.map('leaveData', (leave) => leave.id === existingFullLeave.id ? { ...leavePayload, id: existingFullLeave.id } : leave);
         } else {
-            appendRuntimeItem('leaveData', leavePayload);
+            runtimeActions.append('leaveData', leavePayload);
         }
     } else {
-        appendRuntimeItem('leaveData', leavePayload);
+        runtimeActions.append('leaveData', leavePayload);
     }
 
     rebuildLeaveStateForDate(date);

@@ -24,6 +24,9 @@ test('Windows browser-smoke wrapper points Selenium runs at the repo browser env
 
     assert.match(source, /\.conda\\browser-test/);
     assert.match(source, /HM_CLSS_BROWSER_ENV/);
+    assert.match(source, /HM_CLSS_BROWSER/);
+    assert.match(source, /HM_CLSS_CHROME_PATH/);
+    assert.match(source, /HM_CLSS_CHROMEDRIVER_PATH/);
     assert.match(source, /HM_CLSS_BROWSER_ARTIFACT_DIR/);
     assert.match(source, /scripts\/browser-smoke\.sh/);
 });

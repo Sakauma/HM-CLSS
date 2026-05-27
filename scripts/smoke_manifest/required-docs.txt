@@ -1,6 +1,16 @@
 docs/functional-self-check.md
 docs/testing-artifacts.md
+docs/commercial-readiness-audit.md
+docs/release-checklist.md
+docs/release-validation.md
+docs/troubleshooting.md
+docs/browser-support.md
+docs/data-compatibility.md
+docs/vendor-review.md
 CONTEXT.md
+SECURITY.md
+CONTRIBUTING.md
+CHANGELOG.md
 docs/adr/0001-zero-build-static-app.md
 docs/adr/0002-script-order-startup-contract.md
 docs/adr/0003-local-storage-sync-safety.md

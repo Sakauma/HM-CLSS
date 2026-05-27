@@ -72,7 +72,7 @@ function createTavernHistoryCard(drink) {
             tone: 'danger'
         });
         if (!confirmed) return;
-        filterRuntimeItems('tavernData', (storedDrink) => storedDrink.id !== drink.id);
+        runtimeActions.filter('tavernData', (storedDrink) => storedDrink.id !== drink.id);
         saveData();
         renderTavernHistory();
         showToast('这杯特调已从酒柜移除', 'success');

@@ -89,7 +89,9 @@ test('static template hydration is safe for missing roots and idempotent targets
         dataset: {
             label: 'Work',
             valueId: 'metric-work',
-            value: '0 h'
+            value: '0 h',
+            hintId: 'metric-work-hint',
+            hint: 'Ready'
         }
     };
     const root = {
@@ -115,6 +117,7 @@ test('static template hydration is safe for missing roots and idempotent targets
     assert.match(shiftTarget.html, /id="morning-checkin"/);
     assert.match(checkinTableRowTarget.html, /id="table-morning-checkin-status"/);
     assert.match(metricTarget.html, /id="metric-work"/);
+    assert.match(metricTarget.html, /id="metric-work-hint"/);
 
     vesselTarget.html = 'unchanged';
     context.renderStaticUiTemplates(root);

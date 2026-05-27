@@ -143,7 +143,7 @@ function checkAchievements() {
         }
 
         if (achieved) {
-            appendRuntimeItem('achievements', achievement.id);
+            runtimeActions.append('achievements', achievement.id);
             showAchievementPopup(achievement);
             hasNew = true;
         }

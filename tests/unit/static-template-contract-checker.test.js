@@ -17,7 +17,7 @@ test('static template contract checker validates real index placeholders', () =>
 
     assert.equal(result.ok, true);
     assert.equal(result.errors.length, 0);
-    assert.equal(result.placeholders.length, 10);
+    assert.equal(result.placeholders.length, 18);
 });
 
 test('static template contract checker parses boolean template attrs and dataset names', () => {

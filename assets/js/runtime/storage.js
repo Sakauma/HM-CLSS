@@ -107,36 +107,51 @@ function normalizeWorkspaceRuntimeState(options = {}) {
         normalizeAmbient = false
     } = options;
 
-    setRuntimeValue('phoneResistData', normalizePhoneResistDataShape(phoneResistData));
-    if (!Array.isArray(leaveData)) setRuntimeValue('leaveData', []);
-    setRuntimeValue('achievements', Array.isArray(achievements)
-        ? achievements.filter((achievementId) => typeof achievementId === 'string')
+    runtimeActions.setPhoneResistData(normalizePhoneResistDataShape(runtimeSelectors.phoneResistData()));
+    runtimeActions.setLeaveData(Array.isArray(runtimeSelectors.leaveData())
+        ? runtimeSelectors.leaveData().map((leave) => normalizeLeaveRecord(leave))
         : []);
-    setRuntimeValue('tavernData', Array.isArray(tavernData)
-        ? tavernData.filter((drink) => drink && typeof drink === 'object')
+    const currentAchievements = runtimeSelectors.achievements();
+    runtimeActions.setAchievements(Array.isArray(currentAchievements)
+        ? currentAchievements.filter((achievementId) => typeof achievementId === 'string')
         : []);
-    if (!quickNotesData || typeof quickNotesData !== 'object' || Array.isArray(quickNotesData)) setRuntimeValue('quickNotesData', {});
-    setRuntimeValue('taskData', normalizeTaskDataByDate(taskData));
-    if (!checkinData || typeof checkinData !== 'object' || Array.isArray(checkinData)) setRuntimeValue('checkinData', {});
-
-    mapRuntimeItems('leaveData', (leave) => normalizeLeaveRecord(leave));
-    Object.keys(checkinData).forEach((date) => {
-        checkinData[date] = ensureDayRecord(checkinData[date]);
-    });
+    runtimeActions.setTavernData(Array.isArray(runtimeSelectors.tavernData())
+        ? runtimeSelectors.tavernData().filter((drink) => drink && typeof drink === 'object')
+        : []);
+    const notesData = runtimeSelectors.quickNotesData();
+    runtimeActions.setQuickNotesData(notesData && typeof notesData === 'object' && !Array.isArray(notesData)
+        ? notesData
+        : {});
+    runtimeActions.setTaskData(normalizeTaskDataByDate(runtimeSelectors.taskData()));
+    const currentCheckinData = runtimeSelectors.checkinData();
+    runtimeActions.setCheckinData(currentCheckinData && typeof currentCheckinData === 'object' && !Array.isArray(currentCheckinData)
+        ? Object.fromEntries(Object.entries(currentCheckinData).map(([date, day]) => [date, ensureDayRecord(day)]))
+        : {});
 
     if (normalizeAmbient) {
-        setRuntimeValue('ambientPreferences', normalizeAmbientPreferences(ambientPreferences));
+        runtimeActions.setAmbientPreferences(normalizeAmbientPreferences(runtimeSelectors.ambientPreferences()));
     }
 
-    setRuntimeValue('checkinPreferences', normalizeCheckinPreferences(checkinPreferences));
+    runtimeActions.setCheckinPreferences(normalizeCheckinPreferences(runtimeSelectors.checkinPreferences()));
 
     if (!ensureTodayDefaults) return;
 
     const today = getTodayString();
-    if (!checkinData[today]) checkinData[today] = createEmptyDayRecord();
-    if (!phoneResistData.records[today]) phoneResistData.records[today] = { count: 0, times: [] };
-    if (!taskData[today]) taskData[today] = [];
-    if (!quickNotesData[today]) quickNotesData[today] = [];
+    if (!runtimeSelectors.checkinData()[today]) {
+        runtimeActions.updateCheckinDay(today, (day) => ensureDayRecord(day), createEmptyDayRecord);
+    }
+    if (!runtimeSelectors.phoneResistData().records[today]) {
+        runtimeActions.updatePhoneResistRecord(today, (record) => ({
+            count: Number.isFinite(Number(record?.count)) ? Number(record.count) : 0,
+            times: Array.isArray(record?.times) ? record.times : []
+        }));
+    }
+    if (!runtimeSelectors.taskData()[today]) {
+        runtimeActions.updateTaskEntries(today, (entries) => (Array.isArray(entries) ? entries : []));
+    }
+    if (!runtimeSelectors.quickNotesData()[today]) {
+        runtimeActions.updateQuickNoteEntries(today, (entries) => (Array.isArray(entries) ? entries : []));
+    }
 }
 
 function saveData(preventAutoSync = false, options = {}) {

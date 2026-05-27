@@ -1,6 +1,9 @@
 param(
     [string]$BashPath = '',
     [string]$BrowserEnv = '',
+    [string]$Browser = '',
+    [string]$ChromePath = '',
+    [string]$ChromedriverPath = '',
     [string]$TargetUrl = '',
     [string]$ArtifactDir = '',
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -93,11 +96,23 @@ $resolvedBash = Resolve-GitBash -RequestedPath $BashPath
 $resolvedBrowserEnv = Resolve-BrowserEnvPath -RequestedPath $BrowserEnv
 
 $previousBrowserEnv = $env:HM_CLSS_BROWSER_ENV
+$previousBrowser = $env:HM_CLSS_BROWSER
+$previousChromePath = $env:HM_CLSS_CHROME_PATH
+$previousChromedriverPath = $env:HM_CLSS_CHROMEDRIVER_PATH
 $previousTargetUrl = $env:HM_CLSS_SMOKE_URL
 $previousArtifactDir = $env:HM_CLSS_BROWSER_ARTIFACT_DIR
 
 try {
     $env:HM_CLSS_BROWSER_ENV = Convert-ToGitBashPath $resolvedBrowserEnv
+    if ($Browser) {
+        $env:HM_CLSS_BROWSER = $Browser
+    }
+    if ($ChromePath) {
+        $env:HM_CLSS_CHROME_PATH = $ChromePath
+    }
+    if ($ChromedriverPath) {
+        $env:HM_CLSS_CHROMEDRIVER_PATH = $ChromedriverPath
+    }
     if ($TargetUrl) {
         $env:HM_CLSS_SMOKE_URL = $TargetUrl
     }
@@ -116,6 +131,9 @@ try {
     exit $LASTEXITCODE
 } finally {
     $env:HM_CLSS_BROWSER_ENV = $previousBrowserEnv
+    $env:HM_CLSS_BROWSER = $previousBrowser
+    $env:HM_CLSS_CHROME_PATH = $previousChromePath
+    $env:HM_CLSS_CHROMEDRIVER_PATH = $previousChromedriverPath
     $env:HM_CLSS_SMOKE_URL = $previousTargetUrl
     $env:HM_CLSS_BROWSER_ARTIFACT_DIR = $previousArtifactDir
 }

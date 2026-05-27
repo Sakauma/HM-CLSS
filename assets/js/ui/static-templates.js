@@ -171,9 +171,16 @@ function renderCheckinTableRowTemplate(target, options = {}) {
 }
 
 function createMetricCardTemplateHtml(options = {}) {
+    const valueClass = joinTemplateClasses('metric-value', options.valueClass);
+    const hintClass = joinTemplateClasses(options.hintClass || 'metric-hint');
+    const hintHtml = options.hint || options.hintId
+        ? `<p${templateAttr('id', options.hintId)} class="${escapeHtml(hintClass)}">${escapeHtml(options.hint || '')}</p>`
+        : '';
+
     return `
-        <span class="metric-label">${escapeHtml(options.label || '')}</span>
-        <span${templateAttr('id', options.valueId)} class="metric-value">${escapeHtml(options.value || '')}</span>
+        <span${templateAttr('id', options.labelId)} class="metric-label">${escapeHtml(options.label || '')}</span>
+        <span${templateAttr('id', options.valueId)} class="${escapeHtml(valueClass)}">${escapeHtml(options.value || '')}</span>
+        ${hintHtml}
     `;
 }
 
