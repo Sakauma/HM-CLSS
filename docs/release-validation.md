@@ -6,6 +6,7 @@
 
 本次验证覆盖当前工作树中的商业级工程化补强：
 
+- `v1.0.0` 商业级工程基线发布记录。
 - 运行时状态写入契约。
 - 静态模板契约扩展。
 - 发布、安全、贡献、排障、浏览器支持和数据兼容治理文档。
@@ -62,6 +63,7 @@
 
 ## Residual Release Notes
 
+- `CHANGELOG.md` 已包含 `v1.0.0 - 2026-05-27` 正式发布记录；发布 tag 应指向合并后的同一商业级基线。
 - Firefox 是本地和 CI 的基础浏览器 gate。
 - Chromium 已由 CI gate 验证：GitHub Actions 通过 `browser-actions/setup-chrome@v2` 安装 Chrome for Testing 和 ChromeDriver 后运行同一套 smoke 场景。本机当前没有 Chrome/ChromeDriver，因此本轮本地只验证 Firefox 路径。
 - 本次没有修改存储 schema 版本。

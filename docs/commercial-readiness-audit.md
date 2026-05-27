@@ -33,6 +33,7 @@
 - 完成首轮 vendor 联网复核：升级 Chart.js 4.5.1 和 DOMPurify 3.4.7，记录 Tailwind browser build、Lucide、marked 的跨主版本暂缓原因，并刷新 checksum。
 - 收紧双浏览器视觉验证：Chromium 通过 Chrome DevTools viewport override 固定到 Firefox 基线视口，并为 settings 页保留浏览器专属视觉快照，避免扩大全局容差。
 - 修复 CI 失败产物留痕：浏览器 smoke artifact 目录统一解析到仓库根，GitHub Actions 允许上传 `.artifacts` 隐藏目录，失败时可下载截图、HTML、console 和当前布局快照。
+- 准备 `v1.0.0` 正式发布记录：`CHANGELOG.md` 已从纯 `Unreleased` 模板扩展为带日期的商业级基线 release note。
 
 ## 已验证证据
 
@@ -48,13 +49,13 @@
 
 ## 仍需推进的商业级缺口
 
-- 真实发版证据：当前已有 release checklist 和 changelog 模板，但还没有一次带版本号的正式 release 记录。
-- 本地 Chromium 证据：CI 已验证 Chromium 自动化；本地可选入口仍为 `HM_CLSS_BROWSER=chromium`。本机缺少 Chrome/ChromeDriver，尚未产生本地 Chromium 运行证据。
-- 产品探索验收：`docs/release-validation.md` 已记录自动化覆盖映射，但大面积视觉或交互改版前仍需要追加人工探索式验收。
+- 发布落地：`v1.0.0` release note 已准备；正式 tag 需要在 PR 合并到 `main` 后指向合并后的商业级基线。
+- 本地 Chromium 证据：CI 已验证 Chromium 自动化；本地可选入口仍为 `HM_CLSS_BROWSER=chromium`。本机缺少 Chrome/ChromeDriver，因此本地 Chromium 不是本轮 release blocker。
+- 产品探索验收：本轮没有大面积产品交互改版；`docs/release-validation.md` 已记录自动化覆盖映射。未来大面积视觉或交互改版前仍需追加人工探索式验收。
 - 长期依赖安全监控：已完成本轮联网复核；后续仍需按 `docs/vendor-review.md` 在 release、季度或安全公告触发时复核。
 
 ## 下一批优先级
 
-1. 在第一次正式版本发布时，把 `CHANGELOG.md` 从 `Unreleased` 转成带日期的版本段。
+1. 合并 PR 后创建 `v1.0.0` tag。
 2. 为 Tailwind browser build、Lucide 和 marked 的跨主版本升级开独立兼容性验证任务。
 3. 大面积视觉或交互改版前，补一次人工探索验收记录，并把结论追加到 `docs/release-validation.md`。
