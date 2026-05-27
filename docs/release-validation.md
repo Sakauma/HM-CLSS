@@ -24,8 +24,10 @@
 - Runtime state contract check passed.
 - Release governance check passed.
 - Vendor manifest check passed.
-- Node test runner: 83 tests passed.
+- Node test runner: 84 tests passed.
 - Vendor checksum, script order, required files, required docs, and required IDs passed.
+
+远程证据：GitHub Actions `ci` run #31（2026-05-27）中 `smoke-check` job 通过。
 
 ### `bash scripts/browser-smoke.sh`
 
@@ -46,6 +48,8 @@
 - Visual layout baselines.
 - Tavern analysis flow.
 
+远程证据：GitHub Actions `ci` run #31（2026-05-27）中 `browser-smoke` job 通过，包含 Firefox smoke、Chrome for Testing 安装，以及 `HM_CLSS_BROWSER=chromium` 的 Chromium smoke。Chromium 使用浏览器专属视觉基线覆盖 settings 页的字体/表单渲染差异，未放宽全局视觉容差。
+
 ## Functional Self-Check Mapping
 
 `docs/functional-self-check.md` 中的主要高风险区域已经由 browser smoke 覆盖到自动化证据：
@@ -59,6 +63,6 @@
 ## Residual Release Notes
 
 - Firefox 是本地和 CI 的基础浏览器 gate。
-- Chromium 已接入 CI gate：GitHub Actions 通过 `browser-actions/setup-chrome@v2` 安装 Chrome for Testing 和 ChromeDriver 后运行同一套 smoke 场景。本机当前没有 Chrome/ChromeDriver，因此本轮本地只验证 Firefox 路径。
+- Chromium 已由 CI gate 验证：GitHub Actions 通过 `browser-actions/setup-chrome@v2` 安装 Chrome for Testing 和 ChromeDriver 后运行同一套 smoke 场景。本机当前没有 Chrome/ChromeDriver，因此本轮本地只验证 Firefox 路径。
 - 本次没有修改存储 schema 版本。
 - 本次没有修改 vendor 文件。

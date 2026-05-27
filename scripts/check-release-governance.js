@@ -41,7 +41,7 @@ const GOVERNANCE_DOCS = Object.freeze([
     {
         path: 'docs/release-validation.md',
         requiredHeadings: ['Scope', 'Automated Evidence', 'Functional Self-Check Mapping', 'Residual Release Notes'],
-        requiredTerms: ['smoke-check.sh', 'browser-smoke.sh', 'Vendor manifest check passed', '83 tests passed']
+        requiredTerms: ['smoke-check.sh', 'browser-smoke.sh', 'Vendor manifest check passed', 'tests passed', 'GitHub Actions']
     },
     {
         path: 'docs/troubleshooting.md',

@@ -30,25 +30,30 @@
 - 新增验收留痕：`docs/release-validation.md` 记录最近一轮 smoke、浏览器 smoke 和功能自测映射。
 - 新增 vendor 清单检查：`scripts/check-vendor-manifest.js` 验证第三方脚本的 README、source URL、版本文件名和 checksum 清单一致。
 - 新增 vendor 复核节奏：`docs/vendor-review.md` 明确发布前、季度和安全公告触发的联网复核流程。
+- 收紧双浏览器视觉验证：Chromium 通过 Chrome DevTools viewport override 固定到 Firefox 基线视口，并为 settings 页保留浏览器专属视觉快照，避免扩大全局容差。
+- 修复 CI 失败产物留痕：浏览器 smoke artifact 目录统一解析到仓库根，GitHub Actions 允许上传 `.artifacts` 隐藏目录，失败时可下载截图、HTML、console 和当前布局快照。
 
 ## 已验证证据
 
 - `bash scripts/smoke-check.sh`
   - 结果：通过。
-  - 覆盖：83 个 Node 单测、模块依赖、静态模板契约、运行时状态契约、发布治理契约、vendor 清单契约、vendor checksum、脚本顺序、资源和文档存在性。
+  - 覆盖：84 个 Node 单测、模块依赖、静态模板契约、运行时状态契约、发布治理契约、vendor 清单契约、vendor checksum、脚本顺序、资源和文档存在性。
 - `bash scripts/browser-smoke.sh`
   - 结果：通过。
   - 覆盖：真实 Firefox + Selenium 的关键用户路径、可访问性回归和视觉布局基线。
+- GitHub Actions `ci` run #31（2026-05-27）
+  - 结果：通过。
+  - 覆盖：远程 `smoke-check`、Firefox browser smoke、Chrome for Testing 安装、Chromium browser smoke。
 
 ## 仍需推进的商业级缺口
 
 - 真实发版证据：当前已有 release checklist 和 changelog 模板，但还没有一次带版本号的正式 release 记录。
-- Chromium 自动化：当前已接入 GitHub Actions，通过 `browser-actions/setup-chrome@v2` 跑同一套 Selenium smoke；本地可选入口仍为 `HM_CLSS_BROWSER=chromium`。本机缺少 Chrome/ChromeDriver，尚未产生本地 Chromium 运行证据。
+- 本地 Chromium 证据：CI 已验证 Chromium 自动化；本地可选入口仍为 `HM_CLSS_BROWSER=chromium`。本机缺少 Chrome/ChromeDriver，尚未产生本地 Chromium 运行证据。
 - 产品探索验收：`docs/release-validation.md` 已记录自动化覆盖映射，但大面积视觉或交互改版前仍需要追加人工探索式验收。
 - 长期依赖安全监控：vendor 清单、checksum 和复核节奏已覆盖本地治理；联网复核仍需在 release 流程中执行并记录。
 
 ## 下一批优先级
 
-1. 等待 GitHub Actions 在 PR / main 上实际跑出 Firefox + Chromium 双浏览器 CI 证据。
-2. 在第一次正式版本发布时，把 `CHANGELOG.md` 从 `Unreleased` 转成带日期的版本段。
-3. 第一次正式版本发布时，按 `docs/vendor-review.md` 记录一次完整 vendor 联网复核。
+1. 在第一次正式版本发布时，把 `CHANGELOG.md` 从 `Unreleased` 转成带日期的版本段。
+2. 第一次正式版本发布时，按 `docs/vendor-review.md` 记录一次完整 vendor 联网复核。
+3. 大面积视觉或交互改版前，补一次人工探索验收记录，并把结论追加到 `docs/release-validation.md`。
