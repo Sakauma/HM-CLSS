@@ -179,6 +179,68 @@ test('runtime action writes persist through saveData and refresh dependent views
     assert.equal(autoSyncTriggers, 1);
 });
 
+test('workspace runtime normalization writes through actions and notifies subscribers', () => {
+    const MockDate = class extends Date {
+        constructor(...args) {
+            super(...(args.length ? args : ['2026-04-20T09:00:00']));
+        }
+        static now() {
+            return new Date('2026-04-20T09:00:00').getTime();
+        }
+    };
+    const context = createBaseContext({
+        Date: MockDate,
+        localStorage: createStorageMock(),
+        showToast() {}
+    });
+
+    loadScript(context, 'assets/js/runtime/state.js');
+    loadScript(context, 'assets/js/runtime/store.js');
+    loadScript(context, 'assets/js/runtime/date-utils.js');
+    loadScript(context, 'assets/js/features/checkin/rules.js');
+    loadScript(context, 'assets/js/runtime/storage-shapes.js');
+    loadScript(context, 'assets/js/runtime/storage.js');
+
+    context.runtimeActions.setCheckinData({
+        '2026-04-19': {
+            morning: { checkIn: '08:30', status: { checkIn: true } }
+        }
+    });
+    context.runtimeActions.setPhoneResistData({ totalCount: '3', records: {} });
+    context.runtimeActions.setTaskData({
+        '2026-04-19': [{ name: 123, duration: '40' }]
+    });
+    context.runtimeActions.setQuickNotesData(null);
+    context.runtimeActions.setLeaveData([{ date: '2026-04-19' }]);
+
+    const changedKeys = [];
+    ['checkinData', 'phoneResistData', 'taskData', 'quickNotesData', 'leaveData'].forEach((key) => {
+        context.subscribeRuntimeValue(key, (value, previousValue, changedKey) => {
+            changedKeys.push(changedKey);
+        });
+    });
+
+    context.normalizeWorkspaceRuntimeState({
+        ensureTodayDefaults: true,
+        normalizeAmbient: true
+    });
+
+    assert.equal(context.runtimeSelectors.checkinData()['2026-04-19'].morning.status.checkIn, 'success');
+    assert.ok(context.runtimeSelectors.checkinData()['2026-04-20']);
+    assert.equal(context.runtimeSelectors.phoneResistData().totalCount, 3);
+    assert.equal(context.runtimeSelectors.phoneResistData().records['2026-04-20'].count, 0);
+    assert.equal(context.runtimeSelectors.phoneResistData().records['2026-04-20'].times.length, 0);
+    assert.equal(context.runtimeSelectors.taskData()['2026-04-19'][0].duration, 40);
+    assert.equal(context.runtimeSelectors.taskData()['2026-04-20'].length, 0);
+    assert.equal(context.runtimeSelectors.quickNotesData()['2026-04-20'].length, 0);
+    assert.equal(context.runtimeSelectors.leaveData()[0].type, 'full');
+    assert.ok(changedKeys.includes('checkinData'));
+    assert.ok(changedKeys.includes('phoneResistData'));
+    assert.ok(changedKeys.includes('taskData'));
+    assert.ok(changedKeys.includes('quickNotesData'));
+    assert.ok(changedKeys.includes('leaveData'));
+});
+
 test('runtime store rejects unknown state keys', () => {
     const context = createBaseContext();
     loadScript(context, 'assets/js/runtime/store.js');

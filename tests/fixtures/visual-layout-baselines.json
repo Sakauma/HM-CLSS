@@ -200,5 +200,51 @@
       "height": 1114,
       "width": 1600
     }
+  },
+  "browsers": {
+    "chromium": {
+      "settings": {
+        "ambient": "recovery",
+        "elements": {
+          "export-month-field": {
+            "childCount": 2,
+            "height": 81,
+            "visible": true,
+            "width": 465,
+            "x": 443,
+            "y": 1826
+          },
+          "export-trigger-btn": {
+            "childCount": 2,
+            "height": 52,
+            "visible": true,
+            "width": 465,
+            "x": 443,
+            "y": 2028
+          },
+          "github-token-input": {
+            "childCount": 0,
+            "height": 52,
+            "visible": true,
+            "width": 1102,
+            "x": 422,
+            "y": 320
+          },
+          "settings-section": {
+            "childCount": 5,
+            "height": 2162,
+            "visible": true,
+            "width": 1152,
+            "x": 397,
+            "y": 0
+          }
+        },
+        "scrollTop": 524,
+        "viewport": {
+          "height": 1114,
+          "width": 1600
+        }
+      }
+    }
   }
 }

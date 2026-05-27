@@ -56,7 +56,7 @@ function bindTavernResultEvents(disposables, inputState) {
 
     disposables.listen(document.getElementById('btn-save-drink'), 'click', () => {
         if (!currentDrinkInfo || currentDrinkInfo.saved) return;
-        prependRuntimeItem('tavernData', { ...currentDrinkInfo, saved: true });
+        runtimeActions.prepend('tavernData', { ...currentDrinkInfo, saved: true });
         runtimeActions.setCurrentDrinkInfo({ ...currentDrinkInfo, saved: true });
         saveData();
         showToast('特调已封存入酒柜', 'success');

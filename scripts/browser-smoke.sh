@@ -5,11 +5,25 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEFAULT_URL="http://127.0.0.1:8000"
 TARGET_URL="${HM_CLSS_SMOKE_URL:-$DEFAULT_URL}"
 CONDA_ENV_PATH="${HM_CLSS_BROWSER_ENV:-$ROOT_DIR/.conda/browser-test}"
-ARTIFACT_DIR="${HM_CLSS_BROWSER_ARTIFACT_DIR:-$ROOT_DIR/.artifacts/browser-smoke}"
-SERVER_LOG="${HM_CLSS_BROWSER_SERVER_LOG:-$ARTIFACT_DIR/server.log}"
+BROWSER_NAME="${HM_CLSS_BROWSER:-firefox}"
 SERVER_PID=""
 ENV_PYTHON=""
 CONDA_BIN=""
+
+resolve_repo_path() {
+  local input="$1"
+  case "$input" in
+    /* | [A-Za-z]:/* | [A-Za-z]:\\*)
+      printf '%s\n' "$input"
+      ;;
+    *)
+      printf '%s/%s\n' "$ROOT_DIR" "$input"
+      ;;
+  esac
+}
+
+ARTIFACT_DIR="$(resolve_repo_path "${HM_CLSS_BROWSER_ARTIFACT_DIR:-$ROOT_DIR/.artifacts/browser-smoke}")"
+SERVER_LOG="$(resolve_repo_path "${HM_CLSS_BROWSER_SERVER_LOG:-$ARTIFACT_DIR/server.log}")"
 
 log_info() {
   printf '[browser-smoke] %s\n' "$*"
@@ -86,6 +100,7 @@ diagnose_browser_env() {
   run_browser_python - <<'PY'
 import shutil
 import sys
+import os
 from pathlib import Path
 
 try:
@@ -112,7 +127,13 @@ def resolve_tool(tool_name):
                 return str(candidate)
     return None
 
-for tool_name in ("firefox", "geckodriver"):
+browser = os.environ.get("HM_CLSS_BROWSER", "firefox").lower()
+print(f"[browser-smoke] Browser: {browser}")
+tool_sets = {
+    "firefox": ("firefox", "geckodriver"),
+    "chromium": ("chromium", "chromium-browser", "google-chrome", "chrome", "chromedriver"),
+}
+for tool_name in tool_sets.get(browser, (browser,)):
     print(f"[browser-smoke] {tool_name}: {resolve_tool(tool_name) or 'not found'}")
 PY
 }
@@ -134,6 +155,7 @@ PY
 
 mkdir -p "$ARTIFACT_DIR"
 log_info "Target URL: $TARGET_URL"
+log_info "Browser: $BROWSER_NAME"
 log_info "Conda env: $CONDA_ENV_PATH"
 log_info "Artifact dir: $ARTIFACT_DIR"
 log_info "Static server log: $SERVER_LOG"
@@ -173,6 +195,7 @@ if [[ -n "$CONDA_BIN" ]]; then
   exec "$CONDA_BIN" run --no-capture-output -p "$CONDA_ENV_PATH" \
     python "$ROOT_DIR/scripts/browser-smoke.py" \
     --url "$TARGET_URL" \
+    --browser "$BROWSER_NAME" \
     --artifact-dir "$ARTIFACT_DIR" \
     --visual-baseline "$ROOT_DIR/tests/fixtures/visual-layout-baselines.json" \
     "$@"
@@ -181,6 +204,7 @@ fi
 export PATH="$(python_env_path)"
 exec "$ENV_PYTHON" "$(python_path_arg "$ROOT_DIR/scripts/browser-smoke.py")" \
   --url "$TARGET_URL" \
+  --browser "$BROWSER_NAME" \
   --artifact-dir "$(python_path_arg "$ARTIFACT_DIR")" \
   --visual-baseline "$(python_path_arg "$ROOT_DIR/tests/fixtures/visual-layout-baselines.json")" \
   "$@"

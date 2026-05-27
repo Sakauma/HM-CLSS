@@ -31,13 +31,14 @@ from browser_smoke.scenarios.workspace import (
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run HM-CLSS browser smoke checks with Firefox + Selenium.")
+    parser = argparse.ArgumentParser(description="Run HM-CLSS browser smoke checks with Selenium.")
     parser.add_argument("--url", default="http://127.0.0.1:8000", help="Target URL to test.")
     parser.add_argument("--artifact-dir", default="", help="Directory used to store browser smoke artifacts.")
     parser.add_argument("--visual-baseline", default="tests/fixtures/visual-layout-baselines.json", help="Path to the visual layout baseline fixture.")
+    parser.add_argument("--browser", default="firefox", choices=["firefox", "chromium"], help="Browser driver to use for smoke checks.")
     args = parser.parse_args()
 
-    driver = build_driver()
+    driver = build_driver(args.browser)
     artifact_dir = ensure_artifact_dir(args.artifact_dir)
     try:
         try:
@@ -65,7 +66,7 @@ def main() -> int:
             ("leave-workflows", lambda: test_leave_workflows(driver)),
             ("retro-checkin-flow", lambda: test_retro_checkin_flow(driver)),
             ("accessibility-regressions", lambda: test_accessibility_regressions(driver)),
-            ("visual-layout-baselines", lambda: test_visual_layout_baselines(driver, args.visual_baseline, artifact_dir)),
+            ("visual-layout-baselines", lambda: test_visual_layout_baselines(driver, args.visual_baseline, artifact_dir, args.browser)),
             ("tavern-flow", lambda: test_tavern_flow(driver)),
         ]
 

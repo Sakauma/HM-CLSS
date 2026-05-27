@@ -76,3 +76,6 @@ assets/js/ui/shortcuts.js
 assets/js/runtime/app-init.js
 scripts/check-module-dependencies.js
 scripts/check-static-template-contracts.js
+scripts/check-runtime-state-contracts.js
+scripts/check-release-governance.js
+scripts/check-vendor-manifest.js

@@ -197,6 +197,13 @@ def compare_layout_snapshots(case, actual, expected) -> None:
         )
 
 
+def select_layout_baseline(baselines, browser_name: str, case_name: str):
+    browser_cases = baselines.get("browsers", {}).get(browser_name, {})
+    if case_name in browser_cases:
+        return browser_cases[case_name]
+    return baselines.get(case_name)
+
+
 def capture_visual_case(driver, case, artifact_dir: Path | None):
     click(driver, case["nav"])
     wait_visible(driver, case["section"])
@@ -226,7 +233,7 @@ def capture_visual_case(driver, case, artifact_dir: Path | None):
     return wait_layout_stable(driver, case["elements"])
 
 
-def test_visual_layout_baselines(driver, baseline_path: str, artifact_dir: Path | None) -> None:
+def test_visual_layout_baselines(driver, baseline_path: str, artifact_dir: Path | None, browser_name: str = "firefox") -> None:
     log("11. Checking visual layout baselines")
 
     baselines = json.loads(Path(baseline_path).read_text(encoding="utf-8"))
@@ -238,6 +245,7 @@ def test_visual_layout_baselines(driver, baseline_path: str, artifact_dir: Path 
     write_json_artifact(artifact_dir, "visual/layout-current.json", current_snapshots)
 
     for case in VISUAL_CASES:
-        compare_layout_snapshots(case, current_snapshots[case["name"]], baselines.get(case["name"]))
+        expected = select_layout_baseline(baselines, browser_name, case["name"])
+        compare_layout_snapshots(case, current_snapshots[case["name"]], expected)
 
     log("   visual layout baselines ok")

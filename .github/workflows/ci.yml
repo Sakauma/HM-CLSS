@@ -48,10 +48,28 @@ jobs:
         shell: bash -el {0}
         run: bash scripts/browser-smoke.sh
 
+      - name: Setup Chrome for Testing
+        id: setup-chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: stable
+          install-chromedriver: true
+          install-dependencies: true
+
+      - name: Run Chromium browser smoke
+        shell: bash -el {0}
+        env:
+          HM_CLSS_BROWSER: chromium
+          HM_CLSS_CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
+          HM_CLSS_CHROMEDRIVER_PATH: ${{ steps.setup-chrome.outputs.chromedriver-path }}
+          HM_CLSS_BROWSER_ARTIFACT_DIR: ${{ github.workspace }}/.artifacts/browser-smoke-chromium
+        run: bash scripts/browser-smoke.sh
+
       - name: Upload browser smoke artifacts
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: browser-smoke-artifacts
-          path: .artifacts/browser-smoke
+          path: ${{ github.workspace }}/.artifacts
+          include-hidden-files: true
           if-no-files-found: ignore

@@ -206,6 +206,9 @@ check_manifest_freshness
 check_js_syntax
 "$NODE_BIN" scripts/check-module-dependencies.js
 "$NODE_BIN" scripts/check-static-template-contracts.js
+"$NODE_BIN" scripts/check-runtime-state-contracts.js
+"$NODE_BIN" scripts/check-release-governance.js
+"$NODE_BIN" scripts/check-vendor-manifest.js
 "$NODE_BIN" --test tests/unit/*.test.js
 "$PYTHON_BIN" -m py_compile scripts/browser-smoke.py
 while IFS= read -r -d '' py_file; do
