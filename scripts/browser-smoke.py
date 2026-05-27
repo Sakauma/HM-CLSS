@@ -66,7 +66,7 @@ def main() -> int:
             ("leave-workflows", lambda: test_leave_workflows(driver)),
             ("retro-checkin-flow", lambda: test_retro_checkin_flow(driver)),
             ("accessibility-regressions", lambda: test_accessibility_regressions(driver)),
-            ("visual-layout-baselines", lambda: test_visual_layout_baselines(driver, args.visual_baseline, artifact_dir)),
+            ("visual-layout-baselines", lambda: test_visual_layout_baselines(driver, args.visual_baseline, artifact_dir, args.browser)),
             ("tavern-flow", lambda: test_tavern_flow(driver)),
         ]
 

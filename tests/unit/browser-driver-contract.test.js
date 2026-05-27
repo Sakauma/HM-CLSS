@@ -15,6 +15,7 @@ test('browser smoke CLI exposes Firefox default and Chromium option', () => {
     assert.match(source, /--browser/);
     assert.match(source, /choices=\["firefox", "chromium"\]/);
     assert.match(source, /build_driver\(args\.browser\)/);
+    assert.match(source, /test_visual_layout_baselines\(driver, args\.visual_baseline, artifact_dir, args\.browser\)/);
 });
 
 test('browser smoke shell wrapper forwards HM_CLSS_BROWSER to Selenium runner', () => {
@@ -38,6 +39,17 @@ test('browser driver supports Firefox and Chromium toolchains', () => {
     assert.match(source, /HM_CLSS_CHROME_PATH/);
     assert.match(source, /HM_CLSS_CHROMEDRIVER_PATH/);
     assert.match(source, /Unsupported browser for smoke checks/);
+});
+
+test('visual baselines allow browser-specific snapshots without widening global tolerance', () => {
+    const source = readSource('scripts/browser_smoke/scenarios/visual.py');
+    const baselines = JSON.parse(readSource('tests/fixtures/visual-layout-baselines.json'));
+
+    assert.match(source, /def select_layout_baseline/);
+    assert.match(source, /baselines\.get\("browsers", \{\}\)\.get\(browser_name, \{\}\)/);
+    assert.ok(baselines.browsers.chromium.settings, 'expected Chromium settings visual baseline');
+    assert.equal(baselines.browsers.chromium.settings.viewport.height, 1114);
+    assert.equal(baselines.browsers.chromium.settings.elements['settings-section'].height, 2162);
 });
 
 test('CI runs browser smoke in Firefox and Chromium', () => {
