@@ -65,4 +65,4 @@
 - Firefox 是本地和 CI 的基础浏览器 gate。
 - Chromium 已由 CI gate 验证：GitHub Actions 通过 `browser-actions/setup-chrome@v2` 安装 Chrome for Testing 和 ChromeDriver 后运行同一套 smoke 场景。本机当前没有 Chrome/ChromeDriver，因此本轮本地只验证 Firefox 路径。
 - 本次没有修改存储 schema 版本。
-- 本次没有修改 vendor 文件。
+- 本次修改 vendor 文件：Chart.js 4.4.8 -> 4.5.1，DOMPurify 3.0.6 -> 3.4.7，并刷新 vendor checksum。Tailwind browser build、Lucide 和 marked 已完成联网复核但因跨主版本风险暂缓升级。

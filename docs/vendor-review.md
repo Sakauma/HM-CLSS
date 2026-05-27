@@ -56,6 +56,26 @@ For each vendor review, update the release notes or PR description with:
 - Decision: keep pinned, upgrade now, or defer with reason.
 - Commands run, at minimum `bash scripts/smoke-check.sh`; add browser smoke when any file changes.
 
+### 2026-05-27 Review
+
+Source check: npm registry via `npm view <package> version dist-tags.latest license time.modified homepage repository.url --json`, plus the pinned CDN download URLs in `assets/vendor/README.md`.
+
+| Package | Pinned before | Latest reviewed | Decision |
+| --- | --- | --- | --- |
+| `@tailwindcss/browser` / Tailwind browser build | 3.4.17 | 4.3.0 | Defer. This is a major zero-build browser runtime change and needs a dedicated visual/theming pass. |
+| `lucide` | 0.514.0 | 1.16.0 | Defer. This crosses the 1.0 boundary and should be tested as a focused icon-rendering upgrade. |
+| `chart.js` | 4.4.8 | 4.5.1 | Upgrade now. Same major version; statistics smoke covers chart creation. |
+| `marked` | 12.0.2 | 18.0.4 | Defer. Multiple major versions; markdown rendering must stay paired with DOMPurify. |
+| `dompurify` | 3.0.6 | 3.4.7 | Upgrade now. Security-sensitive sanitizer, same major version. |
+
+Updated files:
+
+- `assets/vendor/chart.umd-4.5.1.min.js`
+- `assets/vendor/purify-3.4.7.min.js`
+- `scripts/smoke_manifest/vendor-checksums.txt`
+
+Follow-up: plan a separate major-upgrade review for Tailwind browser runtime, Lucide icons, and marked markdown output.
+
 ## Local Gates
 
 The following gates must pass after any vendor change:

@@ -618,9 +618,9 @@ const CONFIG = {
 
 1. `vendor/tailwindcss-3.4.17.js`
 2. `vendor/lucide-0.514.0.min.js`
-3. `vendor/chart.umd-4.4.8.min.js`
+3. `vendor/chart.umd-4.5.1.min.js`
 4. `vendor/marked-12.0.2.min.js`
-5. `vendor/purify-3.0.6.min.js`
+5. `vendor/purify-3.4.7.min.js`
 6. `runtime/tailwind-config.js`
 7. `runtime/logger.js`
 8. `runtime/module-registry.js`
