@@ -56,9 +56,14 @@ function bindTavernResultEvents(disposables, inputState) {
 
     disposables.listen(document.getElementById('btn-save-drink'), 'click', () => {
         if (!currentDrinkInfo || currentDrinkInfo.saved) return;
-        runtimeActions.prepend('tavernData', { ...currentDrinkInfo, saved: true });
-        runtimeActions.setCurrentDrinkInfo({ ...currentDrinkInfo, saved: true });
-        saveData();
+        const saveResult = commitRuntimeMutation(['tavernData', 'currentDrinkInfo'], () => {
+            runtimeActions.prepend('tavernData', { ...currentDrinkInfo, saved: true });
+            runtimeActions.setCurrentDrinkInfo({ ...currentDrinkInfo, saved: true });
+        }, {
+            storageKeys: ['tavernData']
+        });
+        if (!saveResult.ok) return;
+
         showToast('特调已封存入酒柜', 'success');
         renderResult(currentDrinkInfo, true);
     });

@@ -57,9 +57,15 @@ function updateCheckinPreferenceDraftPreview() {
 
 function saveCheckinPreferences() {
     const preferences = readDraftCheckinPreferences();
-    runtimeActions.setCheckinPreferences(preferences);
+    const saveResult = commitRuntimeMutation(['checkinPreferences'], () => {
+        runtimeActions.setCheckinPreferences(preferences);
+    }, {
+        preventAutoSync: true,
+        storageKeys: [CHECKIN_PREFS_STORAGE_KEY]
+    });
+    if (!saveResult.ok) return;
+
     renderCheckinPreferenceForm(preferences);
-    saveData(true);
     updateRetroCheckinPanel();
     showToast(`弹性打卡已更新：上班 +${preferences.lateGraceMins} 分钟，下班 -${preferences.earlyGraceMins} 分钟`, 'success');
 }
@@ -68,9 +74,15 @@ function resetCheckinPreferences() {
     const defaults = normalizeCheckinPreferences(
         typeof DEFAULT_CHECKIN_PREFERENCES === 'object' ? DEFAULT_CHECKIN_PREFERENCES : null
     );
-    runtimeActions.setCheckinPreferences(defaults);
+    const saveResult = commitRuntimeMutation(['checkinPreferences'], () => {
+        runtimeActions.setCheckinPreferences(defaults);
+    }, {
+        preventAutoSync: true,
+        storageKeys: [CHECKIN_PREFS_STORAGE_KEY]
+    });
+    if (!saveResult.ok) return;
+
     renderCheckinPreferenceForm(defaults);
-    saveData(true);
     updateRetroCheckinPanel();
     showToast('已恢复默认弹性窗口。', 'info');
 }
@@ -108,17 +120,18 @@ function checkIn(period) {
     const today = getTodayString();
     const time = getCurrentTimeString();
     const mins = timeStrToMins(time);
-    const dayData = ensureCheckinDay(today);
+    const dayData = getCheckinDaySnapshot(today);
     const inStatus = getCheckInStatusForTime(dayData, period, mins);
 
-    applyShiftRecord(today, period, {
-        checkIn: time,
-        inStatus,
-        entrySource: 'live'
+    const saveResult = commitRuntimeMutation(['checkinData'], () => {
+        applyShiftRecord(today, period, {
+            checkIn: time,
+            inStatus,
+            entrySource: 'live'
+        });
     });
-
-    saveData();
     refreshCheckinViews({ includeRetro: false });
+    if (!saveResult.ok) return;
     checkAchievements();
 }
 
@@ -128,20 +141,21 @@ function checkIn(period) {
  */
 function checkOut(period) {
     const today = getTodayString();
-    const dayData = ensureCheckinDay(today);
+    const dayData = getCheckinDaySnapshot(today);
     const time = getCurrentTimeString();
     const currentMins = timeStrToMins(time);
     const inMins = timeStrToMins(dayData[period].checkIn);
     const outStatus = getCheckOutStatusForTimes(dayData, period, inMins, currentMins);
 
-    applyShiftRecord(today, period, {
-        checkOut: time,
-        outStatus,
-        entrySource: 'live'
+    const saveResult = commitRuntimeMutation(['checkinData'], () => {
+        applyShiftRecord(today, period, {
+            checkOut: time,
+            outStatus,
+            entrySource: 'live'
+        });
     });
-
-    saveData();
     refreshCheckinViews({ includeRetro: false });
+    if (!saveResult.ok) return;
     checkAchievements();
 
     if (period === 'evening') {
@@ -171,7 +185,7 @@ async function submitRetroCheckin() {
         return;
     }
 
-    const dayData = ensureCheckinDay(date);
+    const dayData = getCheckinDaySnapshot(date);
     if (dayData.leave) {
         showToast('这一天当前按全天离舰处理，回离舰流程调整后再补打卡。', 'warning');
         refreshCheckinViews({ includeStatus: false });
@@ -198,16 +212,18 @@ async function submitRetroCheckin() {
         if (!confirmed) return;
     }
 
-    applyShiftRecord(date, period, {
-        checkIn: checkInTime,
-        checkOut: checkOutTime,
-        inStatus: evaluation.inStatus,
-        outStatus: evaluation.outStatus,
-        entrySource: 'retro',
-        correctionReason: reason
+    const saveResult = commitRuntimeMutation(['checkinData'], () => {
+        applyShiftRecord(date, period, {
+            checkIn: checkInTime,
+            checkOut: checkOutTime,
+            inStatus: evaluation.inStatus,
+            outStatus: evaluation.outStatus,
+            entrySource: 'retro',
+            correctionReason: reason
+        });
     });
+    if (!saveResult.ok) return;
 
-    saveData();
     checkAchievements();
     refreshCheckinViews();
 

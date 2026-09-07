@@ -159,13 +159,11 @@ def click(driver: WebDriver, element_id: str) -> None:
         )
 
 
-def install_debug_hooks(driver: WebDriver) -> None:
-    driver.execute_script(
-        """
-        if (window.__hmClssSmokeHooksInstalled) return;
-        window.__hmClssSmokeHooksInstalled = true;
-        window.__hmClssConsoleEvents = [];
-        window.__hmClssPageErrors = [];
+PRELOAD_DEBUG_HOOKS = """() => {
+        if (globalThis.__hmClssSmokeHooksInstalled) return;
+        globalThis.__hmClssSmokeHooksInstalled = true;
+        globalThis.__hmClssConsoleEvents = [];
+        globalThis.__hmClssPageErrors = [];
 
         const safeStringify = (value) => {
           try {
@@ -179,7 +177,7 @@ def install_debug_hooks(driver: WebDriver) -> None:
         ['log', 'info', 'warn', 'error'].forEach((level) => {
           const original = console[level].bind(console);
           console[level] = (...args) => {
-            window.__hmClssConsoleEvents.push({
+            globalThis.__hmClssConsoleEvents.push({
               level,
               message: args.map(safeStringify).join(' '),
               at: new Date().toISOString()
@@ -188,8 +186,8 @@ def install_debug_hooks(driver: WebDriver) -> None:
           };
         });
 
-        window.addEventListener('error', (event) => {
-          window.__hmClssPageErrors.push({
+        globalThis.addEventListener('error', (event) => {
+          globalThis.__hmClssPageErrors.push({
             type: 'error',
             message: event.message || '',
             source: event.filename || '',
@@ -199,12 +197,24 @@ def install_debug_hooks(driver: WebDriver) -> None:
           });
         });
 
-        window.addEventListener('unhandledrejection', (event) => {
-          window.__hmClssPageErrors.push({
+        globalThis.addEventListener('unhandledrejection', (event) => {
+          globalThis.__hmClssPageErrors.push({
             type: 'unhandledrejection',
             message: safeStringify(event.reason),
             at: new Date().toISOString()
           });
         });
-        """
-    )
+    }"""
+
+
+def install_debug_hooks(driver: WebDriver) -> None:
+    """Install page diagnostics before navigation and keep them across refreshes."""
+    if getattr(driver, "_hm_clss_debug_preload_script", None) is not None:
+        return
+    try:
+        driver._hm_clss_debug_preload_script = driver.script.pin(PRELOAD_DEBUG_HOOKS)
+    except Exception as error:
+        raise RuntimeError(
+            "Selenium BiDi preload scripts are required for page-error capture; "
+            "ensure the driver was created with enable_bidi=True."
+        ) from error

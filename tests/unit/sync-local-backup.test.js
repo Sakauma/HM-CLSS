@@ -11,6 +11,33 @@ const {
     createSyncApplyContext
 } = require('./sync-helpers');
 
+test('local cloud-apply backup read returns null when localStorage access is blocked', () => {
+    const context = createBaseContext({
+        console: { ...console, error() {} },
+        localStorage: {
+            getItem() {
+                const error = new Error('blocked');
+                error.name = 'SecurityError';
+                throw error;
+            },
+            setItem() {},
+            removeItem() {}
+        },
+        sessionStorage: createStorageMock(),
+        document: {
+            getElementById() {
+                return null;
+            }
+        }
+    });
+
+    loadScript(context, 'assets/js/features/sync/state.js');
+    loadScript(context, 'assets/js/features/sync/backup.js');
+
+    assert.doesNotThrow(() => context.readLocalBackupBeforeCloudApply());
+    assert.equal(context.readLocalBackupBeforeCloudApply(), null);
+});
+
 test('local cloud-apply backup can be restored and cleared', async () => {
     const backup = {
         datasets: {

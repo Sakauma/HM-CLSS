@@ -32,6 +32,30 @@ VISUAL_CASES = [
         "elements": ["tasks-section", "task-name", "quick-notes-container", "schedule-content"]
     },
     {
+        "name": "phone",
+        "nav": "nav-phone",
+        "section": "phone-section",
+        "title": "认知干扰拦截",
+        "anchor": "phone-section",
+        "elements": ["phone-section", "phone-resist-count", "today-phone-resist-count", "achievements-list"]
+    },
+    {
+        "name": "archive",
+        "nav": "nav-archive",
+        "section": "archive-section",
+        "title": "全舰日志归档",
+        "anchor": "archive-section",
+        "elements": ["archive-section", "archive-search-input", "archive-list-container"]
+    },
+    {
+        "name": "stats",
+        "nav": "nav-stats",
+        "section": "stats-section",
+        "title": "维生统计分析",
+        "anchor": "stats-section",
+        "elements": ["stats-section", "stats-period-controls", "checkin-rate-chart", "total-checkin-days"]
+    },
+    {
         "name": "leave",
         "nav": "nav-leave",
         "section": "leave-section",

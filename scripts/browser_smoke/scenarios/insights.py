@@ -74,6 +74,90 @@ def test_settings_and_exports(driver) -> None:
     wait_visible(driver, "settings-section")
     wait_text_contains(driver, "panel-meta-title", "深空通讯设置")
 
+    # Exercise the application's real stored Markdown path. The published
+    # DOMPurify advisories target optional hooks/configuration or DOM-return
+    # modes that HM-CLSS does not use; this protects its reachable default
+    # string-sanitization path against representative executable payloads.
+    driver.execute_script(
+        """
+        window.__hmClssSanitizerSnapshot = {
+          storageValue: localStorage.getItem('quickNotesData'),
+          runtimeValue: JSON.parse(JSON.stringify(runtimeSelectors.quickNotesData()))
+        };
+        """
+    )
+    try:
+        sanitizer_version = driver.execute_script(
+            """
+            window.__hmClssSanitizerExecuted = 0;
+            const today = getTodayString();
+            const noteText = [
+              '# Browser smoke safe heading',
+              '',
+              'Safe **strong text** stays rendered.',
+              '<script>window.__hmClssSanitizerExecuted += 1</script>',
+              '<img src="x-browser-smoke" onerror="window.__hmClssSanitizerExecuted += 1">',
+              '<svg><g onload="window.__hmClssSanitizerExecuted += 1"></g></svg>',
+              '[unsafe link](javascript:window.__hmClssSanitizerExecuted%20%2B%3D%201)'
+            ].join('\\n');
+            const storedNotes = JSON.parse(localStorage.getItem('quickNotesData') || '{}');
+            storedNotes[today] = [{ time: '12:34', text: noteText, tag: 'idea' }];
+            localStorage.setItem('quickNotesData', JSON.stringify(storedNotes));
+            runtimeActions.setQuickNotesData(JSON.parse(localStorage.getItem('quickNotesData')));
+            updateQuickNotesList();
+            return DOMPurify.version;
+            """
+        )
+        require(sanitizer_version == "3.4.15", f"Unexpected DOMPurify version: {sanitizer_version}")
+        wait_for(
+            driver,
+            lambda d: d.execute_script(
+                "return document.querySelector('#quick-notes-container h1')?.textContent.trim();"
+            ) == "Browser smoke safe heading",
+            "Stored Markdown heading did not render",
+        )
+        sanitizer_result = driver.execute_async_script(
+            """
+            const done = arguments[arguments.length - 1];
+            setTimeout(() => {
+              const container = document.getElementById('quick-notes-container');
+              const inlineHandlers = Array.from(container.querySelectorAll('*')).flatMap((element) =>
+                Array.from(element.attributes).filter((attribute) => attribute.name.toLowerCase().startsWith('on'))
+              );
+              const javascriptLinks = Array.from(container.querySelectorAll('a[href]')).filter((link) =>
+                /^\\s*javascript:/i.test(link.getAttribute('href') || '')
+              );
+              done({
+                scriptCount: container.querySelectorAll('script').length,
+                inlineHandlerCount: inlineHandlers.length,
+                javascriptLinkCount: javascriptLinks.length,
+                executionMarker: window.__hmClssSanitizerExecuted,
+                strongText: container.querySelector('strong')?.textContent.trim() || ''
+              });
+            }, 100);
+            """
+        )
+        require(sanitizer_result["scriptCount"] == 0, "Stored Markdown retained a script node")
+        require(sanitizer_result["inlineHandlerCount"] == 0, "Stored Markdown retained an inline event handler")
+        require(sanitizer_result["javascriptLinkCount"] == 0, "Stored Markdown retained a javascript: link")
+        require(sanitizer_result["executionMarker"] == 0, "Stored Markdown executed an injected payload")
+        require(sanitizer_result["strongText"] == "strong text", "Safe Markdown strong text did not render")
+    finally:
+        driver.execute_script(
+            """
+            const snapshot = window.__hmClssSanitizerSnapshot;
+            if (snapshot.storageValue === null) {
+              localStorage.removeItem('quickNotesData');
+            } else {
+              localStorage.setItem('quickNotesData', snapshot.storageValue);
+            }
+            runtimeActions.setQuickNotesData(snapshot.runtimeValue);
+            updateQuickNotesList();
+            delete window.__hmClssSanitizerSnapshot;
+            delete window.__hmClssSanitizerExecuted;
+            """
+        )
+
     token = "ghp_browser_smoke_token"
     gist_id = "browser-smoke-gist-id"
     set_field_value(driver, "github-token-input", token)

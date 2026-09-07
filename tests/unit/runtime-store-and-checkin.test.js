@@ -584,3 +584,74 @@ test('leave current-time shortcut falls back to the final valid slot near midnig
         tone: 'info'
     });
 });
+
+test('ending a task rolls back taskData and currentTask together before a safe retry', () => {
+    const activeTask = {
+        id: 'task_active',
+        name: 'Active task',
+        tag: 'code',
+        startTime: '09:00',
+        startDate: '2026-04-20',
+        startTimestamp: Date.now() - 60000
+    };
+    const store = new Map([
+        ['taskData', JSON.stringify({ '2026-04-20': [] })],
+        ['currentTask', JSON.stringify(activeTask)]
+    ]);
+    let currentTaskRemoveFailures = 1;
+    const context = createBaseContext({
+        console: { ...console, error() {} },
+        localStorage: {
+            getItem(key) {
+                return store.has(key) ? store.get(key) : null;
+            },
+            setItem(key, value) {
+                store.set(key, String(value));
+            },
+            removeItem(key) {
+                if (key === 'currentTask' && currentTaskRemoveFailures > 0) {
+                    currentTaskRemoveFailures -= 1;
+                    throw new Error('remove blocked');
+                }
+                store.delete(key);
+            }
+        },
+        CURRENT_TASK_STORAGE_KEY: 'currentTask',
+        AMBIENT_PREFS_STORAGE_KEY: 'ambientPrefs',
+        CHECKIN_PREFS_STORAGE_KEY: 'checkinPrefs',
+        normalizeAmbientPreferences: (value) => value || {},
+        normalizeCheckinPreferences: (value) => value || {},
+        getTodayString: () => '2026-04-20',
+        getCurrentTimeString: () => '09:01',
+        showToast() {},
+        updateTodayTasksList() {},
+        updateSchedule() {},
+        updateTodayStatus() {},
+        checkAchievements() {},
+        registerAppModule() {},
+        renderCurrentTaskState() {},
+        document: {
+            getElementById() {
+                return { value: '' };
+            }
+        }
+    });
+
+    loadScript(context, 'assets/js/runtime/store.js');
+    loadScript(context, 'assets/js/runtime/storage.js');
+    loadScript(context, 'assets/js/features/tasks/index.js');
+    context.runtimeActions.setCurrentTask(activeTask);
+    context.runtimeActions.setTaskData({ '2026-04-20': [] });
+
+    assert.equal(context.endTask(), false);
+    assert.equal(context.currentTask.id, 'task_active');
+    assert.equal(context.taskData['2026-04-20'].length, 0);
+    assert.equal(JSON.parse(store.get('currentTask')).id, 'task_active');
+    assert.equal(JSON.parse(store.get('taskData'))['2026-04-20'].length, 0);
+
+    assert.equal(context.endTask(), true);
+    assert.equal(context.currentTask, null);
+    assert.equal(context.taskData['2026-04-20'].length, 1);
+    assert.equal(store.has('currentTask'), false);
+    assert.equal(JSON.parse(store.get('taskData'))['2026-04-20'].length, 1);
+});

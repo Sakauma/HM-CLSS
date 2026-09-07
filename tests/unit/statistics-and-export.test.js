@@ -148,6 +148,28 @@ test('statistics data prepares stable fixture aggregates', () => {
     });
 });
 
+test('checkout leave exemptions remain in the denominator and count as qualified', () => {
+    const context = createBaseContext({
+        formatLocalDate: (date) => date.toISOString().slice(0, 10),
+        getNormalizedCheckInStatus: (status) => status,
+        checkinData: {
+            '2026-04-20': createCheckinDay({
+                morning: {
+                    checkIn: '08:00',
+                    checkOut: '11:20',
+                    status: { checkIn: 'success', checkOut: 'excused' }
+                }
+            })
+        }
+    });
+
+    loadScript(context, 'assets/js/features/stats/aggregates.js');
+
+    const date = new Date('2026-04-20T12:00:00.000Z');
+    assert.equal(context.isQualifiedCheckoutStatus('excused'), true);
+    assert.equal(context.calculateCheckinRateForRange(date, date), 100);
+});
+
 test('export data keeps empty monthly fixtures stable', () => {
     const context = createBaseContext({
         getTodayString: () => '2026-04-20',

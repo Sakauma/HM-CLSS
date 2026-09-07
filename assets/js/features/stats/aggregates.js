@@ -9,7 +9,7 @@ function isQualifiedCheckinStatus(status) {
 }
 
 function isQualifiedCheckoutStatus(status) {
-    return status === true || status === 'success' || status === 'warning';
+    return status === true || status === 'success' || status === 'warning' || status === 'excused';
 }
 
 function calculateCheckinRateForRange(start, end) {

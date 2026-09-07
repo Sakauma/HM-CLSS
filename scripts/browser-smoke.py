@@ -9,6 +9,8 @@ from selenium.common.exceptions import TimeoutException
 from browser_smoke.artifacts import capture_failure_artifacts, ensure_artifact_dir
 from browser_smoke.driver import build_driver
 from browser_smoke.helpers import install_debug_hooks, log, wait_ready
+from browser_smoke.page_errors import unexpected_page_errors
+from browser_smoke.tests.page_errors_browser import run_page_error_browser_checks
 from browser_smoke.scenarios.accessibility import test_accessibility_regressions
 from browser_smoke.scenarios.bootstrap import (
     test_bootstrap,
@@ -30,6 +32,17 @@ from browser_smoke.scenarios.workspace import (
 )
 
 
+def assert_no_unexpected_page_errors(driver, scenario_name: str, expected_events=()) -> None:
+    page_errors = driver.execute_script("return window.__hmClssPageErrors || [];")
+    unexpected = unexpected_page_errors(page_errors, expected_events)
+    if unexpected:
+        details = "; ".join(
+            f"{event.get('type', 'unknown')}: {event.get('message', '')}"
+            for event in unexpected
+        )
+        raise AssertionError(f"{scenario_name} emitted uncaught page errors: {details}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run HM-CLSS browser smoke checks with Selenium.")
     parser.add_argument("--url", default="http://127.0.0.1:8000", help="Target URL to test.")
@@ -41,18 +54,22 @@ def main() -> int:
     driver = build_driver(args.browser)
     artifact_dir = ensure_artifact_dir(args.artifact_dir)
     try:
+        install_debug_hooks(driver)
+        log("Running real-browser page-error capture checks")
+        run_page_error_browser_checks(driver)
         try:
             driver.get(args.url)
         except TimeoutException:
             log("Navigation hit the page-load timeout; continuing with DOM checks.")
         wait_ready(driver)
+        assert_no_unexpected_page_errors(driver, "initial-navigation")
         driver.execute_script("window.localStorage.clear(); window.sessionStorage.clear();")
         try:
             driver.refresh()
         except TimeoutException:
             log("Refresh hit the page-load timeout; continuing with DOM checks.")
         wait_ready(driver)
-        install_debug_hooks(driver)
+        assert_no_unexpected_page_errors(driver, "initial-load")
 
         scenarios = [
             ("bootstrap", lambda: test_bootstrap(driver)),
@@ -73,6 +90,7 @@ def main() -> int:
         for scenario_name, scenario in scenarios:
             try:
                 scenario()
+                assert_no_unexpected_page_errors(driver, scenario_name)
             except Exception as error:
                 capture_failure_artifacts(driver, artifact_dir, scenario_name, error)
                 raise

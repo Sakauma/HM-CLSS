@@ -7,39 +7,6 @@ function getDailyEntries(store, dateKey) {
     return store[dateKey] || [];
 }
 
-function ensureDailyEntries(store, dateKey) {
-    if (!Array.isArray(store[dateKey])) {
-        store[dateKey] = [];
-    }
-    return store[dateKey];
-}
-
-function appendDailyEntry(store, dateKey, entry) {
-    const entries = ensureDailyEntries(store, dateKey);
-    entries.push(entry);
-    return entry;
-}
-
-function prependDailyEntry(store, dateKey, entry) {
-    const entries = ensureDailyEntries(store, dateKey);
-    entries.unshift(entry);
-    return entry;
-}
-
-function removeDailyEntry(store, dateKey, index) {
-    const entries = store[dateKey];
-    if (!Array.isArray(entries) || index < 0 || index >= entries.length) {
-        return null;
-    }
-
-    const [removed] = entries.splice(index, 1);
-    if (!entries.length) {
-        delete store[dateKey];
-    }
-
-    return removed || null;
-}
-
 function formatDurationLabel(durationMins) {
     const safeDuration = Number.isFinite(durationMins) ? durationMins : 0;
     const hours = Math.floor(safeDuration / 60);

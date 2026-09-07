@@ -72,8 +72,11 @@ function createTavernHistoryCard(drink) {
             tone: 'danger'
         });
         if (!confirmed) return;
-        runtimeActions.filter('tavernData', (storedDrink) => storedDrink.id !== drink.id);
-        saveData();
+        const saveResult = commitRuntimeMutation(['tavernData'], () => {
+            runtimeActions.filter('tavernData', (storedDrink) => storedDrink.id !== drink.id);
+        });
+        if (!saveResult.ok) return;
+
         renderTavernHistory();
         showToast('这杯特调已从酒柜移除', 'success');
     });

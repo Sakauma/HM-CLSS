@@ -26,22 +26,27 @@ function startTask() {
     const name = document.getElementById('task-name').value.trim();
     const tagValue = document.getElementById('task-tag').value;
     if (!name) return showToast('请输入任务名称', 'warning');
-    if (runtimeSelectors.currentTask()) endTask();
+    if (runtimeSelectors.currentTask() && !endTask()) return false;
 
-    runtimeActions.setCurrentTask({
-        id: 'task_' + Date.now(),
-        name,
-        tag: tagValue,
-        startTime: getCurrentTimeString(),
-        startDate: getTodayString(),
-        startTimestamp: Date.now()
+    const saveResult = commitRuntimeMutation(['currentTask'], () => {
+        runtimeActions.setCurrentTask({
+            id: 'task_' + Date.now(),
+            name,
+            tag: tagValue,
+            startTime: getCurrentTimeString(),
+            startDate: getTodayString(),
+            startTimestamp: Date.now()
+        });
+    }, {
+        storageKeys: [CURRENT_TASK_STORAGE_KEY]
     });
+    if (!saveResult.ok) return false;
 
-    persistCurrentTask();
     document.getElementById('task-name').value = '';
 
     startTaskTimer();
     updateTodayStatus();
+    return true;
 }
 
 /**
@@ -62,10 +67,8 @@ function startTaskTimer() {
  */
 function endTask() {
     const activeTask = runtimeSelectors.currentTask();
-    if (!activeTask) return;
+    if (!activeTask) return false;
 
-    clearInterval(runtimeSelectors.taskTimer());
-    runtimeActions.setTaskTimer(null);
     const duration = Math.floor((Date.now() - activeTask.startTimestamp) / 60000);
     const taskStartDate = activeTask.startDate || getTodayString();
     const taskEndDate = getTodayString();
@@ -77,14 +80,21 @@ function endTask() {
         duration,
         completed: true
     };
-    runtimeActions.appendTaskEntry(taskStartDate, completedTask);
-    runtimeActions.clearCurrentTask();
-    persistCurrentTask();
-    saveData();
+    const saveResult = commitRuntimeMutation(['taskData', 'currentTask'], () => {
+        runtimeActions.appendTaskEntry(taskStartDate, completedTask);
+        runtimeActions.clearCurrentTask();
+    }, {
+        storageKeys: ['taskData', CURRENT_TASK_STORAGE_KEY]
+    });
+    if (!saveResult.ok) return false;
+
+    clearInterval(runtimeSelectors.taskTimer());
+    runtimeActions.setTaskTimer(null);
     updateTodayTasksList();
     updateSchedule();
     updateTodayStatus();
     checkAchievements();
+    return true;
 }
 
 registerAppModule({

@@ -6,9 +6,15 @@ MANIFEST_DIR="$ROOT_DIR/scripts/smoke_manifest"
 cd "$ROOT_DIR"
 
 resolve_python_bin() {
+  local minimum_version_check='import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)'
+
   if [[ -n "${PYTHON_BIN:-}" ]]; then
     "$PYTHON_BIN" -c 'import sys' >/dev/null 2>&1 || {
       printf 'PYTHON_BIN is set but not runnable: %s\n' "$PYTHON_BIN" >&2
+      exit 1
+    }
+    "$PYTHON_BIN" -c "$minimum_version_check" >/dev/null 2>&1 || {
+      printf 'Python 3.10 or newer is required for smoke-check.sh: %s\n' "$PYTHON_BIN" >&2
       exit 1
     }
     printf '%s\n' "$PYTHON_BIN"
@@ -17,13 +23,13 @@ resolve_python_bin() {
 
   local candidate
   for candidate in python3 python py; do
-    if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import sys' >/dev/null 2>&1; then
+    if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c "$minimum_version_check" >/dev/null 2>&1; then
       printf '%s\n' "$candidate"
       return
     fi
   done
 
-  printf 'python3 or python is required for smoke-check.sh\n' >&2
+  printf 'Python 3.10 or newer is required for smoke-check.sh\n' >&2
   exit 1
 }
 
@@ -92,6 +98,7 @@ check_tracked_manifest_freshness() {
 
 check_manifest_freshness() {
   check_tracked_manifest_freshness "$MANIFEST_DIR/js-syntax.txt" "JavaScript syntax manifest" "assets/js" '\.js$'
+  check_tracked_manifest_freshness "$MANIFEST_DIR/js-syntax.txt" "JavaScript syntax manifest" "scripts" '\.js$'
   check_tracked_manifest_freshness "$MANIFEST_DIR/required-stylesheets.txt" "Stylesheet manifest" "assets/css" '\.css$'
   check_tracked_manifest_freshness "$MANIFEST_DIR/required-files.txt" "Browser smoke Python manifest" "scripts/browser_smoke" '\.py$' '(^|/)__init__\.py$'
 }
@@ -211,9 +218,11 @@ check_js_syntax
 "$NODE_BIN" scripts/check-vendor-manifest.js
 "$NODE_BIN" --test tests/unit/*.test.js
 "$PYTHON_BIN" -m py_compile scripts/browser-smoke.py
+"$PYTHON_BIN" -m py_compile scripts/check-browser-page-errors.py
 while IFS= read -r -d '' py_file; do
   "$PYTHON_BIN" -m py_compile "$py_file"
 done < <(find scripts/browser_smoke -type f -name '*.py' -print0)
+"$PYTHON_BIN" scripts/check-browser-page-errors.py
 bash -n scripts/browser-smoke.sh
 bash -n scripts/setup-browser-test.sh
 

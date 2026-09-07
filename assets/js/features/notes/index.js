@@ -11,13 +11,15 @@ function saveQuickCapture() {
     }
 
     const today = getTodayString();
-    runtimeActions.prependQuickNoteEntry(today, {
-        time: getCurrentTimeString(),
-        text,
-        tag
+    const saveResult = commitRuntimeMutation(['quickNotesData'], () => {
+        runtimeActions.prependQuickNoteEntry(today, {
+            time: getCurrentTimeString(),
+            text,
+            tag
+        });
     });
+    if (!saveResult.ok) return;
 
-    saveData();
     quickInput.value = '';
     updateQuickCaptureCount();
     closeQuickCaptureModal();

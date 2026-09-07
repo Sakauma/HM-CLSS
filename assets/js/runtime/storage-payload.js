@@ -4,17 +4,46 @@
  */
 
 const corruptedStorageKeys = new Set();
+const failedStorageReadKeys = new Set();
 
 function clearCorruptedStorageKeys() {
     corruptedStorageKeys.clear();
+}
+
+function clearFailedStorageReadKeys() {
+    failedStorageReadKeys.clear();
 }
 
 function getCorruptedStorageKeys() {
     return [...corruptedStorageKeys];
 }
 
+function getFailedStorageReadKeys() {
+    return [...failedStorageReadKeys];
+}
+
 function isCorruptedStorageKey(key) {
     return corruptedStorageKeys.has(key);
+}
+
+function safeGetStorageItem(key) {
+    try {
+        return {
+            ok: true,
+            value: localStorage.getItem(key),
+            error: null
+        };
+    } catch (error) {
+        failedStorageReadKeys.add(key);
+        if (typeof appLogger !== 'undefined') {
+            appLogger.error(`localStorage read failed for "${key}":`, error);
+        }
+        return {
+            ok: false,
+            value: null,
+            error
+        };
+    }
 }
 
 function safeParseStoredJson(rawValue, fallbackValue, storageKey = null) {
@@ -29,7 +58,9 @@ function safeParseStoredJson(rawValue, fallbackValue, storageKey = null) {
 }
 
 function getStoredSchemaVersion() {
-    const rawVersion = Number(localStorage.getItem(STORAGE_SCHEMA_VERSION_KEY));
+    const readResult = safeGetStorageItem(STORAGE_SCHEMA_VERSION_KEY);
+    if (!readResult.ok) return 0;
+    const rawVersion = Number(readResult.value);
     return Number.isFinite(rawVersion) && rawVersion > 0 ? rawVersion : 0;
 }
 
@@ -44,18 +75,23 @@ function isValidCurrentTaskRecord(task) {
 }
 
 function readStoredWorkspacePayload() {
-    clearCorruptedStorageKeys();
+    const readJson = (key, fallbackValue) => {
+        const readResult = safeGetStorageItem(key);
+        return readResult.ok
+            ? safeParseStoredJson(readResult.value, fallbackValue, key)
+            : fallbackValue;
+    };
 
     return {
-        checkinData: safeParseStoredJson(localStorage.getItem('checkinData'), {}, 'checkinData'),
-        phoneResistData: safeParseStoredJson(localStorage.getItem('phoneResistData'), { totalCount: 0, records: {} }, 'phoneResistData'),
-        taskData: safeParseStoredJson(localStorage.getItem('taskData'), {}, 'taskData'),
-        leaveData: safeParseStoredJson(localStorage.getItem('leaveData'), [], 'leaveData'),
-        achievements: safeParseStoredJson(localStorage.getItem('achievements'), [], 'achievements'),
-        quickNotesData: safeParseStoredJson(localStorage.getItem('quickNotesData'), {}, 'quickNotesData'),
-        tavernData: safeParseStoredJson(localStorage.getItem('tavernData'), [], 'tavernData'),
-        currentTask: safeParseStoredJson(localStorage.getItem(CURRENT_TASK_STORAGE_KEY), null, CURRENT_TASK_STORAGE_KEY),
-        ambientPreferences: safeParseStoredJson(localStorage.getItem(AMBIENT_PREFS_STORAGE_KEY), null, AMBIENT_PREFS_STORAGE_KEY),
-        checkinPreferences: safeParseStoredJson(localStorage.getItem(CHECKIN_PREFS_STORAGE_KEY), null, CHECKIN_PREFS_STORAGE_KEY)
+        checkinData: readJson('checkinData', {}),
+        phoneResistData: readJson('phoneResistData', { totalCount: 0, records: {} }),
+        taskData: readJson('taskData', {}),
+        leaveData: readJson('leaveData', []),
+        achievements: readJson('achievements', []),
+        quickNotesData: readJson('quickNotesData', {}),
+        tavernData: readJson('tavernData', []),
+        currentTask: readJson(CURRENT_TASK_STORAGE_KEY, null),
+        ambientPreferences: readJson(AMBIENT_PREFS_STORAGE_KEY, null),
+        checkinPreferences: readJson(CHECKIN_PREFS_STORAGE_KEY, null)
     };
 }

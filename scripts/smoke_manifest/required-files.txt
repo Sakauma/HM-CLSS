@@ -11,7 +11,7 @@ assets/vendor/tailwindcss-3.4.17.js
 assets/vendor/lucide-0.514.0.min.js
 assets/vendor/chart.umd-4.5.1.min.js
 assets/vendor/marked-12.0.2.min.js
-assets/vendor/purify-3.4.7.min.js
+assets/vendor/purify-3.4.15.min.js
 assets/vendor/README.md
 assets/js/runtime/tailwind-config.js
 assets/js/ui/static-templates.js
@@ -20,6 +20,8 @@ environment.browser-test.yml
 scripts/smoke-check.sh
 scripts/smoke-check.ps1
 scripts/check-module-dependencies.js
+scripts/check-browser-page-errors.py
+scripts/browser_smoke/tests/page_errors_browser.py
 scripts/check-static-template-contracts.js
 scripts/check-runtime-state-contracts.js
 scripts/check-release-governance.js
@@ -30,6 +32,7 @@ scripts/browser-smoke.py
 scripts/browser_smoke/helpers.py
 scripts/browser_smoke/driver.py
 scripts/browser_smoke/artifacts.py
+scripts/browser_smoke/page_errors.py
 scripts/browser_smoke/scenarios/bootstrap.py
 scripts/browser_smoke/scenarios/insights.py
 scripts/browser_smoke/scenarios/sync.py

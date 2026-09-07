@@ -24,34 +24,36 @@ function initPhoneResist() {
  */
 function addPhoneResist() {
     const today = getTodayString();
-    runtimeActions.update('phoneResistData', (currentValue) => {
-        const phoneResistState = currentValue && typeof currentValue === 'object'
-            ? currentValue
-            : { totalCount: 0, records: {} };
-        const records = phoneResistState.records && typeof phoneResistState.records === 'object'
-            ? phoneResistState.records
-            : {};
-        const todayRecord = records[today] || { count: 0, times: [] };
+    const saveResult = commitRuntimeMutation(['phoneResistData'], () => {
+        runtimeActions.update('phoneResistData', (currentValue) => {
+            const phoneResistState = currentValue && typeof currentValue === 'object'
+                ? currentValue
+                : { totalCount: 0, records: {} };
+            const records = phoneResistState.records && typeof phoneResistState.records === 'object'
+                ? phoneResistState.records
+                : {};
+            const todayRecord = records[today] || { count: 0, times: [] };
 
-        return {
-            ...phoneResistState,
-            totalCount: (phoneResistState.totalCount || 0) + 1,
-            records: {
-                ...records,
-                [today]: {
-                    count: (todayRecord.count || 0) + 1,
-                    times: [...(todayRecord.times || []), getCurrentTimeString()]
+            return {
+                ...phoneResistState,
+                totalCount: (phoneResistState.totalCount || 0) + 1,
+                records: {
+                    ...records,
+                    [today]: {
+                        count: (todayRecord.count || 0) + 1,
+                        times: [...(todayRecord.times || []), getCurrentTimeString()]
+                    }
                 }
-            }
-        };
+            };
+        });
     });
-    saveData();
 
     const phoneResistState = runtimeSelectors.phoneResistData();
     document.getElementById('phone-resist-count').textContent = phoneResistState.totalCount;
     document.getElementById('today-phone-resist-count').textContent = phoneResistState.records[today].count;
     updateTodayPhoneResistTimes();
     updateAchievementsList();
+    if (!saveResult.ok) return;
     checkAchievements();
     updateTodayStatus();
 }
@@ -122,7 +124,7 @@ function showAchievementPopup(achievement) {
  * 遍历全部成就条件，判断是否有新的里程碑被满足。
  */
 function checkAchievements() {
-    let hasNew = false;
+    const unlockedAchievements = [];
 
     achievementList.forEach((achievement) => {
         if (achievements.includes(achievement.id)) return;
@@ -143,17 +145,22 @@ function checkAchievements() {
         }
 
         if (achieved) {
-            runtimeActions.append('achievements', achievement.id);
-            showAchievementPopup(achievement);
-            hasNew = true;
+            unlockedAchievements.push(achievement);
         }
     });
 
-    if (hasNew) {
-        saveData();
-        updateAchievementsList();
-        updateTodayStatus();
-    }
+    if (!unlockedAchievements.length) return;
+
+    const saveResult = commitRuntimeMutation(['achievements'], () => {
+        unlockedAchievements.forEach((achievement) => {
+            runtimeActions.append('achievements', achievement.id);
+        });
+    });
+    if (!saveResult.ok) return;
+
+    unlockedAchievements.forEach(showAchievementPopup);
+    updateAchievementsList();
+    updateTodayStatus();
 }
 
 registerAppModule({

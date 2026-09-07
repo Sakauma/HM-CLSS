@@ -42,13 +42,15 @@ async function handleLeaveRecordDeletion(event) {
 
     const id = btn.getAttribute('data-id');
     const leaveObj = leaveData.find((leave) => leave.id === id);
-    runtimeActions.filter('leaveData', (leave) => leave.id !== id);
-
     if (!leaveObj) return;
 
     const date = leaveObj.date;
-    rebuildLeaveStateForDate(date);
-    saveData();
+    const saveResult = commitRuntimeMutation(['leaveData', 'checkinData'], () => {
+        runtimeActions.filter('leaveData', (leave) => leave.id !== id);
+        rebuildLeaveStateForDate(date);
+    });
+    if (!saveResult.ok) return;
+
     updateLeaveRecordsList();
     updateLeaveFormState();
     if (date === getTodayString()) {
@@ -141,7 +143,7 @@ async function addLeave() {
         }
     }
 
-    const dayData = ensureCheckinDay(date);
+    const dayData = getCheckinDaySnapshot(date);
     const hasExistingLeave = leaveData.some((leave) => leave.date === date);
     const hasExistingCheckins = hasAnyCheckinRecord(dayData);
     if (workflow === 'retro' && (hasExistingLeave || hasExistingCheckins)) {
@@ -169,31 +171,36 @@ async function addLeave() {
         correctionNote
     });
 
-    if (type === 'full') {
-        const existingFullLeave = leaveData.find((leave) => leave.date === date && leave.type === 'full');
-        if (existingFullLeave) {
-            const confirmed = await showConfirmDialog({
-                title: '覆盖这条全天离舰记录？',
-                message: '同一天已经存在一条全天离舰记录，确认后会改成这次内容。',
-                badge: 'FULL LEAVE',
-                confirmLabel: '确认覆盖',
-                cancelLabel: '先保留',
-                tone: 'warning'
-            });
-            if (!confirmed) return;
-        }
+    const existingFullLeave = type === 'full'
+        ? leaveData.find((leave) => leave.date === date && leave.type === 'full')
+        : null;
+    if (existingFullLeave) {
+        const confirmed = await showConfirmDialog({
+            title: '覆盖这条全天离舰记录？',
+            message: '同一天已经存在一条全天离舰记录，确认后会改成这次内容。',
+            badge: 'FULL LEAVE',
+            confirmLabel: '确认覆盖',
+            cancelLabel: '先保留',
+            tone: 'warning'
+        });
+        if (!confirmed) return;
+    }
 
-        if (existingFullLeave) {
-            runtimeActions.map('leaveData', (leave) => leave.id === existingFullLeave.id ? { ...leavePayload, id: existingFullLeave.id } : leave);
+    const saveResult = commitRuntimeMutation(['leaveData', 'checkinData'], () => {
+        if (type === 'full') {
+            if (existingFullLeave) {
+                runtimeActions.map('leaveData', (leave) => leave.id === existingFullLeave.id ? { ...leavePayload, id: existingFullLeave.id } : leave);
+            } else {
+                runtimeActions.append('leaveData', leavePayload);
+            }
         } else {
             runtimeActions.append('leaveData', leavePayload);
         }
-    } else {
-        runtimeActions.append('leaveData', leavePayload);
-    }
 
-    rebuildLeaveStateForDate(date);
-    saveData();
+        rebuildLeaveStateForDate(date);
+    });
+    if (!saveResult.ok) return;
+
     document.getElementById('leave-reason').value = '';
     document.getElementById('leave-correction-note').value = '';
     updateLeaveRecordsList();

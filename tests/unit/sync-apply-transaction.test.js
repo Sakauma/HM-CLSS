@@ -180,6 +180,47 @@ test('cloud import rolls back datasets and state when state persistence fails', 
     assert.match(toastEvents.at(-1).message, /已回滚当前工作区/);
 });
 
+test('failed high-level rollback blocks later writes when disk still contains cloud datasets', () => {
+    let saveCalls = 0;
+    let blockCalls = 0;
+    const { context, localStorage, toastEvents } = createSyncApplyContext({
+        saveData(currentContext, storage) {
+            saveCalls += 1;
+            if (saveCalls === 1) {
+                storage.setItem('taskData', JSON.stringify(currentContext.taskData));
+                return { ok: true, failedKeys: [] };
+            }
+            return {
+                ok: false,
+                failedKeys: ['taskData'],
+                rollbackSucceeded: true
+            };
+        },
+        persistCurrentTask() {
+            return { ok: false, failedKeys: ['currentTask'] };
+        }
+    });
+    context.blockStoragePersistence = () => {
+        blockCalls += 1;
+    };
+
+    const applied = context.applyImportedData({
+        taskData: { '2026-04-20': [{ name: 'Cloud Task' }] },
+        quickNotesData: {},
+        state: {
+            currentTask: { name: 'Cloud Active', startTimestamp: 1770000000000, startTime: '09:00' }
+        },
+        lastSyncTime: '2026-04-20T10:00:00.000Z'
+    });
+
+    assert.equal(applied, false);
+    assert.equal(context.taskData['2026-04-19'][0].name, 'Original Task');
+    assert.match(localStorage.getItem('taskData'), /Cloud Task/);
+    assert.equal(blockCalls, 1);
+    assert.match(toastEvents.at(-1).message, /回滚当前工作区保存失败/);
+    assert.match(toastEvents.at(-1).message, /导出当前会话数据.*刷新恢复/);
+});
+
 test('cloud import aborts when pre-apply local backup cannot be written', () => {
     const localStorage = createStorageMock({
         gistId: 'gist_test',

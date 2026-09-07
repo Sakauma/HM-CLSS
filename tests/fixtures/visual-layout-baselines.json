@@ -201,6 +201,124 @@
       "width": 1600
     }
   },
+  "phone": {
+    "ambient": "recovery",
+    "elements": {
+      "achievements-list": {
+        "childCount": 6,
+        "height": 320,
+        "visible": true,
+        "width": 514,
+        "x": 1013,
+        "y": 851
+      },
+      "phone-resist-count": {
+        "childCount": 0,
+        "height": 48,
+        "visible": true,
+        "width": 372,
+        "x": 1134,
+        "y": 570
+      },
+      "phone-section": {
+        "childCount": 2,
+        "height": 516,
+        "visible": true,
+        "width": 1152,
+        "x": 400,
+        "y": 524
+      },
+      "today-phone-resist-count": {
+        "childCount": 0,
+        "height": 40,
+        "visible": true,
+        "width": 514,
+        "x": 425,
+        "y": 847
+      }
+    },
+    "scrollTop": 0,
+    "viewport": {
+      "height": 1114,
+      "width": 1600
+    }
+  },
+  "archive": {
+    "ambient": "recovery",
+    "elements": {
+      "archive-list-container": {
+        "childCount": 1,
+        "height": 184,
+        "visible": true,
+        "width": 1152,
+        "x": 400,
+        "y": 704
+      },
+      "archive-search-input": {
+        "childCount": 0,
+        "height": 52,
+        "visible": true,
+        "width": 568,
+        "x": 959,
+        "y": 576
+      },
+      "archive-section": {
+        "childCount": 2,
+        "height": 364,
+        "visible": true,
+        "width": 1152,
+        "x": 400,
+        "y": 524
+      }
+    },
+    "scrollTop": 0,
+    "viewport": {
+      "height": 1114,
+      "width": 1600
+    }
+  },
+  "stats": {
+    "ambient": "recovery",
+    "elements": {
+      "checkin-rate-chart": {
+        "childCount": 0,
+        "height": 256,
+        "visible": true,
+        "width": 514,
+        "x": 425,
+        "y": 244
+      },
+      "stats-period-controls": {
+        "childCount": 3,
+        "height": 56,
+        "visible": true,
+        "width": 252,
+        "x": 1275,
+        "y": 75
+      },
+      "stats-section": {
+        "childCount": 4,
+        "height": 1434,
+        "visible": true,
+        "width": 1152,
+        "x": 400,
+        "y": 0
+      },
+      "total-checkin-days": {
+        "childCount": 0,
+        "height": 36,
+        "visible": true,
+        "width": 237,
+        "x": 419,
+        "y": 1320
+      }
+    },
+    "scrollTop": 524,
+    "viewport": {
+      "height": 1114,
+      "width": 1600
+    }
+  },
   "browsers": {
     "chromium": {
       "settings": {

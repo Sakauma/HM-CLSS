@@ -39,8 +39,15 @@ function restoreWorkspaceApplySnapshot(snapshot) {
 function rollbackWorkspaceApplySnapshot(snapshot) {
     restoreWorkspaceApplySnapshot(snapshot);
     const saveResult = saveData(true) || { ok: true, failedKeys: [] };
-    if (!saveResult.ok) return saveResult;
-    return commitWorkspaceStatePersistence(snapshot.state || {});
+    if (!saveResult.ok) {
+        if (typeof blockStoragePersistence === 'function') blockStoragePersistence();
+        return saveResult;
+    }
+    const stateResult = commitWorkspaceStatePersistence(snapshot.state || {});
+    if (!stateResult.ok && typeof blockStoragePersistence === 'function') {
+        blockStoragePersistence();
+    }
+    return stateResult;
 }
 
 function rollbackFailedWorkspaceApply(beforeSnapshot, failurePrefix, failureResult) {
@@ -48,7 +55,10 @@ function rollbackFailedWorkspaceApply(beforeSnapshot, failurePrefix, failureResu
     refreshWorkspaceUiAfterSync();
     refreshLocalBackupRestoreState();
     if (!rollbackResult.ok) {
-        showToast(getWorkspaceSaveFailureMessage(`${failurePrefix}，且回滚当前工作区保存失败`, rollbackResult), 'error');
+        showToast(getWorkspaceSaveFailureMessage(
+            `${failurePrefix}，且回滚当前工作区保存失败；当前数据与本地存储可能不一致，请先导出当前会话数据，处理存储问题后刷新恢复`,
+            rollbackResult
+        ), 'error');
         return false;
     }
 
@@ -102,7 +112,19 @@ function backupLocalDataBeforeCloudApply(reason) {
 }
 
 function readLocalBackupBeforeCloudApply() {
-    const rawBackup = localStorage.getItem(LOCAL_BACKUP_BEFORE_CLOUD_APPLY_KEY);
+    let readResult;
+    if (typeof safeGetStorageItem === 'function') {
+        readResult = safeGetStorageItem(LOCAL_BACKUP_BEFORE_CLOUD_APPLY_KEY);
+    } else {
+        try {
+            readResult = { ok: true, value: localStorage.getItem(LOCAL_BACKUP_BEFORE_CLOUD_APPLY_KEY) };
+        } catch (error) {
+            appLogger.error('覆盖前备份读取失败:', error);
+            readResult = { ok: false, value: null };
+        }
+    }
+    if (!readResult.ok) return null;
+    const rawBackup = readResult.value;
     if (!rawBackup) return null;
 
     try {
@@ -182,7 +204,10 @@ async function restoreLocalBackupBeforeCloudApply() {
     refreshWorkspaceUiAfterSync();
     refreshLocalBackupRestoreState();
     if (!rollbackResult.ok) {
-        showToast(getWorkspaceSaveFailureMessage('恢复失败，且回滚当前工作区保存失败', rollbackResult), 'error');
+        showToast(getWorkspaceSaveFailureMessage(
+            '恢复失败，且回滚当前工作区保存失败；当前数据与本地存储可能不一致，请先导出当前会话数据，处理存储问题后刷新恢复',
+            rollbackResult
+        ), 'error');
         return false;
     }
 

@@ -108,14 +108,19 @@ function saveSyncCredentials(nextToken, nextGistId) {
     const result = createSyncStorageOperationResult();
     const tokenStorage = getSyncTokenStorage();
     const credentialsChanged = githubToken !== nextToken || gistId !== nextGistId;
+    const gistChanged = gistId !== nextGistId;
     const previousToken = githubToken;
     const previousGistId = gistId;
+    const previousSyncTime = localLastSyncTime;
 
     persistSyncStorageValue(tokenStorage, SYNC_TOKEN_STORAGE_KEY, nextToken, result);
     if (tokenStorage !== localStorage) {
         persistSyncStorageValue(localStorage, SYNC_TOKEN_STORAGE_KEY, '', result);
     }
     persistSyncStorageValue(localStorage, SYNC_GIST_STORAGE_KEY, nextGistId, result);
+    if (gistChanged) {
+        persistSyncStorageValue(localStorage, SYNC_TIME_STORAGE_KEY, '', result);
+    }
 
     if (!result.ok) {
         persistSyncStorageValue(tokenStorage, SYNC_TOKEN_STORAGE_KEY, previousToken, createSyncStorageOperationResult());
@@ -123,6 +128,9 @@ function saveSyncCredentials(nextToken, nextGistId) {
             persistSyncStorageValue(localStorage, SYNC_TOKEN_STORAGE_KEY, '', createSyncStorageOperationResult());
         }
         persistSyncStorageValue(localStorage, SYNC_GIST_STORAGE_KEY, previousGistId, createSyncStorageOperationResult());
+        if (gistChanged) {
+            persistSyncStorageValue(localStorage, SYNC_TIME_STORAGE_KEY, previousSyncTime, createSyncStorageOperationResult());
+        }
         if (typeof notifyStorageWriteFailure === 'function') {
             notifyStorageWriteFailure(result);
         }
@@ -134,6 +142,12 @@ function saveSyncCredentials(nextToken, nextGistId) {
     }
     githubToken = nextToken;
     gistId = nextGistId;
+    if (gistChanged) {
+        localLastSyncTime = '';
+    }
+    if (credentialsChanged && typeof resetAutoSyncTracking === 'function') {
+        resetAutoSyncTracking();
+    }
     return result;
 }
 

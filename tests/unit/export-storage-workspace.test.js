@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
+const vm = require('node:vm');
 
 const {
     loadScript,
@@ -471,4 +472,274 @@ test('saveData reports storage write failures and skips auto sync', () => {
 
     context.saveData();
     assert.equal(toastEvents.length, 1);
+});
+
+test('initData enters session mode without overwriting storage when reads are blocked', () => {
+    let writeCalls = 0;
+    let readsBlocked = true;
+    const toastEvents = [];
+    const storedQuickNotes = JSON.stringify({ '2026-04-19': [{ text: 'preserve me' }] });
+    const store = new Map([['quickNotesData', storedQuickNotes]]);
+    const context = createBaseContext({
+        console: { ...console, error() {} },
+        localStorage: {
+            getItem(key) {
+                if (readsBlocked) {
+                    const error = new Error('blocked');
+                    error.name = 'SecurityError';
+                    throw error;
+                }
+                return store.has(key) ? store.get(key) : null;
+            },
+            setItem(key, value) {
+                writeCalls += 1;
+                store.set(key, String(value));
+            },
+            removeItem(key) {
+                writeCalls += 1;
+                store.delete(key);
+            }
+        },
+        getTodayString: () => '2026-04-20',
+        formatLocalDate: (date) => date.toISOString().slice(0, 10),
+        getNormalizedCheckInStatus: (status) => status,
+        refreshStatisticsView() {},
+        refreshExportPreview() {},
+        updateVoyageAmbientPresentation() {},
+        showToast(message, tone) {
+            toastEvents.push({ message, tone });
+        },
+        setTimeout(callback) {
+            callback();
+            return 1;
+        }
+    });
+
+    loadScript(context, 'assets/js/runtime/state.js');
+    loadScript(context, 'assets/js/runtime/store.js');
+    loadScript(context, 'assets/js/runtime/storage-migrations.js');
+    loadScript(context, 'assets/js/runtime/storage-payload.js');
+    loadScript(context, 'assets/js/runtime/storage-shapes.js');
+    loadScript(context, 'assets/js/runtime/storage.js');
+
+    assert.doesNotThrow(() => context.initData());
+    assert.equal(writeCalls, 0);
+    assert.equal(context.isStorageSessionMode(), true);
+    assert.equal(context.isStorageStartupReadBlocked(), true);
+    assert.ok(context.getFailedStorageReadKeys().includes('taskData'));
+    assert.match(toastEvents.at(-1).message, /会话模式/);
+
+    readsBlocked = false;
+    let mutationCalls = 0;
+    const result = context.commitRuntimeMutation(['quickNotesData'], () => {
+        mutationCalls += 1;
+        context.runtimeActions.setQuickNotesData({ overwritten: true });
+    });
+
+    assert.equal(result.blocked, true);
+    assert.equal(result.blockReason, 'startupRead');
+    assert.equal(mutationCalls, 0);
+    assert.equal(writeCalls, 0);
+    assert.equal(store.get('quickNotesData'), storedQuickNotes);
+    assert.match(toastEvents.at(-1).message, /避免覆盖旧数据/);
+});
+
+test('saveData rolls back earlier keys when a later key write fails', () => {
+    const store = new Map([
+        ['taskData', JSON.stringify({ old: ['task'] })],
+        ['quickNotesData', JSON.stringify({ old: ['note'] })]
+    ]);
+    let quickNoteFailures = 1;
+    let autoSyncCalls = 0;
+    const context = createBaseContext({
+        console: { ...console, error() {} },
+        localStorage: {
+            getItem(key) {
+                return store.has(key) ? store.get(key) : null;
+            },
+            setItem(key, value) {
+                if (key === 'quickNotesData' && quickNoteFailures > 0) {
+                    quickNoteFailures -= 1;
+                    throw new Error('quota exceeded');
+                }
+                store.set(key, String(value));
+            },
+            removeItem(key) {
+                store.delete(key);
+            }
+        },
+        CURRENT_TASK_STORAGE_KEY: 'currentTask',
+        AMBIENT_PREFS_STORAGE_KEY: 'ambientPrefs',
+        CHECKIN_PREFS_STORAGE_KEY: 'checkinPrefs',
+        normalizeAmbientPreferences: (value) => value || {},
+        normalizeCheckinPreferences: (value) => value || {},
+        triggerAutoSync() {
+            autoSyncCalls += 1;
+        },
+        showToast() {},
+        checkinData: {},
+        phoneResistData: {},
+        taskData: { fresh: ['task'] },
+        leaveData: [],
+        achievements: [],
+        quickNotesData: { fresh: ['note'] },
+        tavernData: [],
+        ambientPreferences: {},
+        checkinPreferences: {}
+    });
+    loadScript(context, 'assets/js/runtime/storage.js');
+
+    const result = context.saveData(false, { keys: ['taskData', 'quickNotesData'] });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.rollbackSucceeded, true);
+    assert.deepEqual(JSON.parse(store.get('taskData')), { old: ['task'] });
+    assert.deepEqual(JSON.parse(store.get('quickNotesData')), { old: ['note'] });
+    assert.deepEqual(Array.from(result.persistedKeys), []);
+    assert.equal(autoSyncCalls, 0);
+});
+
+test('rollback failure blocks repeated runtime mutations and keeps the latest memory for export', () => {
+    const store = new Map([
+        ['taskData', JSON.stringify({ old: [] })],
+        ['quickNotesData', JSON.stringify({ old: [] })]
+    ]);
+    const toastEvents = [];
+    const context = createBaseContext({
+        console: { ...console, error() {} },
+        localStorage: {
+            getItem(key) {
+                return store.has(key) ? store.get(key) : null;
+            },
+            setItem(key, value) {
+                if (key === 'quickNotesData') throw new Error('write blocked');
+                store.set(key, String(value));
+            },
+            removeItem(key) {
+                store.delete(key);
+            }
+        },
+        CURRENT_TASK_STORAGE_KEY: 'currentTask',
+        AMBIENT_PREFS_STORAGE_KEY: 'ambientPrefs',
+        CHECKIN_PREFS_STORAGE_KEY: 'checkinPrefs',
+        normalizeAmbientPreferences: (value) => value || {},
+        normalizeCheckinPreferences: (value) => value || {},
+        showToast(message, tone) {
+            toastEvents.push({ message, tone });
+        },
+        checkinData: {},
+        phoneResistData: {},
+        taskData: { old: [] },
+        leaveData: [],
+        achievements: [],
+        quickNotesData: { old: [] },
+        tavernData: [],
+        currentTask: null,
+        ambientPreferences: {},
+        checkinPreferences: {}
+    });
+    context.setRuntimeValue = (key, value) => {
+        context[key] = value;
+        return value;
+    };
+    loadScript(context, 'assets/js/runtime/store.js');
+    loadScript(context, 'assets/js/runtime/storage.js');
+
+    let mutationCalls = 0;
+    const mutate = () => {
+        mutationCalls += 1;
+        context.runtimeActions.setTaskData({ fresh: [{ id: mutationCalls }] });
+        context.runtimeActions.setQuickNotesData({ fresh: [{ id: mutationCalls }] });
+    };
+    const firstResult = context.commitRuntimeMutation(['taskData', 'quickNotesData'], mutate);
+    const secondResult = context.commitRuntimeMutation(['taskData', 'quickNotesData'], mutate);
+
+    assert.equal(firstResult.rollbackSucceeded, false);
+    assert.equal(firstResult.memoryRestored, false);
+    assert.equal(context.isStorageWriteBlocked(), true);
+    assert.equal(secondResult.blocked, true);
+    assert.equal(mutationCalls, 1);
+    assert.deepEqual(context.taskData, { fresh: [{ id: 1 }] });
+    assert.match(toastEvents.at(-1).message, /导出.*刷新页面/);
+});
+
+test('quick capture retry uses the edited draft once after an initial save failure', () => {
+    const store = new Map();
+    let failuresRemaining = 1;
+    const toastEvents = [];
+    const quickInput = { value: 'first draft' };
+    const quickTagSelect = { value: 'idea' };
+    let closeCalls = 0;
+    const context = createBaseContext({
+        console: { ...console, error() {} },
+        localStorage: {
+            getItem(key) {
+                return store.has(key) ? store.get(key) : null;
+            },
+            setItem(key, value) {
+                if (key === 'quickNotesData' && failuresRemaining > 0) {
+                    failuresRemaining -= 1;
+                    throw new Error('quota exceeded');
+                }
+                store.set(key, String(value));
+            },
+            removeItem(key) {
+                store.delete(key);
+            }
+        },
+        getTodayString: () => '2026-04-20',
+        getCurrentTimeString: () => '09:30',
+        CURRENT_TASK_STORAGE_KEY: 'currentTask',
+        AMBIENT_PREFS_STORAGE_KEY: 'ambientPrefs',
+        CHECKIN_PREFS_STORAGE_KEY: 'checkinPrefs',
+        normalizeAmbientPreferences: (value) => value || {},
+        normalizeCheckinPreferences: (value) => value || {},
+        showToast(message, tone) {
+            toastEvents.push({ message, tone });
+        },
+        updateQuickCaptureCount() {},
+        closeQuickCaptureModal() {
+            closeCalls += 1;
+        },
+        updateQuickNotesList() {},
+        rerenderVisiblePanel() {},
+        checkAchievements() {},
+        lucide: { createIcons() {} },
+        registerAppModule() {},
+        checkinData: {},
+        phoneResistData: {},
+        taskData: {},
+        leaveData: [],
+        achievements: [],
+        quickNotesData: {},
+        tavernData: [],
+        currentTask: null,
+        ambientPreferences: {},
+        checkinPreferences: {}
+    });
+    context.setRuntimeValue = (key, value) => {
+        context[key] = value;
+        return value;
+    };
+    loadScript(context, 'assets/js/runtime/store.js');
+    loadScript(context, 'assets/js/runtime/storage.js');
+    context.__quickInput = quickInput;
+    context.__quickTagSelect = quickTagSelect;
+    vm.runInContext('const quickInput = __quickInput; const quickTagSelect = __quickTagSelect;', context);
+    loadScript(context, 'assets/js/features/notes/index.js');
+
+    context.saveQuickCapture();
+    assert.equal(quickInput.value, 'first draft');
+    assert.equal(context.quickNotesData['2026-04-20'], undefined);
+    assert.equal(closeCalls, 0);
+
+    quickInput.value = 'edited draft';
+    context.saveQuickCapture();
+
+    assert.equal(context.quickNotesData['2026-04-20'].length, 1);
+    assert.equal(context.quickNotesData['2026-04-20'][0].text, 'edited draft');
+    assert.equal(JSON.parse(store.get('quickNotesData'))['2026-04-20'].length, 1);
+    assert.equal(quickInput.value, '');
+    assert.equal(closeCalls, 1);
+    assert.equal(toastEvents.filter((event) => event.tone === 'success').length, 1);
 });

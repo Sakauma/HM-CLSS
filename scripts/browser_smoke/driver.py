@@ -63,6 +63,7 @@ def resolve_browser_tool(name: str) -> str | None:
 
 def create_firefox_driver(firefox_path: str, geckodriver_path: str) -> WebDriver:
     options = FirefoxOptions()
+    options.enable_bidi = True
     options.add_argument("-headless")
     options.add_argument("--width=1600")
     options.add_argument("--height=1200")
@@ -86,6 +87,7 @@ def create_firefox_driver(firefox_path: str, geckodriver_path: str) -> WebDriver
 
 def create_chromium_driver(browser_path: str, chromedriver_path: str) -> WebDriver:
     options = ChromiumOptions()
+    options.enable_bidi = True
     options.add_argument("--headless=new")
     options.add_argument("--window-size=1600,1200")
     options.add_argument("--force-device-scale-factor=1")

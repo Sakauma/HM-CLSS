@@ -9,6 +9,7 @@
 
 - 页面外壳：`index.html`
 - 样式渲染：本地 `assets/vendor/` Tailwind 浏览器脚本 + 自定义 CSS
+- 字体加载：`index.html` 默认从 Google Fonts 加载 IBM Plex 与 Noto Sans SC；网络不可用时由 Tailwind 字体栈回退到系统中文字体和 `sans-serif` / `monospace`
 - 行为逻辑：Vanilla JavaScript
 - 数据存储：浏览器 `localStorage`
 - 云端同步：GitHub Gist API
@@ -26,6 +27,8 @@
 - **深空酒馆（情绪特调）**：根据输入文本生成情绪配方，并保存到酒柜历史。
 - **全舰效能雷达（数据分析）**：多维图表展示考勤、任务与干扰拦截数据。
 - **深空通讯链路（云端同步）**：通过 GitHub Gist 在不同设备间同步本地数据。
+
+统计口径：标记为 `excused` 的签到或登出记录仍保留在统计分母中，并与合规记录一样计入合规率。
 
 
 ## 🧭 启动方式
@@ -48,97 +51,15 @@ http://localhost:8000
 
 直接在浏览器中打开 `index.html` 即可进行简单冒烟测试。
 
-### 脚本语法巡检
+### 自动化回归
 
-```bash
-node --check assets/js/runtime/theme.js
-node --check assets/js/runtime/store.js
-node --check assets/js/runtime/state.js
-node --check assets/js/runtime/storage-migrations.js
-node --check assets/js/runtime/storage-payload.js
-node --check assets/js/runtime/storage-shapes.js
-node --check assets/js/runtime/storage.js
-node --check assets/js/runtime/date-utils.js
-node --check assets/js/runtime/dom-utils.js
-node --check assets/js/runtime/ambient.js
-node --check assets/js/runtime/module-registry.js
-node --check assets/js/workspace/metrics.js
-node --check assets/js/workspace/data.js
-node --check assets/js/ui/navigation-data.js
-node --check assets/js/ui/navigation-ui.js
-node --check assets/js/ui/navigation.js
-node --check assets/js/features/tavern/catalog.js
-node --check assets/js/features/tavern/analyze.js
-node --check assets/js/features/tavern/records.js
-node --check assets/js/features/tavern/logic.js
-node --check assets/js/features/tavern/stage.js
-node --check assets/js/features/tavern/result.js
-node --check assets/js/features/tavern/history.js
-node --check assets/js/features/tavern/flow.js
-node --check assets/js/features/tavern/ui.js
-node --check assets/js/features/tavern/index.js
-node --check assets/js/features/checkin/rules.js
-node --check assets/js/features/checkin/status.js
-node --check assets/js/features/checkin/retro.js
-node --check assets/js/features/checkin/summary.js
-node --check assets/js/features/checkin/ui.js
-node --check assets/js/features/checkin/index.js
-node --check assets/js/features/focus/achievements.js
-node --check assets/js/workspace/entries.js
-node --check assets/js/features/tasks/hero.js
-node --check assets/js/features/tasks/render.js
-node --check assets/js/features/tasks/index.js
-node --check assets/js/features/notes/modal.js
-node --check assets/js/features/notes/today.js
-node --check assets/js/features/notes/archive.js
-node --check assets/js/features/notes/render.js
-node --check assets/js/features/notes/index.js
-node --check assets/js/features/leave/rules.js
-node --check assets/js/features/leave/ui.js
-node --check assets/js/features/leave/index.js
-node --check assets/js/features/stats/ranges.js
-node --check assets/js/features/stats/aggregates.js
-node --check assets/js/features/stats/data.js
-node --check assets/js/features/stats/charts.js
-node --check assets/js/features/stats/index.js
-node --check assets/js/features/dashboard/labels.js
-node --check assets/js/features/dashboard/overview.js
-node --check assets/js/features/dashboard/confirm.js
-node --check assets/js/features/dashboard/toast.js
-node --check assets/js/features/dashboard/status.js
-node --check assets/js/features/dashboard/ui.js
-node --check assets/js/features/sync/state.js
-node --check assets/js/features/sync/api.js
-node --check assets/js/features/sync/ui.js
-node --check assets/js/features/sync/backup.js
-node --check assets/js/features/sync/conflict.js
-node --check assets/js/features/sync/logic.js
-node --check assets/js/features/sync/index.js
-node --check assets/js/features/export/profiles.js
-node --check assets/js/features/export/monthly.js
-node --check assets/js/features/export/data.js
-node --check assets/js/features/export/formats.js
-node --check assets/js/features/export/ui.js
-node --check assets/js/features/export/index.js
-node --check assets/js/ui/shortcuts.js
-node --check assets/js/runtime/app-init.js
-node --check scripts/check-module-dependencies.js
-node --check scripts/check-static-template-contracts.js
-node --check scripts/check-runtime-state-contracts.js
-node --test tests/unit/*.test.js
-python3 -m py_compile scripts/browser-smoke.py
-python3 -m py_compile scripts/browser_smoke/helpers.py
-python3 -m py_compile scripts/browser_smoke/driver.py
-python3 -m py_compile scripts/browser_smoke/scenarios/*.py
-bash -n scripts/browser-smoke.sh
-bash -n scripts/setup-browser-test.sh
-```
-
-### 快速回归脚本
+JavaScript 语法文件和页面脚本加载顺序分别以 [`js-syntax.txt`](./scripts/smoke_manifest/js-syntax.txt) 与 [`script-order.txt`](./scripts/smoke_manifest/script-order.txt) 为唯一清单来源。不要在 README 复制逐文件命令或加载顺序；直接运行完整回归入口：
 
 ```bash
 bash scripts/smoke-check.sh
 ```
+
+该入口会执行语法、模块依赖、模板与运行时契约、单元测试、浏览器脚本编译、脚本顺序、资源存在性和 vendor 完整性检查。
 
 Windows 上建议使用 PowerShell 包装脚本，它会优先使用项目内的 `.conda/browser-test/python.exe`，并把 Node/Python 路径转换给 Git Bash：
 
@@ -258,7 +179,7 @@ powershell -ExecutionPolicy Bypass -File scripts/browser-smoke.ps1 -Browser chro
 当前仓库的主结构如下：
 
 - `index.html`
-  飞船主舱。负责页面骨架、Tailwind 配置、样式链接，以及脚本加载顺序。
+  飞船主舱。负责页面骨架、字体链接、样式链接，以及脚本加载块；Tailwind 令牌配置位于 `assets/js/runtime/tailwind-config.js`。
 - `assets/css/theme.css`
   主题令牌、页面背景、滚动条与基础焦点反馈。
 - `assets/css/shell.css`
@@ -279,6 +200,8 @@ powershell -ExecutionPolicy Bypass -File scripts/browser-smoke.ps1 -Browser chro
   弹窗、toast、酒馆液面和减弱动效规则。
 - `assets/js/runtime/theme.js`
   主题切换与深浅色图标同步。
+- `assets/js/runtime/tailwind-config.js`
+  Tailwind 浏览器运行时的主题色、阴影和字体令牌；必须在本地 Tailwind vendor 脚本之后加载。
 - `assets/js/runtime/store.js`
   运行时可变状态容器，以及对旧全局变量的统一代理入口。
 - `assets/js/runtime/state.js`
@@ -610,95 +533,11 @@ const CONFIG = {
 
 直接替换这些 RGB 数值即可；如果你同时改了背景或卡面气氛色，也记得同步调整同一区域里的 `--color-bg-*` 与 `--color-card-*`。
 
-### 5. 自定义“脚本加载顺序”
+### 5. 自定义脚本与启动顺序
 
-如果你未来继续拆分脚本，不要随意打乱 `index.html` 中的 `<script src="...">` 顺序。
+新增或调整脚本时，以 [`script-order.txt`](./scripts/smoke_manifest/script-order.txt) 为唯一加载顺序清单；`index.html` 的脚本块由 smoke check 自动校验。目录按 `runtime / workspace / ui / features` 分层：`runtime` 负责启动、模块注册、共享运行时和可变状态容器，`workspace` 负责跨模块共享的数据与口径，`ui` 负责导航和快捷键这类外层交互，`features` 按值班、酒馆、离舰、统计、同步、导出等功能继续拆分。
 
-当前顺序遵循依赖关系，`scripts/smoke_manifest/script-order.txt` 与 `index.html` 保持同一份清单：
-
-1. `vendor/tailwindcss-3.4.17.js`
-2. `vendor/lucide-0.514.0.min.js`
-3. `vendor/chart.umd-4.5.1.min.js`
-4. `vendor/marked-12.0.2.min.js`
-5. `vendor/purify-3.4.7.min.js`
-6. `runtime/tailwind-config.js`
-7. `runtime/logger.js`
-8. `runtime/module-registry.js`
-9. `runtime/theme.js`
-10. `runtime/store.js`
-11. `runtime/state.js`
-12. `runtime/storage-migrations.js`
-13. `runtime/storage-payload.js`
-14. `runtime/storage-shapes.js`
-15. `runtime/storage.js`
-16. `runtime/date-utils.js`
-17. `runtime/dom-utils.js`
-18. `runtime/ambient.js`
-19. `workspace/metrics.js`
-20. `workspace/data.js`
-21. `ui/navigation-data.js`
-22. `ui/navigation-ui.js`
-23. `ui/navigation.js`
-24. `ui/static-templates.js`
-25. `features/tavern/catalog-data.js`
-26. `features/tavern/catalog.js`
-27. `features/tavern/analyze.js`
-28. `features/tavern/records.js`
-29. `features/tavern/logic.js`
-30. `features/tavern/stage.js`
-31. `features/tavern/result.js`
-32. `features/tavern/history.js`
-33. `features/tavern/flow.js`
-34. `features/tavern/ui.js`
-35. `features/tavern/index.js`
-36. `features/checkin/rules.js`
-37. `features/checkin/status.js`
-38. `features/checkin/retro.js`
-39. `features/checkin/summary.js`
-40. `features/checkin/ui.js`
-41. `features/checkin/index.js`
-42. `features/focus/achievements.js`
-43. `workspace/entries.js`
-44. `features/tasks/hero.js`
-45. `features/tasks/render.js`
-46. `features/tasks/index.js`
-47. `features/notes/modal.js`
-48. `features/notes/today.js`
-49. `features/notes/archive.js`
-50. `features/notes/render.js`
-51. `features/notes/index.js`
-52. `features/leave/rules.js`
-53. `features/leave/ui.js`
-54. `features/leave/index.js`
-55. `features/stats/ranges.js`
-56. `features/stats/aggregates.js`
-57. `features/stats/data.js`
-58. `features/stats/charts.js`
-59. `features/stats/index.js`
-60. `features/dashboard/labels.js`
-61. `features/dashboard/overview.js`
-62. `features/dashboard/confirm.js`
-63. `features/dashboard/toast.js`
-64. `features/dashboard/status.js`
-65. `features/dashboard/ui.js`
-66. `features/sync/state.js`
-67. `features/sync/api.js`
-68. `features/sync/ui.js`
-69. `features/sync/backup.js`
-70. `features/sync/apply-transaction.js`
-71. `features/sync/conflict.js`
-72. `features/sync/logic.js`
-73. `features/sync/index.js`
-74. `features/export/profiles.js`
-75. `features/export/monthly.js`
-76. `features/export/data.js`
-77. `features/export/formats.js`
-78. `features/export/ui.js`
-79. `features/export/index.js`
-80. `runtime/app-init.js`
-81. `ui/shortcuts.js`
-
-现在目录按 `runtime / workspace / ui / features` 分层：`runtime` 负责启动、模块注册、共享运行时和可变状态容器，`workspace` 负责跨模块共享的数据与口径，`ui` 负责导航和快捷键这类外层交互，`features` 按值班、酒馆、离舰、统计、同步、导出等功能继续拆分。`app-init.js` 现在只负责 `initData()` 和触发模块注册中心，具体功能模块各自向注册中心报到。顺序错乱会导致飞船在启动时失压。
+`app-init.js` 现在只负责 `initData()` 和触发模块注册中心，具体功能模块各自向注册中心报到。顺序错乱会导致飞船在启动时失压。
 
 新增或调整业务数据时，优先通过 `runtimeActions` 写入共享状态，再由 `saveData()` 统一持久化和刷新统计/导出预览。只有兼容旧 helper 或纯读取场景才直接访问 `checkinData`、`taskData` 等全局代理。新增 `registerAppModule` 时必须声明稳定 `id`；如果依赖其他模块或脚本，补齐 `dependsOn`，并让 `order` 晚于依赖模块的初始化顺序。
 
@@ -744,7 +583,7 @@ const CONFIG = {
 
 ### 下一阶段
 
-- [x] 继续抽离 `core.js` 中的共享状态、存储与启动流程
+- [x] 将原 `core.js` 中的共享状态、存储与启动流程拆分到 `runtime`、`workspace` 和功能模块
 - [x] 将主题色进一步变量化，降低样式硬编码密度
 - [x] 为常见回归场景补充更稳定的自动化测试脚本
 - [x] 增强键盘操作流，例如快捷切换舱段与快捷打卡
